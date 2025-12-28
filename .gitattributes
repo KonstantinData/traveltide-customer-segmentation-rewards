@@ -1,0 +1,6 @@
+# Normalize line endings across OS
+* text=auto eol=lf
+
+# Explicitly keep Windows scripts as CRLF if needed later
+*.ps1 text eol=crlf
+*.bat text eol=crlf
