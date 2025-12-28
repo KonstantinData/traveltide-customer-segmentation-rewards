@@ -1,56 +1,27 @@
-# ========== Projektstruktur ==========
-# Ignoriere Datenverzeichnisse
-data/
-datasets/
-*.csv
-*.tsv
-*.parquet
-*.h5
-*.db
-*.sqlite
-
-# ========== Jupyter Notebook ==========
-# Ignoriere automatisch generierte Checkpoints
-**/.ipynb_checkpoints/
-
-# ========== Python Umgebung ==========
-# Virtuelle Umgebung
-.venv/
-env/
+# Virtual environments
 venv/
+.venv/
 
-# Bytecode-Dateien & Cache
+# Python cache / tooling
 __pycache__/
 *.py[cod]
-*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
 
-# ========== Logs und temporäre Dateien ==========
-*.log
-*.tmp
-*.swp
-*.bak
-*.~
-*.pid
+# Artifacts & data (project outputs)
+artifacts/
+data/
+*.parquet
+*.csv
 
-# ========== Betriebssystem / Editor Dateien ==========
+# Env files
+.env
+.env.*
+
+# OS / IDE
 .DS_Store
-Thumbs.db
 .vscode/
 .idea/
-
-# ========== Sonstiges ==========
-# Ergebnisse von Tools wie pytest, coverage, etc.
-htmlcov/
-.tox/
-coverage.xml
-*.cover
-*.py,cover
-.cache/
-nosetests.xml
-test-output/
-
-# ========== Ignore bestimmte Modelle / Outputs ==========
-models/
-outputs/
-checkpoints/
-runs/
