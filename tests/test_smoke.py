@@ -3,6 +3,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+
 def test_cli_help_runs() -> None:
     env = dict(os.environ)
     env["PYTHONPATH"] = str(Path.cwd() / "src")
