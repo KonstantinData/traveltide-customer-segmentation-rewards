@@ -1,8 +1,12 @@
+# =========================
 # Virtual environments
+# =========================
 venv/
 .venv/
 
+# =========================
 # Python cache / tooling
+# =========================
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -11,27 +15,33 @@ __pycache__/
 .coverage
 htmlcov/
 
-# Artifacts & data (project outputs)
-artifacts/
-data/
-*.parquet
-*.csv
+# Jupyter
+.ipynb_checkpoints/
 
-# Env files
+# =========================
+# Env files / secrets
+# =========================
 .env
 .env.*
 
+# =========================
 # OS / IDE
+# =========================
 .DS_Store
 .vscode/
 .idea/
 
-# Packaging/build artifacts
+# =========================
+# Packaging / build artifacts
+# =========================
 *.egg-info/
 build/
 dist/
 
-# Artifacts: keep folder in git, ignore generated outputs
+# =========================
+# Project outputs
+# =========================
+# Keep the folder tracked, ignore generated contents by default
 artifacts/**
 !artifacts/.gitkeep
 !artifacts/example_run/.gitkeep
