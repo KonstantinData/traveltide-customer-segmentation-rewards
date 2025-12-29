@@ -1,1 +1,4 @@
-__all__ = []
+"""TravelTide customer segmentation & rewards (portfolio project)."""
+
+__all__ = ["__version__"]
+__version__ = "0.1.0"
