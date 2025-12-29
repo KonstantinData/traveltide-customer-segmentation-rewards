@@ -3,6 +3,7 @@
 Portfolio-style Mastery Project: customer segmentation for TravelTide and a data-driven rewards/perks mapping.
 
 ## Repository layout (golden path)
+
 - `src/traveltide/` — Python package + CLI entry point (`python -m traveltide`)
 - `tests/` — automated checks (CI runs `pytest -q`)
 - `docs/` — narrative by project step + architecture decisions (ADR)
@@ -16,14 +17,19 @@ Portfolio-style Mastery Project: customer segmentation for TravelTide and a data
 - `artifacts/` — generated outputs (exports, charts, tables). The folder is versioned, contents are generally ignored.
 
 ## How to run (placeholder)
+
 ```bash
 python -m venv venv
 source venv/bin/activate  # Windows: .\venv\Scripts\activate
-pip install -r requirements.txt
+
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+python -m pip install -e .
 
 python -m traveltide --help
-pytest -q
-```
+python -m pytest -q
 
-## Outputs
-- Generated outputs will be written under `artifacts/` (e.g., `artifacts/example_run/`).
+# Optional local quality gates (same as CI)
+python -m ruff check .
+python -m ruff format --check .
+```
