@@ -25,3 +25,13 @@ data/
 .DS_Store
 .vscode/
 .idea/
+
+# Packaging/build artifacts
+*.egg-info/
+build/
+dist/
+
+# Artifacts: keep folder in git, ignore generated outputs
+artifacts/**
+!artifacts/.gitkeep
+!artifacts/example_run/.gitkeep
