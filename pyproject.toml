@@ -1,15 +1,37 @@
+# pyproject.toml
+# Purpose / Rationale:
+# This file is the central, standardized configuration for a Python project.
+# It defines (a) how the project is built and installed (build system),
+# (b) core project metadata and runtime requirements (packaging),
+# and (c) tool-specific configuration (e.g. setuptools, linters, test tools).
+# The goal is reproducible builds, clean installs (including editable installs),
+# and a single source of truth for packaging and CLI entry points.
+
 [build-system]
+# requires: Build-time dependencies required to build and install the project (PEP 517 / PEP 518).
 requires = ["setuptools>=68", "wheel"]
+# build-backend: The backend responsible for performing the build and installation steps.
 build-backend = "setuptools.build_meta"
 
 [project]
+# name: The canonical project/package name used for installation and distribution.
 name = "traveltide-customer-segmentation-rewards"
+# version: Project version (semantic versioning recommended); used for releases and traceability.
 version = "0.1.0"
+# requires-python: Minimum supported Python version; prevents installation on incompatible interpreters.
 requires-python = ">=3.12"
+# dependencies: Runtime dependencies automatically installed alongside this project.
 dependencies = []
 
 [tool.setuptools]
+# package-dir: Maps the package root to the src/ directory (src-layout best practice).
 package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
+# where: Directories in which setuptools searches for Python packages.
 where = ["src"]
+
+[project.scripts]
+# Console script entry point: creates an executable `traveltide` command after installation.
+# Format: <command> = "<module path>:<callable>"
+traveltide = "traveltide.cli:main"

@@ -28,6 +28,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="Also print relevant environment variables (redacted if missing).",
     )
 
+    # TT-007: golden path placeholder command
+    run = sub.add_parser("run", help="Golden path placeholder (not implemented yet).")
+    run.add_argument(
+        "--mode",
+        default="golden-path",
+        help="Execution mode placeholder (reserved for future pipeline modes).",
+    )
+
     return parser
 
 
@@ -40,12 +48,21 @@ def cmd_info(show_env: bool) -> int:
     return 0
 
 
+def cmd_run(mode: str) -> int:
+    print("Golden path placeholder: pipeline not implemented yet.")
+    print(f"Requested mode: {mode}")
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
     if args.command == "info":
         return cmd_info(show_env=bool(args.show_env))
+
+    if args.command == "run":
+        return cmd_run(mode=str(args.mode))
 
     # Default behavior: show help for friendly UX.
     parser.print_help()
