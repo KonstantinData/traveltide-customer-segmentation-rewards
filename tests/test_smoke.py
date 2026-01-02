@@ -12,9 +12,9 @@ def test_cli_help_runs() -> None:
     assert result.returncode == 0
 
 
-def test_cli_run_placeholder_runs() -> None:
+def test_cli_info_runs() -> None:
     result = subprocess.run(
-        [sys.executable, "-m", "traveltide", "run"],
+        [sys.executable, "-m", "traveltide", "info"],
         capture_output=True,
         text=True,
         check=False,
