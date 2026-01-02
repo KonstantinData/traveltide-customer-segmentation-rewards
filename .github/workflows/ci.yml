@@ -1,37 +1,74 @@
+# Description:
+# This GitHub Actions workflow exists to keep the repository continuously “green” by enforcing a
+# consistent quality + reproducibility + baseline security gate on every push/PR:
+# - code quality: ruff linting + formatting compliance
+# - correctness: pytest test suite
+# - dependency security: pip-audit vulnerability scan
+# The workflow is intentionally minimal and uses `python -m ...` invocations to match local usage.
+
 name: CI
 
 on:
+  # Notes: Run CI for changes merged to main (push) and for all incoming changes (pull_request).
   push:
+    branches: ["main"]
   pull_request:
+
+permissions:
+  # Notes: Minimal permissions (read-only) for security hardening.
+  contents: read
 
 jobs:
   quality:
+    # Notes: Single-job baseline pipeline to keep signal high and maintenance low.
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      # Notes: Fetch the repository content so subsequent steps can run on the codebase.
+      - name: Checkout
+        uses: actions/checkout@v4
 
+      # Notes: Provision the pinned Python runtime and enable pip caching for faster builds.
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
+          # Notes: Keep CI aligned with the project’s supported runtime (Python 3.12.x).
           python-version: "3.12"
+          # Notes: Cache pip downloads to speed up repeated workflow runs.
+          cache: "pip"
 
+      # Notes: Ensure a modern pip to avoid resolver/installation edge cases.
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      # Notes:
+      # - Install runtime dependencies (requirements.txt)
+      # - Install the project in editable mode to validate packaging/imports/entry points
+      # - Install pip-audit as a CI tool dependency
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
           python -m pip install -e .
+          python -m pip install pip-audit
 
+      # Notes: Smoke-check that the CLI entrypoint resolves and basic packaging is correct.
       - name: CLI smoke (help)
         run: python -m traveltide --help
 
-      - name: Lint
+      # Notes:
+      # - Enforce lint rules (ruff check)
+      # - Enforce formatting compliance without rewriting files (ruff format --check)
+      - name: Lint & format check (ruff)
         run: |
           python -m ruff check .
           python -m ruff format --check .
 
-      - name: Tests
+      # Notes: Run the test suite (fast, deterministic) to prevent regressions.
+      - name: Tests (pytest)
         run: python -m pytest -q
 
-      - name: Dependency audit
-        run: pip-audit -r requirements.txt
+      # Notes:
+      # Scan dependency set for known vulnerabilities.
+      # Using requirements.txt makes the audit scope explicit and reproducible.
+      - name: Dependency audit (pip-audit)
+        run: python -m pip_audit -r requirements.txt
