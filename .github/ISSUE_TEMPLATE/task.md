@@ -9,7 +9,7 @@ labels: ""
 What should be true after this is done?
 
 ## Scope
-**In:**  
+**In:**
 **Out:**
 
 ## Acceptance criteria (Definition of Done)
