@@ -1,0 +1,52 @@
+# Purpose: Local quality gates aligned with CI (ruff/format/pytest/pip-audit).
+# This prevents avoidable CI failures by running the same checks earlier.
+
+repos:
+  # #Notes: Baseline hygiene hooks (whitespace, EoF, YAML validity, etc.)
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      # #Notes: Prevent noisy diffs and enforce clean files
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+
+      # #Notes: Prevent broken YAML/TOML and common git mistakes
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+
+      # #Notes: Guardrail against accidentally committing secrets or huge files
+      - id: detect-private-key
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]
+
+  # #Notes: Ruff lint + formatting aligned with CI (fast, runs on commit)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.5.7
+    hooks:
+      # #Notes: Lint (equivalent intent to `python -m ruff check .`)
+      - id: ruff
+        args: ["--fix=false"]
+
+      # #Notes: Formatting check (equivalent intent to `python -m ruff format --check .`)
+      - id: ruff-format
+        args: ["--check"]
+
+  # #Notes: Heavier checks aligned with CI; run on push (pre-push)
+  - repo: local
+    hooks:
+      # #Notes: Run unit tests before pushing to avoid CI test failures
+      - id: pytest
+        name: pytest (pre-push)
+        entry: pytest -q
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+
+      # #Notes: Dependency vulnerability scan similar to CI pip-audit step
+      - id: pip-audit
+        name: pip-audit (pre-push)
+        entry: pip-audit -r requirements.txt
+        language: system
+        pass_filenames: false
+        stages: [pre-push]

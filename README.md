@@ -211,6 +211,31 @@ python -m ruff format --check .
 
 ---
 
+## Local quality gates (pre-commit)
+
+To reduce “fail-in-CI” loops, you can run the same baseline checks locally via **pre-commit**.
+
+### Install
+
+```bash
+python -m pip install --upgrade pip
+python -m pip install pre-commit
+pre-commit install
+pre-commit install --hook-type pre-push
+```
+
+### Run all hooks manually
+
+```bash
+pre-commit run -a
+```
+
+### Notes
+
+- Commit-time hooks are kept fast (basic hygiene + Ruff lint/format checks).
+- Heavier checks run on **pre-push** (pytest + pip-audit), matching CI intent.
+- Emergency bypass (use sparingly): `SKIP=pytest,pip-audit git push`
+
 ## License
 
 MIT License (see `LICENSE`).
