@@ -20,4 +20,3 @@ def test_cli_run_placeholder_runs() -> None:
         check=False,
     )
     assert result.returncode == 0
-
