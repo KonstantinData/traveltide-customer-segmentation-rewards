@@ -35,13 +35,14 @@ repos:
   # #Notes: Heavier checks aligned with CI; run on push (pre-push)
   - repo: local
     hooks:
-      # #Notes: Run unit tests before pushing to avoid CI test failures
       - id: pytest
         name: pytest (pre-push)
         entry: pytest -q
         language: system
         pass_filenames: false
         stages: [pre-push]
+        env:
+          PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
 
       # #Notes: Dependency vulnerability scan similar to CI pip-audit step
       - id: pip-audit
