@@ -35,3 +35,52 @@ where = ["src"]
 # Console script entry point: creates an executable `traveltide` command after installation.
 # Format: <command> = "<module path>:<callable>"
 traveltide = "traveltide.cli:main"
+
+# =========================
+# Ruff (lint + format)
+# =========================
+# Single source of truth for code quality in both local development and CI.
+# CI runs:
+#   - python -m ruff check .
+#   - python -m ruff format --check .
+# Local auto-fix / format:
+#   - python -m ruff check . --fix
+#   - python -m ruff format .
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+
+# Avoid linting/formatting non-source outputs or large binary-ish artifacts.
+extend-exclude = [
+  "artifacts/",
+  "docs/step1_exploration/",
+  "docs/step2_features_segmentation/",
+  "docs/step3_insights_strategy/",
+  "docs/step4_presentation/",
+  "notebooks/",
+]
+
+[tool.ruff.lint]
+# Conservative baseline that catches real defects and enforces deterministic imports.
+select = [
+  "E",  # pycodestyle errors
+  "F",  # pyflakes
+  "I",  # isort (import ordering)
+]
+
+# When using Ruff's formatter, do not also enforce line length via E501.
+ignore = [
+  "E501",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["traveltide"]
+
+[tool.ruff.format]
+# Keep defaults explicit to prevent drift if Ruff defaults change.
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
