@@ -41,6 +41,19 @@ The analytical pipeline (data extraction → feature engineering → clustering 
 
 ---
 
+## How We Define Done
+
+This project uses an explicit Definition of Done and an Excellence Scorecard to ensure consistent, portfolio-grade quality across all phases.
+
+- **Definition of Done (repo + phase level):**See [`docs/definition_of_done.md`](docs/definition_of_done.md)
+- **Excellence Scorecard (quality rubric):**
+  See [`docs/excellence_scorecard.md`](docs/excellence_scorecard.md)
+
+These documents answer one question unambiguously:
+**“Is this work done?”**
+
+---
+
 ## Business context (problem framing)
 
 TravelTide is growing quickly, but customer loyalty is uneven. The business hypothesis is that **different customer archetypes respond to different incentives**, so a single blanket offer is suboptimal.
@@ -118,52 +131,45 @@ python -m venv venv
 
 If `python` does not point to your Python 3.12 interpreter on Windows, use:
 
-```powershell
-py -3.126 -m venv venv
-```
+<pre class="overflow-visible! px-0!" data-start="5563" data-end="5603"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-powershell"><span><span>py </span><span>-3</span><span>.</span><span>126</span><span></span><span>-m</span><span> venv venv
+</span></span></code></div></div></pre>
 
 ### 2) Activate venv
 
 **Windows PowerShell**
 
-```powershell
-.\venv\Scripts\Activate.ps1
-```
+<pre class="overflow-visible! px-0!" data-start="5651" data-end="5696"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-powershell"><span><span>.\venv\Scripts\Activate.ps1
+</span></span></code></div></div></pre>
 
 If PowerShell blocks activation scripts (current session only):
 
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-```
+<pre class="overflow-visible! px-0!" data-start="5763" data-end="5839"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-powershell"><span><span>Set-ExecutionPolicy</span><span></span><span>-Scope</span><span></span><span>Process</span><span></span><span>-ExecutionPolicy</span><span> Bypass
+</span></span></code></div></div></pre>
 
 **macOS / Linux**
 
-```bash
-source venv/bin/activate
-```
+<pre class="overflow-visible! px-0!" data-start="5860" data-end="5896"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-bash"><span><span>source</span><span> venv/bin/activate
+</span></span></code></div></div></pre>
 
 ### 3) Install dependencies + install package (editable)
 
-```bash
-python -m pip install --upgrade pip
+<pre class="overflow-visible! px-0!" data-start="5956" data-end="6072"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-bash"><span><span>python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 python -m pip install -e .
-```
+</span></span></code></div></div></pre>
 
 ### 4) Sanity check (expected to pass)
 
-```bash
-python -m traveltide --help
+<pre class="overflow-visible! px-0!" data-start="6114" data-end="6218"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-bash"><span><span>python -m traveltide --</span><span>help</span><span>
 pytest -q
 python -m ruff check .
 python -m ruff format --check .
-```
+</span></span></code></div></div></pre>
 
 ### 5) Deactivate
 
-```bash
-deactivate
-```
+<pre class="overflow-visible! px-0!" data-start="6239" data-end="6261"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-bash"><span><span>deactivate
+</span></span></code></div></div></pre>
 
 ---
 
@@ -171,9 +177,8 @@ deactivate
 
 The CLI is the intended “golden path” entry point:
 
-```bash
-python -m traveltide --help
-```
+<pre class="overflow-visible! px-0!" data-start="6338" data-end="6377"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-bash"><span><span>python -m traveltide --</span><span>help</span><span>
+</span></span></code></div></div></pre>
 
 Note: At the moment, CLI commands are placeholders; the pipeline will be wired in as the project progresses.
 
@@ -183,9 +188,9 @@ Note: At the moment, CLI commands are placeholders; the pipeline will be wired i
 
 Generated outputs should go under `artifacts/`, for example:
 
-- exported customer-level feature tables (CSV/Parquet)
-- segment profiles (tables + plots)
-- presentation assets (figures for slides/report)
+* exported customer-level feature tables (CSV/Parquet)
+* segment profiles (tables + plots)
+* presentation assets (figures for slides/report)
 
 ---
 
@@ -193,22 +198,19 @@ Generated outputs should go under `artifacts/`, for example:
 
 The repository enforces a minimal baseline:
 
-- `pytest` for tests
-- `ruff` for lint/format checks
-- `pip-audit` for dependency auditing
+* `pytest` for tests
+* `ruff` for lint/format checks
+* `pip-audit` for dependency auditing
 
 Run the same checks locally as CI:
 
-```bash
-pytest -q
+<pre class="overflow-visible! px-0!" data-start="6917" data-end="6993"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-bash"><span><span>pytest -q
 python -m ruff check .
 python -m ruff format --check .
-```
+</span></span></code></div></div></pre>
 
 ---
 
 ## License
 
 MIT License (see `LICENSE`).
-
----
