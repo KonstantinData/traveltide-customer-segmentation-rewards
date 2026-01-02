@@ -37,12 +37,11 @@ repos:
     hooks:
       - id: pytest
         name: pytest (pre-push)
-        entry: pytest -q
+        entry: bash -lc 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest -q'
         language: system
         pass_filenames: false
         stages: [pre-push]
-        env:
-          PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+
 
       # #Notes: Dependency vulnerability scan similar to CI pip-audit step
       - id: pip-audit
