@@ -1,12 +1,12 @@
-"""Step 1 (EDA) pipeline.
+"""TravelTide package.
 
 Notes:
-- This package provides a reproducible EDA generator for TT-012.
-- It is designed to be runnable headlessly (CLI/CI) and to emit versioned artifacts.
+- Keep top-level imports minimal to avoid import-time side effects.
+- EDA entrypoint is available via `traveltide.eda.run_eda`.
 """
 
 from __future__ import annotations
 
-__all__ = ["run_eda"]
+__all__ = ["__version__"]
 
-from .pipeline import run_eda
+__version__ = "0.0.0"
