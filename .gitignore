@@ -45,3 +45,10 @@ dist/
 artifacts/**
 !artifacts/.gitkeep
 !artifacts/example_run/.gitkeep
+!artifacts/eda/.gitkeep
+
+# =========================
+# TT-012 EDA artifacts
+# =========================
+artifacts/eda/*
+!artifacts/eda/.gitkeep

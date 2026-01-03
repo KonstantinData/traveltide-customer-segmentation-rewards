@@ -34,12 +34,24 @@ The intended outcome is a **portfolio-ready** deliverable that is reproducible (
 
 ---
 
-## Project status
+# Project status
 
-This repository currently provides the **project scaffold + CI baseline** (packaging, CLI entry point, lint/tests hooks).
-The analytical pipeline (data extraction → feature engineering → clustering → reporting) is designed to be implemented iteratively in subsequent issues/steps.
+This repository provides the **project scaffold + CI baseline** (packaging, CLI entry point, lint/tests hooks) and now includes a **reproducible Step 1 EDA artifact generator** (TT-012).
 
----
+The remaining analytical pipeline (feature engineering → clustering → final presentation artifacts) is implemented iteratively in subsequent issues/steps.
+
+### Step 1 (EDA) artifact generation (TT-012)
+
+Generate a versioned EDA report + cleaned tables (requires `TRAVELTIDE_DATABASE_URL`):
+
+```bash
+python -m pip install -r requirements.txt
+python -m pip install -e .
+
+# Generate EDA artifact into artifacts/eda/<timestamp>/
+python -m traveltide eda --config config/eda.yaml --outdir artifacts/eda
+```
+
 
 ## How We Define Done
 

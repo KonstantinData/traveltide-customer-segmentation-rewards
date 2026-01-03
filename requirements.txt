@@ -28,3 +28,9 @@ pytest-cov>=5.0
 ruff>=0.6
 pip-audit>=2.7
 pre-commit>=3.7
+
+# =========================
+# Database access (TravelTide is Postgres)
+# =========================
+sqlalchemy>=2.0
+psycopg[binary]>=3.1

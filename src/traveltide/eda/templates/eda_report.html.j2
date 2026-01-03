@@ -1,0 +1,108 @@
+{#
+  EDA HTML report template (TT-012).
+
+  Notes:
+  - Standalone HTML for portability and easy review (GitHub, local browser, CI artifacts).
+  - Keep structure simple: metadata → shapes → missingness → charts → previews.
+  - Avoid external dependencies (CSS frameworks, images, JS) to keep output deterministic.
+#}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ title }}</title>
+    <style>
+      /* Notes: Minimal CSS for readability; no external assets for deterministic rendering. */
+      body { font-family: Arial, sans-serif; margin: 24px; line-height: 1.45; }
+      h1, h2, h3 { margin: 0.6em 0 0.3em; }
+      code, pre { background: #f6f8fa; padding: 2px 4px; border-radius: 4px; }
+      pre { padding: 12px; overflow-x: auto; }
+      table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+      th, td { border: 1px solid #ddd; padding: 8px; font-size: 13px; }
+      th { background: #f2f2f2; text-align: left; }
+      .meta { background: #f6f8fa; padding: 12px; border-radius: 8px; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      .chart { border: 1px solid #eee; padding: 10px; border-radius: 8px; }
+      .muted { color: #555; }
+    </style>
+  </head>
+  <body>
+    <h1>{{ title }}</h1>
+    <p class="muted">
+      Step 1 (EDA) artifact. This report documents cohort definition, data quality findings,
+      preprocessing decisions, and core descriptive exploration.
+    </p>
+
+    <h2>Run metadata</h2>
+    <div class="meta">
+      <!-- Notes: Metadata is displayed verbatim to keep the run fully auditable. -->
+      <pre>{{ metadata | tojson(indent=2) }}</pre>
+    </div>
+
+    <h2>Shapes</h2>
+    <ul>
+      <li><strong>Session-level table:</strong> {{ session_shape[0] }} rows × {{ session_shape[1] }} columns</li>
+      <li><strong>User-level table:</strong> {{ user_shape[0] }} rows × {{ user_shape[1] }} columns</li>
+    </ul>
+
+    <h2>Missingness</h2>
+    <div class="grid">
+      <div>
+        <h3>Session-level (top missing)</h3>
+        <table>
+          <thead>
+            <tr><th>column</th><th>missing</th><th>missing_pct</th><th>dtype</th></tr>
+          </thead>
+          <tbody>
+            {% for r in session_missing[:25] %}
+              <tr>
+                <td>{{ r.column }}</td>
+                <td>{{ r.missing }}</td>
+                <td>{{ r.missing_pct }}</td>
+                <td>{{ r.dtype }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h3>User-level (top missing)</h3>
+        <table>
+          <thead>
+            <tr><th>column</th><th>missing</th><th>missing_pct</th><th>dtype</th></tr>
+          </thead>
+          <tbody>
+            {% for r in user_missing[:25] %}
+              <tr>
+                <td>{{ r.column }}</td>
+                <td>{{ r.missing }}</td>
+                <td>{{ r.missing_pct }}</td>
+                <td>{{ r.dtype }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <h2>Core charts</h2>
+    <div class="grid">
+      <!-- Notes: Charts are base64 images embedded by the renderer (no external files required). -->
+      {% for key, img in charts.items() %}
+        <div class="chart">
+          <div class="muted"><code>{{ key }}</code></div>
+          <img src="data:image/png;base64,{{ img }}" style="max-width:100%" />
+        </div>
+      {% endfor %}
+    </div>
+
+    <h2>Data previews</h2>
+    <h3>Session-level sample</h3>
+    <!-- Notes: Preview is escaped HTML table produced by pandas; safe to embed. -->
+    {{ session_sample | safe }}
+
+    <h3>User-level sample</h3>
+    {{ user_sample | safe }}
+  </body>
+</html>

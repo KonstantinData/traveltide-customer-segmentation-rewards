@@ -1,0 +1,40 @@
+# EDA configuration (TT-012)
+# Notes:
+# - This file is the single source of truth for the EDA cohort + cleaning rules.
+# - It is intentionally explicit to make EDA runs reproducible and diffable in Git.
+
+cohort:
+  # Notes: Elena baseline cohort: customers who signed up during calendar year 2022.
+  sign_up_date_start: "2022-01-01"
+  sign_up_date_end: "2022-12-31"
+
+extraction:
+  # Notes: Limit extraction window to reduce runtime while keeping EDA representative.
+  # Set to null to disable session_start filtering.
+  session_start_min: null
+
+cleaning:
+  # Notes: Hotels table can contain invalid nights (0 or negative). This policy controls handling.
+  # - recompute: recompute nights from timestamps when invalid.
+  # - drop: drop rows with invalid nights.
+  invalid_hotel_nights_policy: "recompute"
+
+outliers:
+  # Notes: Outlier handling is applied before aggregations to avoid distorted averages.
+  method: "iqr"           # allowed: iqr | zscore
+  iqr_multiplier: 5.0      # Notes: conservative (keeps most observations) as suggested in course.
+  zscore_threshold: 5.0
+  columns:
+    # Notes: These are the highest-leverage numeric columns for early EDA stability.
+    - page_clicks
+    - base_fare_usd
+    - hotel_per_room_usd
+    - nights
+    - rooms
+    - seats
+
+report:
+  # Notes: Controls where and how report outputs are written.
+  title: "TravelTide — Step 1 EDA Report"
+  output_format: "html"   # allowed: html (PDF can be added later)
+  include_sample_rows: 25

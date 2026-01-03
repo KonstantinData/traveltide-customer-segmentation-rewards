@@ -1,4 +1,12 @@
-"""TravelTide customer segmentation & rewards (portfolio project)."""
+"""Step 1 (EDA) pipeline.
 
-__all__ = ["__version__"]
-__version__ = "0.1.0"
+Notes:
+- This package provides a reproducible EDA generator for TT-012.
+- It is designed to be runnable headlessly (CLI/CI) and to emit versioned artifacts.
+"""
+
+from __future__ import annotations
+
+__all__ = ["run_eda"]
+
+from .pipeline import run_eda
