@@ -104,7 +104,7 @@ def extract_session_level(config: EDAConfig) -> pd.DataFrame:
             ON f.trip_id = s.trip_id
         LEFT JOIN hotels h
             ON h.trip_id = s.trip_id
-        WHERE {' AND '.join(where_clauses)}
+        WHERE {" AND ".join(where_clauses)}
     """
 
     # Notes: Parameter dict keeps SQL readable and prevents accidental string formatting issues.
