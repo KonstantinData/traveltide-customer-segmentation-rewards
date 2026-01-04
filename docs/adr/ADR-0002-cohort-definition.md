@@ -17,6 +17,12 @@ The analysis cohort includes users who:
 - have at least one recorded session
 - are not test or incomplete users (implicit via dataset constraints)
 
+### Canonical implementation (SQL)
+
+To avoid boundary ambiguity (date vs timestamp), the cohort window is implemented with an exclusive upper bound:
+
+`sign_up_date >= '2022-01-01' AND sign_up_date < '2023-01-01'`
+
 ## Rationale
 
 - Aligns customers to a comparable lifecycle stage
@@ -25,6 +31,11 @@ The analysis cohort includes users who:
 
 This definition is based on guidance from the Head of Marketing (business context)
 and validated through exploratory data analysis.
+
+## Implementation notes / Overrides
+
+- The cohort filter MUST be applied at the user anchor level and propagated via joins (users → sessions → flights/hotels).
+- Exploratory overrides are allowed, but must be parameterized (single source of truth) and documented in the respective analysis artifact (notebook/report).
 
 ## Consequences
 

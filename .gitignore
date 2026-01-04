@@ -23,6 +23,10 @@ htmlcov/
 # =========================
 .env
 .env.*
+data/bronze/flights_full.csv
+data/bronze/hotels_full.csv
+data/bronze/sessions_full.csv
+data/bronze/users_full.csv
 
 # =========================
 # OS / IDE
