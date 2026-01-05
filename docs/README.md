@@ -7,3 +7,9 @@ This folder mirrors the Mastery project narrative:
 - `step3_insights_strategy/` — segment insights and rewards/perks strategy
 - `step4_presentation/` — final storyline and slide/material references
 - `adr/` — Architecture Decision Records (why key choices were made)
+
+
+## Documentation Conventions
+
+Common abbreviations and terminology used in this project
+are defined in `docs/terminology.md`.
