@@ -19,6 +19,7 @@ from .pipeline import (
     SegmentationConfig,
     run_segmentation,
 )
+from .visuals import plot_k_sweep, plot_seed_sweep, write_k_robust_visuals
 
 __all__ = [
     "DecisionReport",
@@ -31,7 +32,10 @@ __all__ = [
     "compare_algorithms",
     "compute_silhouette",
     "decision_report_to_markdown",
+    "plot_k_sweep",
+    "plot_seed_sweep",
     "run_k_sweep",
     "run_seed_sweep",
     "run_segmentation",
+    "write_k_robust_visuals",
 ]
