@@ -21,3 +21,19 @@ Include:
 * Best-effort remediation timeline depending on severity and maintainer availability
 
 Do not open public issues for sensitive vulnerabilities.
+
+## Security baseline
+
+* **No secrets in Git.** Do not commit credentials, API keys, or production data to this repository.
+* **Use environment variables.** Copy `.env.example` to `.env` for local-only configuration.
+* **Scrub artifacts.** Ensure generated artifacts contain only aggregated or anonymized data.
+
+## Dependency audit policy
+
+Run a dependency audit at least once per release cycle (or monthly, whichever is more frequent).
+
+Recommended command:
+
+```bash
+pip-audit
+```

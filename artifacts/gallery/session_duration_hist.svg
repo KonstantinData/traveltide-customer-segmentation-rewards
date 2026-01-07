@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-label="Session duration histogram">
+  <rect width="640" height="360" fill="#ffffff"/>
+  <text x="32" y="40" font-family="Arial, sans-serif" font-size="20" fill="#111827">Session Duration Histogram</text>
+  <line x1="60" y1="300" x2="600" y2="300" stroke="#9ca3af" stroke-width="2"/>
+  <line x1="60" y1="80" x2="60" y2="300" stroke="#9ca3af" stroke-width="2"/>
+  <rect x="90" y="230" width="50" height="70" fill="#10b981"/>
+  <rect x="150" y="200" width="50" height="100" fill="#10b981"/>
+  <rect x="210" y="160" width="50" height="140" fill="#10b981"/>
+  <rect x="270" y="140" width="50" height="160" fill="#10b981"/>
+  <rect x="330" y="170" width="50" height="130" fill="#10b981"/>
+  <rect x="390" y="210" width="50" height="90" fill="#10b981"/>
+  <rect x="450" y="250" width="50" height="50" fill="#10b981"/>
+  <text x="60" y="70" font-family="Arial, sans-serif" font-size="12" fill="#6b7280">count</text>
+  <text x="520" y="320" font-family="Arial, sans-serif" font-size="12" fill="#6b7280">seconds</text>
+</svg>
