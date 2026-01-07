@@ -102,12 +102,12 @@ def test_user_aggregate_schema_validates() -> None:
 
 def test_schema_missing_required_column_fails() -> None:
     df = _raw_session_frame().drop(columns=["session_id"])
-    with pytest.raises(pa.errors.SchemaError):
+    with pytest.raises(pa.errors.SchemaErrors):
         SESSION_RAW_SCHEMA.validate(df, lazy=True)
 
 
 def test_schema_unexpected_column_fails() -> None:
     df = _raw_session_frame()
     df["unexpected"] = 1
-    with pytest.raises(pa.errors.SchemaError):
+    with pytest.raises(pa.errors.SchemaErrors):
         SESSION_RAW_SCHEMA.validate(df, lazy=True)
