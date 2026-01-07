@@ -36,3 +36,4 @@ Minor implementation details are intentionally excluded.
 - ADR-0002 — Customer cohort definition
 - ADR-0003 — Choice of number of clusters (k)
 - ADR-0004 — Required analysis artifacts
+- ADR-0005 — Clustering algorithm choice (KMeans vs DBSCAN)

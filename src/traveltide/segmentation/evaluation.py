@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Iterable, Sequence
 
 import pandas as pd
-from sklearn.cluster import KMeans
+from sklearn.cluster import DBSCAN, KMeans
 from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import StandardScaler
@@ -22,6 +22,15 @@ class EvaluationConfig:
     random_state: int | None = 42
     n_init: int = 10
     pca: PCAConfig | None = None
+
+
+@dataclass(frozen=True)
+class DBSCANConfig:
+    """Configuration for DBSCAN comparison runs."""
+
+    eps: float = 0.5
+    min_samples: int = 5
+    metric: str = "euclidean"
 
 
 @dataclass(frozen=True)
@@ -92,6 +101,15 @@ def compute_silhouette(features: pd.DataFrame, labels: Sequence[int]) -> float |
     return float(silhouette_score(features, labels))
 
 
+def _summarize_labels(labels: Sequence[int]) -> tuple[int, float]:
+    label_set = set(labels)
+    n_clusters = len(label_set) - (1 if -1 in label_set else 0)
+    n_samples = len(labels)
+    noise_count = sum(label == -1 for label in labels)
+    noise_pct = noise_count / n_samples if n_samples else 0.0
+    return n_clusters, noise_pct
+
+
 def run_k_sweep(
     df: pd.DataFrame,
     config: EvaluationConfig,
@@ -147,6 +165,66 @@ def run_k_sweep(
                 "status": status,
             }
         )
+
+    return pd.DataFrame(results)
+
+
+def compare_algorithms(
+    df: pd.DataFrame,
+    config: EvaluationConfig,
+    *,
+    kmeans_k: int,
+    dbscan_config: DBSCANConfig | None = None,
+) -> pd.DataFrame:
+    """Compare KMeans and DBSCAN outcomes on the same feature set."""
+
+    if kmeans_k < 2:
+        raise ValueError("kmeans_k must be at least 2")
+
+    transformed_df = _prepare_features(df, config)
+    results: list[dict[str, object]] = []
+
+    kmeans = KMeans(
+        n_clusters=kmeans_k,
+        random_state=config.random_state,
+        n_init=config.n_init,
+    )
+    kmeans_labels = kmeans.fit_predict(transformed_df)
+    kmeans_clusters, _ = _summarize_labels(kmeans_labels)
+    results.append(
+        {
+            "algorithm": "kmeans",
+            "n_clusters": kmeans_clusters,
+            "noise_pct": 0.0,
+            "silhouette": compute_silhouette(transformed_df, kmeans_labels),
+            "inertia": float(kmeans.inertia_),
+        }
+    )
+
+    dbscan_settings = dbscan_config or DBSCANConfig()
+    dbscan = DBSCAN(
+        eps=dbscan_settings.eps,
+        min_samples=dbscan_settings.min_samples,
+        metric=dbscan_settings.metric,
+    )
+    dbscan_labels = dbscan.fit_predict(transformed_df)
+    dbscan_clusters, dbscan_noise_pct = _summarize_labels(dbscan_labels)
+    silhouette = None
+    if dbscan_clusters >= 2:
+        non_noise_mask = dbscan_labels != -1
+        if non_noise_mask.sum() >= 2:
+            silhouette = compute_silhouette(
+                transformed_df.loc[non_noise_mask], dbscan_labels[non_noise_mask]
+            )
+    results.append(
+        {
+            "algorithm": "dbscan",
+            "n_clusters": dbscan_clusters,
+            "noise_pct": dbscan_noise_pct,
+            "silhouette": silhouette,
+            "inertia": None,
+        }
+    )
 
     return pd.DataFrame(results)
 

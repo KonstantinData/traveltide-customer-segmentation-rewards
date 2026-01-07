@@ -5,8 +5,10 @@ from __future__ import annotations
 import pandas as pd
 
 from traveltide.segmentation.evaluation import (
+    DBSCANConfig,
     EvaluationConfig,
     build_decision_report,
+    compare_algorithms,
     compute_silhouette,
     decision_report_to_markdown,
     run_k_sweep,
@@ -43,6 +45,25 @@ def test_run_k_sweep_returns_metrics() -> None:
     assert results.loc[0, "status"].startswith("invalid")
     assert results.loc[1, "silhouette"] is not None
     assert results.loc[2, "inertia"] is not None
+
+
+def test_compare_algorithms_returns_rows() -> None:
+    df = _sample_data()
+    config = EvaluationConfig(
+        features=["avg_page_clicks", "avg_base_fare_usd"],
+        random_state=7,
+    )
+
+    comparison = compare_algorithms(
+        df,
+        config,
+        kmeans_k=2,
+        dbscan_config=DBSCANConfig(eps=1.2, min_samples=2),
+    )
+
+    assert comparison["algorithm"].tolist() == ["kmeans", "dbscan"]
+    assert comparison.loc[0, "inertia"] is not None
+    assert 0.0 <= comparison.loc[1, "noise_pct"] <= 1.0
 
 
 def test_decision_report_to_markdown() -> None:
