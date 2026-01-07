@@ -7,9 +7,9 @@ Notes:
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
-import re
 from xml.sax.saxutils import escape
 
 from reportlab.lib import colors
