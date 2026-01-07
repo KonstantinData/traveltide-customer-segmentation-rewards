@@ -11,6 +11,7 @@ from .evaluation import (
     compute_silhouette,
     decision_report_to_markdown,
     run_k_sweep,
+    run_seed_sweep,
 )
 from .pipeline import (
     PCAConfig,
@@ -31,5 +32,6 @@ __all__ = [
     "compute_silhouette",
     "decision_report_to_markdown",
     "run_k_sweep",
+    "run_seed_sweep",
     "run_segmentation",
 ]
