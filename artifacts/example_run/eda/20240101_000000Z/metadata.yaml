@@ -1,0 +1,48 @@
+config:
+  cohort:
+    sign_up_date_start: "2022-01-01"
+    sign_up_date_end: "2022-12-31"
+  extraction:
+    session_start_min: null
+  cleaning:
+    invalid_hotel_nights_policy: recompute
+  outliers:
+    method: iqr
+    iqr_multiplier: 5.0
+    zscore_threshold: 5.0
+    columns:
+      - page_clicks
+      - base_fare_usd
+      - hotel_per_room_usd
+      - nights
+      - rooms
+      - seats
+  report:
+    title: "TravelTide — Step 1 EDA Report"
+    output_format: html
+    include_sample_rows: 25
+source_table_row_counts:
+  sessions: 2
+  users: 2
+  flights: 2
+  hotels: 1
+rows:
+  session_level_raw: 2
+  session_level_after_validity: 2
+  session_level_clean: 2
+validity_rules:
+  invalid_hotel_nights:
+    rows_removed: 0
+    rows_affected: 1
+    rows_total: 2
+outliers:
+  page_clicks:
+    rows_removed: 0
+    rows_affected: 0
+    rows_total: 2
+invalid_hotel_nights:
+  policy: recompute
+  rows_recomputed: 1
+  rows_dropped: 0
+outliers_removed_by_column:
+  page_clicks: 0
