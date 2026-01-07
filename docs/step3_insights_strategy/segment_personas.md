@@ -7,13 +7,13 @@ profiles after each segmentation run.
 
 ## Persona overview (by segment id)
 
-| Segment id | Persona name | Primary behaviors | Likely primary perk |
-| --- | --- | --- | --- |
-| 0 | Explorer Planners | Research-heavy planners with broad browsing and moderate bookings. | Planning tools + itinerary support |
-| 1 | Deal-Driven Flyers | High flight booking intent, strong response to flight discounts. | Flight discounting |
-| 2 | Staycation Bundlers | Hotel-heavy trips with longer stays and multiple rooms. | Hotel/room perks |
-| 3 | Frequent Business Travelers | High session frequency, short stays, repeat flight bookings. | Loyalty accelerators |
-| 4 | Cautious Evaluators | High cancellation signals and low booking conversion. | Risk-reduction perks |
+| Segment id | Persona name | Primary behaviors | Evidence snapshot | Likely primary perk |
+| --- | --- | --- | --- | --- |
+| 0 | Explorer Planners | Research-heavy planners with broad browsing and moderate bookings. | High `avg_page_clicks`, high `avg_session_duration_sec`, moderate bookings. | Planning tools + itinerary support |
+| 1 | Deal-Driven Flyers | High flight booking intent, strong response to flight discounts. | High `p_flight_booked`, high flight discount exposure. | Flight discounting |
+| 2 | Staycation Bundlers | Hotel-heavy trips with longer stays and multiple rooms. | High `p_hotel_booked`, high `avg_nights`, high `avg_rooms`. | Hotel/room perks |
+| 3 | Frequent Business Travelers | High session frequency, short stays, repeat flight bookings. | High `n_sessions`, high `p_return_flight_booked`, low `avg_nights`. | Loyalty accelerators |
+| 4 | Cautious Evaluators | High cancellation signals and low booking conversion. | High `p_cancellation_session`, low booking conversion. | Risk-reduction perks |
 
 > **Note:** Segment ids are assigned by K-Means and can shift across runs.
 > Keep the mapping current by re-profiling after each segmentation refresh.
