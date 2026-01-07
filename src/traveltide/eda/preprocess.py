@@ -17,6 +17,7 @@ import numpy as np
 import pandas as pd
 
 from .config import EDAConfig
+from .dq_report import RuleImpact
 
 
 def add_derived_columns(df: pd.DataFrame) -> pd.DataFrame:
@@ -106,9 +107,55 @@ def fix_invalid_hotel_nights(df: pd.DataFrame, policy: str) -> pd.DataFrame:
     return out
 
 
+def apply_validity_rules(
+    df: pd.DataFrame, config: EDAConfig
+) -> tuple[pd.DataFrame, dict[str, RuleImpact], dict[str, int | str]]:
+    """Apply validity rules and capture their impact for metadata."""
+
+    out = df.copy()
+    validity_rules: dict[str, RuleImpact] = {}
+    invalid_hotel_nights_meta: dict[str, int | str] = {}
+
+    if "nights" in out.columns:
+        nights = pd.to_numeric(out["nights"], errors="coerce")
+        invalid_mask = nights.isna() | (nights <= 0)
+        invalid_detected = int(invalid_mask.sum())
+
+        rows_before = int(len(out))
+        policy = config.cleaning.invalid_hotel_nights_policy
+
+        if policy == "drop":
+            out = out.loc[~invalid_mask].copy()
+            invalid_hotel_nights_meta = {
+                "policy": "drop",
+                "invalid_detected": invalid_detected,
+                "dropped_rows": invalid_detected,
+            }
+        else:
+            out = fix_invalid_hotel_nights(out, policy=policy)
+            recomputed = pd.to_numeric(out["nights"], errors="coerce")
+            recomputed_success = int((recomputed.loc[invalid_mask] >= 1).sum())
+            still_missing = invalid_detected - recomputed_success
+            invalid_hotel_nights_meta = {
+                "policy": "recompute",
+                "invalid_detected": invalid_detected,
+                "recomputed_success": recomputed_success,
+                "still_missing": still_missing,
+            }
+
+        rows_after = int(len(out))
+        validity_rules["invalid_hotel_nights"] = RuleImpact(
+            rows_before=rows_before,
+            rows_after=rows_after,
+            rows_removed=rows_before - rows_after,
+        )
+
+    return out, validity_rules, invalid_hotel_nights_meta
+
+
 def remove_outliers(
     df: pd.DataFrame, config: EDAConfig
-) -> tuple[pd.DataFrame, dict[str, int]]:
+) -> tuple[pd.DataFrame, dict[str, RuleImpact]]:
     """Remove outliers from selected numeric columns.
 
     Notes:
@@ -118,19 +165,19 @@ def remove_outliers(
     """
 
     out = df.copy()
-    removed: dict[str, int] = {}
+    rules: dict[str, RuleImpact] = {}
 
     # Notes: Only apply to configured columns that actually exist in the dataset.
     cols = [c for c in config.outliers.columns if c in out.columns]
     if not cols:
-        return out, removed
+        return out, rules
 
     # Notes: Keep-mask accumulates constraints across columns (intersection).
     mask_keep = pd.Series(True, index=out.index)
 
     for col in cols:
         s = pd.to_numeric(out[col], errors="coerce")
-        before = int(mask_keep.sum())
+        rows_before = int(mask_keep.sum())
 
         if config.outliers.method == "iqr":
             # Notes: IQR method is robust under non-normal distributions.
@@ -156,10 +203,14 @@ def remove_outliers(
             raise ValueError("outliers.method must be one of: iqr, zscore")
 
         mask_keep &= keep.fillna(True)
-        after = int(mask_keep.sum())
-        removed[col] = before - after
+        rows_after = int(mask_keep.sum())
+        rules[col] = RuleImpact(
+            rows_before=rows_before,
+            rows_after=rows_after,
+            rows_removed=rows_before - rows_after,
+        )
 
-    return out.loc[mask_keep].copy(), removed
+    return out.loc[mask_keep].copy(), rules
 
 
 def aggregate_user_level(df: pd.DataFrame) -> pd.DataFrame:
@@ -218,9 +269,12 @@ def aggregate_user_level(df: pd.DataFrame) -> pd.DataFrame:
 def build_metadata(
     config: EDAConfig,
     row_counts: dict[str, int],
-    removed_outliers: dict[str, int],
     n_rows_raw: int,
+    n_rows_after_validity: int,
     n_rows_clean: int,
+    validity_rules: dict[str, RuleImpact],
+    outlier_rules: dict[str, RuleImpact],
+    invalid_hotel_nights_meta: dict[str, int | str],
 ) -> dict[str, object]:
     """Create a run metadata payload saved next to artifacts.
 
@@ -234,7 +288,15 @@ def build_metadata(
         "source_table_row_counts": row_counts,
         "rows": {
             "session_level_raw": n_rows_raw,
+            "session_level_after_validity": n_rows_after_validity,
             "session_level_clean": n_rows_clean,
         },
-        "outliers_removed_by_column": removed_outliers,
+        "validity_rules": {
+            name: asdict(impact) for name, impact in validity_rules.items()
+        },
+        "outliers": {col: asdict(impact) for col, impact in outlier_rules.items()},
+        "invalid_hotel_nights": invalid_hotel_nights_meta,
+        "outliers_removed_by_column": {
+            col: impact.rows_removed for col, impact in outlier_rules.items()
+        },
     }

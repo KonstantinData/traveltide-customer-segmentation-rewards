@@ -26,9 +26,9 @@ Does not apply to:
 
 ## Guiding Principles
 
-1. **Transparency over convenience**No silent row removal.
-2. **Conservative filtering**Prefer robust statistics over distributional assumptions.
-3. **Reproducibility**All rules must be deterministic and re-runnable from raw data.
+1. **Transparency over convenience** No silent row removal.
+2. **Conservative filtering** Prefer robust statistics over distributional assumptions.
+3. **Reproducibility** All rules must be deterministic and re-runnable from raw data.
 4. **Business plausibility**
    Thresholds must make sense in the TravelTide domain.
 
@@ -53,53 +53,37 @@ Rationale:
 
 ---
 
-### 2. Hard Validity Rules (Domain Constraints)
+### 2. Validity Rules (Domain Constraints)
 
-Applied where values are logically impossible.
+Applied where values are logically impossible and handled explicitly.
 
-Examples:
+Current implementation:
 
-- `nights <= 0` → invalid
-- `seats <= 0` → invalid
-- `rooms <= 0` → invalid
-- monetary values `< 0` → invalid
+- `nights <= 0` → recompute from timestamps when possible; drop only if policy is set to `drop`.
 
 ---
 
-## Field-Specific Rules
+## Field-Specific Rules (Step-1 EDA)
 
-### sessions
+The Step-1 EDA pipeline applies outlier filtering to the following numeric columns
+as configured in `config/eda.yaml`:
 
-| Field       | Rule type | Handling |
-| ----------- | --------- | -------- |
-| page_clicks | IQR       | Drop row |
+- `page_clicks`
+- `base_fare_usd`
+- `hotel_per_room_usd`
+- `nights`
+- `rooms`
+- `seats`
 
----
-
-### flights
-
-| Field         | Rule type | Handling         |
-| ------------- | --------- | ---------------- |
-| seats         | Hard rule | Drop row if ≤ 0 |
-| checked_bags  | IQR       | Drop row         |
-| base_fare_usd | IQR       | Drop row         |
-
----
-
-### hotels
-
-| Field              | Rule type | Handling                                         |
-| ------------------ | --------- | ------------------------------------------------ |
-| nights             | Hard rule | Recompute from timestamps if possible, else drop |
-| rooms              | Hard rule | Drop row if ≤ 0                                 |
-| hotel_per_room_usd | IQR       | Drop row                                         |
+Each column uses the configured method (`iqr` by default) and removes rows that fall
+outside the computed bounds. Missing values are retained.
 
 ---
 
 ## Handling Strategy Summary
 
-- **Drop rows** when values are invalid or extreme and cannot be reliably corrected
-- **Recompute** only when a deterministic alternative exists
+- **Drop rows** when values are extreme per the configured outlier method
+- **Recompute** only when a deterministic alternative exists (currently only for invalid `nights`)
 - **Never cap / winsorize** (to avoid artificial clustering density)
 
 ---

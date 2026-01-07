@@ -14,6 +14,7 @@ from typing import Sequence
 
 from traveltide import __version__
 from traveltide.eda import run_eda
+from traveltide.eda.dq_report import cmd_dq_report
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -63,6 +64,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="Base output directory for versioned EDA artifacts (default: artifacts/eda).",
     )
 
+    dq = sub.add_parser("dq-report", help="Generate the Data Quality report (TT-015).")
+    dq.add_argument(
+        "--artifacts-base",
+        default=str(Path("artifacts") / "eda"),
+        help="Base directory containing timestamped EDA runs.",
+    )
+    dq.add_argument(
+        "--out",
+        default=str(Path("reports") / "dq_report.md"),
+        help="Path to the markdown file to write.",
+    )
+
     return parser
 
 
@@ -107,6 +120,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     # Notes: "eda" command routing.
     if args.command == "eda":
         return cmd_eda(config_path=str(args.config), outdir=str(args.outdir))
+
+    if args.command == "dq-report":
+        return cmd_dq_report(
+            artifacts_base=Path(args.artifacts_base),
+            out=Path(args.out),
+        )
 
     # Notes: Default behavior (no subcommand): show help to keep UX self-documenting.
     parser.print_help()
