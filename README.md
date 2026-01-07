@@ -1,5 +1,16 @@
 # TravelTide — Customer Segmentation & Data-Driven Rewards
 
+[![CI](https://img.shields.io/badge/CI-GitHub_Actions-blue?logo=githubactions&logoColor=white)](actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+## About the project
+
+TravelTide is a fictional e-booking startup. This project delivers an end-to-end,
+portfolio-grade analytics pipeline that moves from **behavioral data exploration** to
+**customer segmentation** and culminates in a **data-driven rewards strategy**. The goal
+is to produce an interpretable, reproducible, and well-documented workflow that answers
+real business questions while showcasing strong engineering hygiene.
+
 This repository contains an end-to-end analytics project for **TravelTide** (an e-booking startup) that answers two practical business questions:
 
 1) **Which distinct customer segments exist, based on observed browsing and booking behavior?**
