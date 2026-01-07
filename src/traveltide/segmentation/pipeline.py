@@ -39,6 +39,30 @@ class SegmentationArtifacts:
     transformed_features: pd.DataFrame
 
 
+def _validate_config(config: SegmentationConfig, n_features: int) -> None:
+    if not config.features:
+        raise ValueError("SegmentationConfig.features must include at least one column")
+
+    if config.n_clusters < 2:
+        raise ValueError("SegmentationConfig.n_clusters must be at least 2")
+
+    if config.n_init < 1:
+        raise ValueError("SegmentationConfig.n_init must be at least 1")
+
+    if config.pca is None:
+        return
+
+    n_components = config.pca.n_components
+    if isinstance(n_components, float):
+        if not 0 < n_components <= 1:
+            raise ValueError("PCA n_components as float must be in (0, 1]")
+    else:
+        if n_components < 1:
+            raise ValueError("PCA n_components must be at least 1")
+        if n_components > n_features:
+            raise ValueError("PCA n_components cannot exceed feature count")
+
+
 def _validate_features(df: pd.DataFrame, features: list[str]) -> pd.DataFrame:
     missing = [col for col in features if col not in df.columns]
     if missing:
@@ -63,6 +87,7 @@ def run_segmentation(
     """Run scaling + optional PCA + KMeans and return segment assignments."""
 
     feature_df = _validate_features(df, config.features)
+    _validate_config(config, n_features=feature_df.shape[1])
 
     scaler = StandardScaler()
     scaled = scaler.fit_transform(feature_df)

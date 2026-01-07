@@ -47,3 +47,19 @@ def test_run_segmentation_with_pca() -> None:
     assert assignments["segment"].between(0, 1).all()
     assert artifacts.pca is not None
     assert artifacts.transformed_features.shape == (4, 1)
+
+
+def test_run_segmentation_rejects_invalid_pca_components() -> None:
+    df = _sample_data()
+    config = SegmentationConfig(
+        features=["avg_page_clicks", "avg_base_fare_usd"],
+        n_clusters=2,
+        pca=PCAConfig(n_components=3),
+    )
+
+    try:
+        run_segmentation(df, config)
+    except ValueError as exc:
+        assert "n_components" in str(exc)
+    else:
+        raise AssertionError("Expected ValueError for invalid PCA n_components")
