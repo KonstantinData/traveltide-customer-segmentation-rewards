@@ -15,6 +15,7 @@ from typing import Sequence
 from traveltide import __version__
 from traveltide.eda import run_eda
 from traveltide.eda.dq_report import cmd_dq_report
+from traveltide.reports.executive_summary import cmd_executive_summary
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -76,6 +77,22 @@ def build_parser() -> argparse.ArgumentParser:
         help="Path to the markdown file to write.",
     )
 
+    exec_summary = sub.add_parser(
+        "exec-summary", help="Generate the Step 3 executive summary PDF (TT-034)."
+    )
+    exec_summary.add_argument(
+        "--source",
+        default=str(
+            Path("docs") / "step3_insights_strategy" / "step3_summary_report.md"
+        ),
+        help="Markdown source file containing the executive summary section.",
+    )
+    exec_summary.add_argument(
+        "--out",
+        default=str(Path("reports") / "executive_summary.pdf"),
+        help="Path to the PDF file to write.",
+    )
+
     return parser
 
 
@@ -124,6 +141,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "dq-report":
         return cmd_dq_report(
             artifacts_base=Path(args.artifacts_base),
+            out=Path(args.out),
+        )
+
+    if args.command == "exec-summary":
+        return cmd_executive_summary(
+            source=Path(args.source),
             out=Path(args.out),
         )
 
