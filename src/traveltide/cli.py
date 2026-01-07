@@ -15,6 +15,7 @@ from typing import Sequence
 from traveltide import __version__
 from traveltide.eda import run_eda
 from traveltide.eda.dq_report import cmd_dq_report
+from traveltide.features import run_user_features
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -76,6 +77,20 @@ def build_parser() -> argparse.ArgumentParser:
         help="Path to the markdown file to write.",
     )
 
+    features = sub.add_parser(
+        "features", help="Build the user-level feature table (TT-017)."
+    )
+    features.add_argument(
+        "--input",
+        default=str(Path("data") / "sessions_clean.parquet"),
+        help="Path to the cleaned session-level parquet file.",
+    )
+    features.add_argument(
+        "--output",
+        default=str(Path("data") / "features" / "user_features.parquet"),
+        help="Path to write the user feature parquet file.",
+    )
+
     return parser
 
 
@@ -104,6 +119,12 @@ def cmd_eda(config_path: str, outdir: str) -> int:
     return 0
 
 
+def cmd_features(input_path: str, output_path: str) -> int:
+    target = run_user_features(input_path=input_path, output_path=output_path)
+    print(f"User feature table written to: {target}")
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     # Notes: Entrypoint dispatcher — parses argv and routes to the correct subcommand implementation.
     parser = build_parser()
@@ -126,6 +147,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             artifacts_base=Path(args.artifacts_base),
             out=Path(args.out),
         )
+
+    if args.command == "features":
+        return cmd_features(input_path=str(args.input), output_path=str(args.output))
 
     # Notes: Default behavior (no subcommand): show help to keep UX self-documenting.
     parser.print_help()
