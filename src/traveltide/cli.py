@@ -16,6 +16,7 @@ from traveltide import __version__
 from traveltide.eda import run_eda
 from traveltide.eda.dq_report import cmd_dq_report
 from traveltide.reports.executive_summary import cmd_executive_summary
+from traveltide.reports.final_report import cmd_final_report
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -93,6 +94,26 @@ def build_parser() -> argparse.ArgumentParser:
         help="Path to the PDF file to write.",
     )
 
+    final_report = sub.add_parser(
+        "final-report", help="Generate the final report PDF (TT-035)."
+    )
+    final_report.add_argument(
+        "--source",
+        default=str(Path("docs") / "step4_presentation" / "final_report.md"),
+        help="Markdown source file containing the final report content.",
+    )
+    final_report.add_argument(
+        "--out",
+        default=str(Path("reports") / "final_report.pdf"),
+        help="Path to the PDF file to write.",
+    )
+    final_report.add_argument(
+        "--max-pages",
+        default=3,
+        type=int,
+        help="Maximum number of pages allowed for the final report.",
+    )
+
     return parser
 
 
@@ -148,6 +169,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_executive_summary(
             source=Path(args.source),
             out=Path(args.out),
+        )
+
+    if args.command == "final-report":
+        return cmd_final_report(
+            source=Path(args.source),
+            out=Path(args.out),
+            max_pages=int(args.max_pages),
         )
 
     # Notes: Default behavior (no subcommand): show help to keep UX self-documenting.
