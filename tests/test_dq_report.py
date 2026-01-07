@@ -68,7 +68,9 @@ def test_remove_outliers_returns_rule_impacts() -> None:
 def test_build_metadata_renders_dq_report() -> None:
     config = _make_config()
     validity_rules = {
-        "invalid_hotel_nights": RuleImpact(rows_before=100, rows_after=95, rows_removed=5)
+        "invalid_hotel_nights": RuleImpact(
+            rows_before=100, rows_after=95, rows_removed=5
+        )
     }
     outlier_rules = {
         "page_clicks": RuleImpact(rows_before=95, rows_after=90, rows_removed=5)

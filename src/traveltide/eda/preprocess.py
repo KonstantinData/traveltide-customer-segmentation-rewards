@@ -291,7 +291,9 @@ def build_metadata(
             "session_level_after_validity": n_rows_after_validity,
             "session_level_clean": n_rows_clean,
         },
-        "validity_rules": {name: asdict(impact) for name, impact in validity_rules.items()},
+        "validity_rules": {
+            name: asdict(impact) for name, impact in validity_rules.items()
+        },
         "outliers": {col: asdict(impact) for col, impact in outlier_rules.items()},
         "invalid_hotel_nights": invalid_hotel_nights_meta,
         "outliers_removed_by_column": {

@@ -64,9 +64,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Base output directory for versioned EDA artifacts (default: artifacts/eda).",
     )
 
-    dq = sub.add_parser(
-        "dq-report", help="Generate the Data Quality report (TT-015)."
-    )
+    dq = sub.add_parser("dq-report", help="Generate the Data Quality report (TT-015).")
     dq.add_argument(
         "--artifacts-base",
         default=str(Path("artifacts") / "eda"),

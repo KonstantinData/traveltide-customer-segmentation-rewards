@@ -77,8 +77,12 @@ def render_dq_report_md(meta: dict[str, Any]) -> str:
         if not rules:
             return f"## {title}\n\nNo rules applied.\n\n"
         lines = [f"## {title}\n\n"]
-        lines.append("| Rule | Rows before | Rows after | Rows removed | Impact (%) |\n")
-        lines.append("|------|------------:|-----------:|-------------:|-----------:|\n")
+        lines.append(
+            "| Rule | Rows before | Rows after | Rows removed | Impact (%) |\n"
+        )
+        lines.append(
+            "|------|------------:|-----------:|-------------:|-----------:|\n"
+        )
         for name, ri in rules.items():
             r = RuleImpact(
                 rows_before=int(ri.get("rows_before", 0)),
