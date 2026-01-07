@@ -1,7 +1,7 @@
 # =========================
 # Runtime (Pipeline)
 # =========================
-numpy>=1.26
+numpy>=1.26,<2.0
 pandas>=2.2
 pyarrow>=14.0
 scikit-learn>=1.4
