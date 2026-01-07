@@ -4,7 +4,11 @@ from __future__ import annotations
 
 import pandas as pd
 
-from traveltide.segmentation.pipeline import PCAConfig, SegmentationConfig, run_segmentation
+from traveltide.segmentation.pipeline import (
+    PCAConfig,
+    SegmentationConfig,
+    run_segmentation,
+)
 
 
 def _sample_data() -> pd.DataFrame:

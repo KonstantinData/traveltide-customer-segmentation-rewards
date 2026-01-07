@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
-from .pipeline import PCAConfig, SegmentationArtifacts, SegmentationConfig, run_segmentation
+from .pipeline import (
+    PCAConfig,
+    SegmentationArtifacts,
+    SegmentationConfig,
+    run_segmentation,
+)
 
 __all__ = [
     "PCAConfig",
