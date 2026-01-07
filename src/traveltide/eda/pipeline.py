@@ -15,6 +15,12 @@ from pathlib import Path
 
 import yaml
 
+from traveltide.contracts.eda import (
+    SESSION_CLEAN_SCHEMA,
+    SESSION_RAW_SCHEMA,
+    USER_AGGREGATE_SCHEMA,
+)
+
 from .config import load_config
 from .extract import extract_session_level, extract_table_row_counts
 from .preprocess import (
@@ -56,6 +62,7 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
     # Notes: Capture raw DB scale and then cohort-filtered extraction dataset.
     row_counts = extract_table_row_counts()
     raw = extract_session_level(config)
+    raw = SESSION_RAW_SCHEMA.validate(raw, lazy=True)
 
     # 2) Preprocess
     # Notes: Derive consistent columns, then apply anomaly fixes and outlier removal.
@@ -64,10 +71,12 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
         df, config
     )
     df_clean, outlier_rules = remove_outliers(df_valid, config)
+    df_clean = SESSION_CLEAN_SCHEMA.validate(df_clean, lazy=True)
 
     # 3) Aggregate
     # Notes: Create a first customer-level table; deeper feature engineering comes later.
     user = aggregate_user_level(df_clean)
+    user = USER_AGGREGATE_SCHEMA.validate(user, lazy=True)
 
     # 4) Persist data artifacts
     # Notes: Parquet is efficient and preserves dtypes; artifacts are used by later steps.
