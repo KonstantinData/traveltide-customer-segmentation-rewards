@@ -1,0 +1,144 @@
+"""Data Quality (DQ) report generator for TT-015.
+
+Notes:
+- Generates a markdown DQ report with before/after counts based on the *latest* EDA artifact metadata.
+- The DQ report is an audit artifact: it explains what changed, why it changed, and how much data was affected.
+- This module is intentionally I/O-light: it renders markdown from a metadata payload produced by the EDA pipeline.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+import yaml
+
+
+@dataclass(frozen=True)
+class RuleImpact:
+    """Single rule impact snapshot."""
+
+    rows_before: int
+    rows_after: int
+    rows_removed: int
+
+    @property
+    def impact_pct(self) -> float:
+        return (
+            0.0
+            if self.rows_before == 0
+            else (self.rows_removed / self.rows_before) * 100.0
+        )
+
+
+def _fmt_int(n: int) -> str:
+    return f"{int(n):,}".replace(",", "_")
+
+
+def _fmt_pct(x: float) -> str:
+    return f"{x:.2f}%"
+
+
+def load_metadata(run_dir: Path) -> dict[str, Any]:
+    """Load EDA run metadata from a run directory."""
+    path = run_dir / "metadata.yaml"
+    if not path.exists():
+        raise FileNotFoundError(f"metadata.yaml not found in: {run_dir}")
+    return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+
+
+def find_latest_run(artifacts_base: Path) -> Path:
+    """Find the latest timestamped EDA run directory within artifacts_base."""
+    if not artifacts_base.exists():
+        raise FileNotFoundError(f"Artifacts base directory not found: {artifacts_base}")
+    runs = [p for p in artifacts_base.iterdir() if p.is_dir()]
+    if not runs:
+        raise FileNotFoundError(f"No run directories found in: {artifacts_base}")
+    # Notes: run dirs are created as ISO-ish timestamps; lexicographic sort works.
+    return sorted(runs)[-1]
+
+
+def render_dq_report_md(meta: dict[str, Any]) -> str:
+    """Render a markdown DQ report from EDA metadata."""
+
+    rows = meta.get("rows", {})
+    n_raw = int(rows.get("session_level_raw", 0))
+    n_valid = int(
+        rows.get("session_level_after_validity", rows.get("session_level_clean", 0))
+    )
+    n_clean = int(rows.get("session_level_clean", 0))
+
+    validity: dict[str, Any] = meta.get("validity_rules", {}) or {}
+    outliers: dict[str, Any] = meta.get("outliers", {}) or {}
+
+    def rule_block(title: str, ri: dict[str, Any]) -> str:
+        r = RuleImpact(
+            rows_before=int(ri.get("rows_before", 0)),
+            rows_after=int(ri.get("rows_after", 0)),
+            rows_removed=int(ri.get("rows_removed", 0)),
+        )
+        return (
+            f"### Rule: {title}\n"
+            f"| Metric | Count |\n"
+            f"|------|------:|\n"
+            f"| Rows before | {_fmt_int(r.rows_before)} |\n"
+            f"| Rows after  | {_fmt_int(r.rows_after)} |\n"
+            f"| Rows removed | {_fmt_int(r.rows_removed)} |\n"
+            f"| Impact (%) | {_fmt_pct(r.impact_pct)} |\n\n"
+        )
+
+    md = []
+    md.append("# Data Quality Report — Outlier & Anomaly Handling\n")
+    md.append("## Context\n")
+    md.append(
+        "This report documents the quantitative impact of all data quality rules defined in `docs/eda/outlier-policy.md`.\n"
+    )
+    md.append(
+        "All counts refer to **cohort-scoped** session-level data extracted by the Step-1 EDA pipeline.\n"
+    )
+    md.append("\n---\n\n")
+    md.append("## Pipeline row counts\n")
+    md.append("| Stage | Rows |\n|------|------:|\n")
+    md.append(f"| Raw (cohort-scoped extract) | {_fmt_int(n_raw)} |\n")
+    md.append(f"| After validity rules | {_fmt_int(n_valid)} |\n")
+    md.append(f"| After outlier removal (clean) | {_fmt_int(n_clean)} |\n\n")
+    md.append("---\n\n")
+
+    if validity:
+        md.append("## Validity rules (hard constraints)\n\n")
+        for key, ri in validity.items():
+            md.append(rule_block(key, ri))
+
+    if outliers:
+        md.append("## Outlier rules\n\n")
+        for key, ri in outliers.items():
+            md.append(rule_block(key, ri))
+
+    nights = meta.get("invalid_hotel_nights", {}) or {}
+    if nights:
+        md.append("## Hotel nights anomaly handling\n\n")
+        md.append("### Rule: nights <= 0 (recompute where possible)\n")
+        md.append("| Metric | Count |\n|------|------:|\n")
+        md.append(
+            f"| Rows with invalid nights detected | {_fmt_int(int(nights.get('invalid_detected', 0)))} |\n"
+        )
+        md.append(
+            f"| Rows successfully recomputed | {_fmt_int(int(nights.get('recomputed_success', 0)))} |\n"
+        )
+        md.append(
+            f"| Rows still missing after recompute | {_fmt_int(int(nights.get('still_missing', 0)))} |\n\n"
+        )
+        md.append("---\n\n")
+
+    md.append("## Reproducibility\n")
+    md.append(
+        "Re-run the Step-1 EDA pipeline and regenerate this report from the resulting `metadata.yaml`.\n"
+    )
+    md.append("\nGenerated by `python -m traveltide dq-report`.\n")
+    return "".join(md)
+
+
+def write_dq_report(out_path: Path, md: str) -> None:
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(md, encoding="utf-8")
