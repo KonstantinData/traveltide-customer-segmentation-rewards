@@ -90,6 +90,52 @@ Credentials/connection details must **not** be committed to Git. Use environment
 
 ---
 
+## Data architecture (layer model)
+
+This project follows a classic Lakehouse/ELT layer model to cleanly separate raw data from analysis-ready and versionable data.
+
+### 1) Bronze layer → S3
+
+- **Location:** `s3://traveltide-data/bronze/`
+- **Contents:** full raw data, unchanged and uncleaned (CSV/Parquet), large files, sensitive and non-versionable data
+- **Rules:** data is read-only (never written), never stored in the repo, only used temporarily locally
+- **Validation:** Pandera validation immediately after load against a RAW schema
+
+### 2) Silver layer → repo (`data/`)
+
+- **Location in repo:**
+  - `data/sessions_clean.parquet`
+  - `data/users_agg.parquet`
+- **Contents:** cleaned session-level data, enriched fields (e.g., `session_duration_sec`, `age_years`), outliers filtered, validity rules applied
+- **Validation:** Pandera-validated (`SESSION_CLEAN_SCHEMA`, `USER_AGGREGATE_SCHEMA`)
+- **Properties:** small (only relevant columns), safe (no sensitive raw data), compressed (Parquet), commit-ready
+- **Rule:** the Silver layer is the source for cohorts/features/segments
+
+### 3) Gold layer → repo (`data/features/`, `data/cohort/`, `reports/`)
+
+- **Location in repo:**
+  - `data/features/*.parquet`
+  - `data/cohort/*.csv`
+  - `reports/*.md`
+- **Contents:** feature engineering outputs, segmentations, cohort definitions, KPIs, reports & insights
+- **Properties:** highly compressed, anonymized/aggregated, commit-ready, no sensitive fields, fully reproducible from Silver
+
+### End-to-end flow (compact)
+
+**Bronze (S3)** → load raw data → validate with Pandera RAW schema  
+**Silver (repo `data/`)** → preprocessing, derived columns, validity, outlier removal → Silver Parquet  
+**Gold (repo `data/features/` + `reports/`)** → cohorts, features, segments, reports → persisted & versioned
+
+### Why this model is correct
+
+- **Bronze = source of truth**, but not versionable
+- **Silver = cleaned, standardized core** for all analyses
+- **Gold = consumption-ready output** for BI, data science, reporting
+
+This is the standard Lakehouse/ELT layer model used in professional analytics projects.
+
+---
+
 ## Methodology (how the project is approached)
 
 The project follows an industry-style flow:
