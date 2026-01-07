@@ -20,8 +20,8 @@ from .extract import extract_session_level, extract_table_row_counts
 from .preprocess import (
     add_derived_columns,
     aggregate_user_level,
+    apply_validity_rules,
     build_metadata,
-    fix_invalid_hotel_nights,
     remove_outliers,
 )
 from .report import build_basic_charts, render_html_report
@@ -60,10 +60,10 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
     # 2) Preprocess
     # Notes: Derive consistent columns, then apply anomaly fixes and outlier removal.
     df = add_derived_columns(raw)
-    df = fix_invalid_hotel_nights(
-        df, policy=config.cleaning.invalid_hotel_nights_policy
+    df_valid, validity_rules, invalid_hotel_nights_meta = apply_validity_rules(
+        df, config
     )
-    df_clean, removed = remove_outliers(df, config)
+    df_clean, outlier_rules = remove_outliers(df_valid, config)
 
     # 3) Aggregate
     # Notes: Create a first customer-level table; deeper feature engineering comes later.
@@ -81,9 +81,12 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
     meta = build_metadata(
         config=config,
         row_counts=row_counts,
-        removed_outliers=removed,
         n_rows_raw=int(len(raw)),
+        n_rows_after_validity=int(len(df_valid)),
         n_rows_clean=int(len(df_clean)),
+        validity_rules=validity_rules,
+        outlier_rules=outlier_rules,
+        invalid_hotel_nights_meta=invalid_hotel_nights_meta,
     )
     (run_dir / "metadata.yaml").write_text(
         yaml.safe_dump(meta, sort_keys=False, allow_unicode=True), encoding="utf-8"

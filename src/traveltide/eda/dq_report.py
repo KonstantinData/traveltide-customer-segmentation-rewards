@@ -64,29 +64,38 @@ def render_dq_report_md(meta: dict[str, Any]) -> str:
 
     rows = meta.get("rows", {})
     n_raw = int(rows.get("session_level_raw", 0))
-    n_valid = int(
-        rows.get("session_level_after_validity", rows.get("session_level_clean", 0))
-    )
-    n_clean = int(rows.get("session_level_clean", 0))
+    n_valid = int(rows.get("session_level_after_validity", n_raw))
+    n_clean = int(rows.get("session_level_clean", n_valid))
 
     validity: dict[str, Any] = meta.get("validity_rules", {}) or {}
     outliers: dict[str, Any] = meta.get("outliers", {}) or {}
 
-    def rule_block(title: str, ri: dict[str, Any]) -> str:
-        r = RuleImpact(
-            rows_before=int(ri.get("rows_before", 0)),
-            rows_after=int(ri.get("rows_after", 0)),
-            rows_removed=int(ri.get("rows_removed", 0)),
-        )
-        return (
-            f"### Rule: {title}\n"
-            f"| Metric | Count |\n"
-            f"|------|------:|\n"
-            f"| Rows before | {_fmt_int(r.rows_before)} |\n"
-            f"| Rows after  | {_fmt_int(r.rows_after)} |\n"
-            f"| Rows removed | {_fmt_int(r.rows_removed)} |\n"
-            f"| Impact (%) | {_fmt_pct(r.impact_pct)} |\n\n"
-        )
+    def _loss_pct(before: int, after: int) -> float:
+        return 0.0 if before == 0 else ((before - after) / before) * 100.0
+
+    def _render_rules_table(title: str, rules: dict[str, Any]) -> str:
+        if not rules:
+            return f"## {title}\n\nNo rules applied.\n\n"
+        lines = [f"## {title}\n\n"]
+        lines.append("| Rule | Rows before | Rows after | Rows removed | Impact (%) |\n")
+        lines.append("|------|------------:|-----------:|-------------:|-----------:|\n")
+        for name, ri in rules.items():
+            r = RuleImpact(
+                rows_before=int(ri.get("rows_before", 0)),
+                rows_after=int(ri.get("rows_after", 0)),
+                rows_removed=int(ri.get("rows_removed", 0)),
+            )
+            lines.append(
+                "| {rule} | {before} | {after} | {removed} | {pct} |\n".format(
+                    rule=name,
+                    before=_fmt_int(r.rows_before),
+                    after=_fmt_int(r.rows_after),
+                    removed=_fmt_int(r.rows_removed),
+                    pct=_fmt_pct(r.impact_pct),
+                )
+            )
+        lines.append("\n")
+        return "".join(lines)
 
     md = []
     md.append("# Data Quality Report — Outlier & Anomaly Handling\n")
@@ -98,38 +107,43 @@ def render_dq_report_md(meta: dict[str, Any]) -> str:
         "All counts refer to **cohort-scoped** session-level data extracted by the Step-1 EDA pipeline.\n"
     )
     md.append("\n---\n\n")
-    md.append("## Pipeline row counts\n")
-    md.append("| Stage | Rows |\n|------|------:|\n")
-    md.append(f"| Raw (cohort-scoped extract) | {_fmt_int(n_raw)} |\n")
-    md.append(f"| After validity rules | {_fmt_int(n_valid)} |\n")
-    md.append(f"| After outlier removal (clean) | {_fmt_int(n_clean)} |\n\n")
+    md.append("## Overview\n")
+    md.append("| Stage | Rows | Data loss |\n|------|------:|----------:|\n")
+    md.append(
+        f"| Raw (cohort-scoped extract) | {_fmt_int(n_raw)} | {_fmt_pct(0.0)} |\n"
+    )
+    md.append(
+        f"| After validity rules | {_fmt_int(n_valid)} | {_fmt_pct(_loss_pct(n_raw, n_valid))} |\n"
+    )
+    md.append(
+        f"| After outlier removal (clean) | {_fmt_int(n_clean)} | {_fmt_pct(_loss_pct(n_raw, n_clean))} |\n\n"
+    )
     md.append("---\n\n")
 
-    if validity:
-        md.append("## Validity rules (hard constraints)\n\n")
-        for key, ri in validity.items():
-            md.append(rule_block(key, ri))
-
-    if outliers:
-        md.append("## Outlier rules\n\n")
-        for key, ri in outliers.items():
-            md.append(rule_block(key, ri))
+    md.append(_render_rules_table("Validity rules", validity))
+    md.append(_render_rules_table("Outlier rules", outliers))
 
     nights = meta.get("invalid_hotel_nights", {}) or {}
     if nights:
+        policy = str(nights.get("policy", "recompute"))
         md.append("## Hotel nights anomaly handling\n\n")
-        md.append("### Rule: nights <= 0 (recompute where possible)\n")
+        md.append(f"Policy: `{policy}` for `nights <= 0`.\n\n")
         md.append("| Metric | Count |\n|------|------:|\n")
         md.append(
             f"| Rows with invalid nights detected | {_fmt_int(int(nights.get('invalid_detected', 0)))} |\n"
         )
-        md.append(
-            f"| Rows successfully recomputed | {_fmt_int(int(nights.get('recomputed_success', 0)))} |\n"
-        )
-        md.append(
-            f"| Rows still missing after recompute | {_fmt_int(int(nights.get('still_missing', 0)))} |\n\n"
-        )
-        md.append("---\n\n")
+        if policy == "drop":
+            md.append(
+                f"| Rows dropped | {_fmt_int(int(nights.get('dropped_rows', 0)))} |\n"
+            )
+        else:
+            md.append(
+                f"| Rows successfully recomputed | {_fmt_int(int(nights.get('recomputed_success', 0)))} |\n"
+            )
+            md.append(
+                f"| Rows still missing after recompute | {_fmt_int(int(nights.get('still_missing', 0)))} |\n"
+            )
+        md.append("\n---\n\n")
 
     md.append("## Reproducibility\n")
     md.append(
@@ -142,3 +156,12 @@ def render_dq_report_md(meta: dict[str, Any]) -> str:
 def write_dq_report(out_path: Path, md: str) -> None:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(md, encoding="utf-8")
+
+
+def cmd_dq_report(*, artifacts_base: Path, out: Path) -> int:
+    run_dir = find_latest_run(artifacts_base)
+    meta = load_metadata(run_dir)
+    md = render_dq_report_md(meta)
+    write_dq_report(out, md)
+    print(f"DQ report written to: {out}")
+    return 0
