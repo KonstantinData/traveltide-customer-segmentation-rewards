@@ -83,9 +83,7 @@ def build_parser() -> argparse.ArgumentParser:
     exec_summary.add_argument(
         "--source",
         default=str(
-            Path("docs")
-            / "step3_insights_strategy"
-            / "step3_summary_report.md"
+            Path("docs") / "step3_insights_strategy" / "step3_summary_report.md"
         ),
         help="Markdown source file containing the executive summary section.",
     )
