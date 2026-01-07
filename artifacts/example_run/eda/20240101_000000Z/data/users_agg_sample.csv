@@ -1,0 +1,3 @@
+user_id,n_sessions,avg_page_clicks,p_flight_booked,p_hotel_booked,p_cancellation_session,avg_base_fare_usd,avg_hotel_per_room_usd,avg_nights,avg_rooms,avg_seats,gender,married,has_children,home_country,home_city,home_airport,sign_up_date,birthdate
+user_001,1,18,1.0,0.0,0.0,320.5,,,,1,F,true,true,US,Seattle,SEA,2022-03-02,1987-04-12
+user_002,1,8,0.0,1.0,0.0,0.0,185.0,2,1,2,M,false,false,GB,London,LHR,2022-07-19,1992-11-03

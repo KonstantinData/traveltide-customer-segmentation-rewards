@@ -49,6 +49,8 @@ dist/
 artifacts/**
 !artifacts/.gitkeep
 !artifacts/example_run/.gitkeep
+!artifacts/example_run/
+!artifacts/example_run/**
 !artifacts/eda/.gitkeep
 
 # =========================

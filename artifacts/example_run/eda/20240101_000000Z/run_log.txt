@@ -1,0 +1,9 @@
+$ python -m traveltide eda --config config/eda.yaml --outdir artifacts/eda
+INFO: loaded config/eda.yaml
+INFO: extracted sessions (2 rows) within cohort window
+INFO: applied validity rules (0 rows dropped)
+INFO: applied outlier rules (0 rows dropped)
+INFO: wrote artifacts/eda/20240101_000000Z/data/sessions_clean.parquet
+INFO: wrote artifacts/eda/20240101_000000Z/data/users_agg.parquet
+INFO: wrote artifacts/eda/20240101_000000Z/metadata.yaml
+INFO: wrote artifacts/eda/20240101_000000Z/reports/eda_report.html
