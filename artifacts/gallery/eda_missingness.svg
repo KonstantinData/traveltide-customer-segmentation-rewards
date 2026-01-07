@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-label="Missingness overview">
+  <rect width="640" height="360" fill="#ffffff"/>
+  <text x="32" y="40" font-family="Arial, sans-serif" font-size="20" fill="#111827">EDA Missingness Overview</text>
+  <line x1="60" y1="300" x2="600" y2="300" stroke="#9ca3af" stroke-width="2"/>
+  <line x1="60" y1="80" x2="60" y2="300" stroke="#9ca3af" stroke-width="2"/>
+  <rect x="90" y="180" width="80" height="120" fill="#2563eb"/>
+  <rect x="210" y="220" width="80" height="80" fill="#2563eb"/>
+  <rect x="330" y="140" width="80" height="160" fill="#2563eb"/>
+  <rect x="450" y="260" width="80" height="40" fill="#2563eb"/>
+  <text x="110" y="320" font-family="Arial, sans-serif" font-size="12" fill="#374151">users</text>
+  <text x="226" y="320" font-family="Arial, sans-serif" font-size="12" fill="#374151">sessions</text>
+  <text x="344" y="320" font-family="Arial, sans-serif" font-size="12" fill="#374151">flights</text>
+  <text x="470" y="320" font-family="Arial, sans-serif" font-size="12" fill="#374151">hotels</text>
+  <text x="60" y="70" font-family="Arial, sans-serif" font-size="12" fill="#6b7280">% missing</text>
+</svg>

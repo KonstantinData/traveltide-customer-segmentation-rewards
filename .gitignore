@@ -23,6 +23,7 @@ htmlcov/
 # =========================
 .env
 .env.*
+!.env.example
 data/bronze/flights_full.csv
 data/bronze/hotels_full.csv
 data/bronze/sessions_full.csv
@@ -50,6 +51,8 @@ artifacts/**
 !artifacts/.gitkeep
 !artifacts/example_run/.gitkeep
 !artifacts/eda/.gitkeep
+!artifacts/gallery/
+!artifacts/gallery/*.svg
 
 # =========================
 # TT-012 EDA artifacts

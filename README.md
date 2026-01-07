@@ -52,6 +52,16 @@ python -m pip install -e .
 python -m traveltide eda --config config/eda.yaml --outdir artifacts/eda
 ```
 
+## Visual gallery (generated plots)
+
+The EDA pipeline produces lightweight plots that are versioned in `artifacts/` for quick review. The gallery below links to the latest committed examples.
+
+| Plot | Preview |
+| --- | --- |
+| Missingness overview | [artifacts/gallery/eda_missingness.svg](artifacts/gallery/eda_missingness.svg) |
+| Session duration histogram | [artifacts/gallery/session_duration_hist.svg](artifacts/gallery/session_duration_hist.svg) |
+| Base fare histogram | [artifacts/gallery/base_fare_hist.svg](artifacts/gallery/base_fare_hist.svg) |
+
 
 ## How We Define Done
 
@@ -60,6 +70,7 @@ This project uses an explicit Definition of Done and an Excellence Scorecard to 
 - **Definition of Done (repo + phase level):**See [`docs/definition_of_done.md`](docs/definition_of_done.md)
 - **Excellence Scorecard (quality rubric):**
   See [`docs/excellence_scorecard.md`](docs/excellence_scorecard.md)
+- **Release checklist (tagging + notes):** See [`docs/release_checklist.md`](docs/release_checklist.md)
 
 These documents answer one question unambiguously:
 **“Is this work done?”**
