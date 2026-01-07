@@ -12,6 +12,7 @@ from traveltide.segmentation.evaluation import (
     compute_silhouette,
     decision_report_to_markdown,
     run_k_sweep,
+    run_seed_sweep,
 )
 
 
@@ -74,10 +75,12 @@ def test_decision_report_to_markdown() -> None:
     )
 
     sweep = run_k_sweep(df, config, k_values=[2])
+    seed_sweep = run_seed_sweep(df, config, k=2, seeds=[7, 11])
     report = build_decision_report(
         chosen_k=2,
         k_sweep=sweep,
         silhouette_score=sweep.loc[0, "silhouette"],
+        seed_sweep=seed_sweep,
         rationale="Aligns with reward-perk strategy.",
         notes=["Silhouette confirms separation."],
     )
@@ -86,4 +89,19 @@ def test_decision_report_to_markdown() -> None:
 
     assert "Segmentation k Decision Report" in markdown
     assert "**Chosen k:** 2" in markdown
+    assert "Stability (Seed Sweep)" in markdown
     assert "k Sweep" in markdown
+
+
+def test_run_seed_sweep_returns_metrics() -> None:
+    df = _sample_data()
+    config = EvaluationConfig(
+        features=["avg_page_clicks", "avg_base_fare_usd"],
+        random_state=7,
+    )
+
+    results = run_seed_sweep(df, config, k=2, seeds=[7, 11])
+
+    assert results["seed"].tolist() == [7, 11]
+    assert results["inertia"].notna().all()
+    assert results["ari_to_reference"].iloc[0] == 1.0

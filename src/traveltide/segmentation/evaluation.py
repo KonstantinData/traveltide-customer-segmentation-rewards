@@ -8,7 +8,7 @@ from typing import Iterable, Sequence
 import pandas as pd
 from sklearn.cluster import DBSCAN, KMeans
 from sklearn.decomposition import PCA
-from sklearn.metrics import silhouette_score
+from sklearn.metrics import adjusted_rand_score, silhouette_score
 from sklearn.preprocessing import StandardScaler
 
 from .pipeline import PCAConfig, _validate_features
@@ -40,6 +40,7 @@ class DecisionReport:
     chosen_k: int
     silhouette_score: float | None
     k_sweep: pd.DataFrame
+    seed_sweep: pd.DataFrame | None
     rationale: str
     notes: list[str]
 
@@ -169,6 +170,54 @@ def run_k_sweep(
     return pd.DataFrame(results)
 
 
+def run_seed_sweep(
+    df: pd.DataFrame,
+    config: EvaluationConfig,
+    *,
+    k: int,
+    seeds: Iterable[int],
+) -> pd.DataFrame:
+    """Evaluate KMeans stability across random seeds."""
+
+    seed_list = list(seeds)
+    if not seed_list:
+        raise ValueError("seeds must include at least one value")
+
+    if k < 2:
+        raise ValueError("k must be at least 2")
+
+    transformed_df = _prepare_features(df, config)
+    n_samples = transformed_df.shape[0]
+    if k >= n_samples:
+        raise ValueError("k must be < n_samples")
+
+    results: list[dict[str, object]] = []
+    reference_labels: Sequence[int] | None = None
+    for seed in seed_list:
+        kmeans = KMeans(
+            n_clusters=k,
+            random_state=seed,
+            n_init=config.n_init,
+        )
+        labels = kmeans.fit_predict(transformed_df)
+        silhouette = compute_silhouette(transformed_df, labels)
+        if reference_labels is None:
+            reference_labels = labels
+            ari = 1.0
+        else:
+            ari = float(adjusted_rand_score(reference_labels, labels))
+        results.append(
+            {
+                "seed": seed,
+                "inertia": float(kmeans.inertia_),
+                "silhouette": silhouette,
+                "ari_to_reference": ari,
+            }
+        )
+
+    return pd.DataFrame(results)
+
+
 def compare_algorithms(
     df: pd.DataFrame,
     config: EvaluationConfig,
@@ -234,6 +283,7 @@ def build_decision_report(
     chosen_k: int,
     k_sweep: pd.DataFrame,
     silhouette_score: float | None,
+    seed_sweep: pd.DataFrame | None = None,
     rationale: str,
     notes: list[str] | None = None,
 ) -> DecisionReport:
@@ -246,6 +296,7 @@ def build_decision_report(
         chosen_k=chosen_k,
         silhouette_score=silhouette_score,
         k_sweep=k_sweep,
+        seed_sweep=seed_sweep,
         rationale=rationale,
         notes=notes,
     )
@@ -266,10 +317,10 @@ def decision_report_to_markdown(report: DecisionReport) -> str:
             return "n/a"
         return str(value)
 
-    headers = list(report.k_sweep.columns)
-    header_row = "| " + " | ".join(headers) + " |"
-    divider_row = "| " + " | ".join(["---"] * len(headers)) + " |"
-    body_rows = [
+    k_headers = list(report.k_sweep.columns)
+    k_header_row = "| " + " | ".join(k_headers) + " |"
+    k_divider_row = "| " + " | ".join(["---"] * len(k_headers)) + " |"
+    k_body_rows = [
         "| " + " | ".join(format_cell(value) for value in row) + " |"
         for row in report.k_sweep.itertuples(index=False, name=None)
     ]
@@ -290,10 +341,27 @@ def decision_report_to_markdown(report: DecisionReport) -> str:
         lines.extend([f"- {note}" for note in report.notes])
         lines.append("")
 
+    if report.seed_sweep is not None:
+        seed_headers = list(report.seed_sweep.columns)
+        seed_header_row = "| " + " | ".join(seed_headers) + " |"
+        seed_divider_row = "| " + " | ".join(["---"] * len(seed_headers)) + " |"
+        seed_body_rows = [
+            "| " + " | ".join(format_cell(value) for value in row) + " |"
+            for row in report.seed_sweep.itertuples(index=False, name=None)
+        ]
+
+        lines.append("## Stability (Seed Sweep)")
+        lines.append("Reference seed is the first row in the table.")
+        lines.append("")
+        lines.append(seed_header_row)
+        lines.append(seed_divider_row)
+        lines.extend(seed_body_rows)
+        lines.append("")
+
     lines.append("## k Sweep")
-    lines.append(header_row)
-    lines.append(divider_row)
-    lines.extend(body_rows)
+    lines.append(k_header_row)
+    lines.append(k_divider_row)
+    lines.extend(k_body_rows)
     lines.append("")
 
     return "\n".join(lines)
