@@ -1,79 +1,133 @@
 # TravelTide — Customer Segmentation & Data-Driven Rewards
 
-This repository contains an end-to-end analytics project for **TravelTide** (an e-booking startup) that answers two practical business questions:
+This repository is an end-to-end analytics case study for **TravelTide** (an e-booking startup). It is structured to be **portfolio-ready** and **reproducible** (clone → venv → install → run), with clear narrative documentation and a CLI entry point.
+
+---
+
+## Case study
+
+### Problem
+
+TravelTide is growing quickly, but customer loyalty is uneven. The business hypothesis is that **different customer archetypes respond to different incentives**, so a single blanket offer is suboptimal.
+
+This project answers two practical business questions:
 
 1) **Which distinct customer segments exist, based on observed browsing and booking behavior?**
 2) **How should TravelTide tailor a rewards/perks program to increase sign-ups, retention, and customer lifetime value (CLV)?**
 
-The intended outcome is a **portfolio-ready** deliverable that is reproducible (clone → venv → install → run), clearly documented, and easy to review.
+### Approach
 
----
+**Analytical workflow**
 
-## What you will find here
+1) **Exploration & data quality**
+   - Validate schema expectations and join keys
+   - Handle missingness/outliers
+   - Define analysis population and exclusions (if needed)
+2) **Feature engineering (customer-level)**
+   - Aggregate session behavior into stable customer features (e.g., discount affinity, research intensity)
+   - Aggregate booking behavior into stable customer features (e.g., spend levels, trip structure)
+   - Produce a single customer-level table suitable for clustering
+3) **Segmentation**
+   - Scale/normalize features appropriately
+   - Fit clustering (e.g., k-means / alternatives) and select `k` with quantitative + qualitative checks
+   - Profile clusters into interpretable segments
+4) **Rewards/perks strategy**
+   - Translate segment behavior into a targeted reward hypothesis
+   - Define success metrics (e.g., rewards sign-up conversion, retention uplift, incremental CLV)
+   - Recommend rollout: pilot + A/B test + measurement plan
 
-### Core deliverables (project intent)
+**Segment-to-reward framing (example, to validate with final profiles)**
 
-- **Exploration (EDA):** understand TravelTide’s customer journey and data quality
-- **Feature engineering:** produce a customer-level “enriched” table suitable for segmentation
-- **Segmentation:** cluster customers into interpretable segments and profile them
-- **Rewards strategy:** map each segment to a tailored perk/reward hypothesis and success metrics
+- **Cost optimizers:** respond to *exclusive discounts / targeted offers*
+- **Efficiency-focused travelers:** respond to *friction reduction + upgrades* (faster booking/experience improvements)
+- **Flexibility seekers:** respond to *free cancellation / flexibility guarantees*
 
-### Repository layout (golden path)
+**Data architecture (layer model)**
+
+- **Bronze (S3)** → raw, unmodified source data (not stored in repo)
+- **Silver (`data/`)** → cleaned, validated Parquet tables
+- **Gold (`data/features/`, `data/cohort/`, `reports/`)** → features, cohorts, KPIs, and reports
+
+**Repository layout (golden path)**
 
 - `src/traveltide/` — Python package + CLI entry point (`python -m traveltide`)
 - `tests/` — automated checks (CI runs `pytest -q`)
-- `docs/` — narrative documentation by project step + architecture decisions (ADR)
-  - `docs/step1_exploration/`
-  - `docs/step2_features_segmentation/`
-  - `docs/step3_insights_strategy/`
-  - `docs/step4_presentation/`
-  - `docs/adr/`
-- `notebooks/` — supporting notebooks (optional; not the long-term source of truth)
+- `docs/` — narrative documentation by project step + ADRs
+- `notebooks/` — supporting notebooks (not the long-term source of truth)
 - `scripts/` — one-off utilities / experiments
-- `artifacts/` — generated outputs (exports, charts, tables). The folder is versioned; generated contents are typically ignored.
+- `artifacts/` — generated outputs (exports, charts, tables)
+
+**Definition of Done + Quality rubric**
+
+- **Definition of Done:** [`docs/definition_of_done.md`](docs/definition_of_done.md)
+- **Excellence Scorecard:** [`docs/excellence_scorecard.md`](docs/excellence_scorecard.md)
+
+### Results (current)
+
+- **Reproducible Step 1 EDA artifact generator** is implemented (TT-012), producing a versioned report and cleaned tables under `artifacts/`.
+- **Project scaffold + CI baseline** (packaging, CLI entry point, lint/test hooks) is in place.
+
+Future steps will finalize feature engineering, clustering, and segment-driven rewards strategy.
 
 ---
 
-# Project status
+## How to run
 
-This repository provides the **project scaffold + CI baseline** (packaging, CLI entry point, lint/tests hooks) and now includes a **reproducible Step 1 EDA artifact generator** (TT-012).
+### Prerequisites
 
-The remaining analytical pipeline (feature engineering → clustering → final presentation artifacts) is implemented iteratively in subsequent issues/steps.
+- Python **3.12.x**
+- Access to the TravelTide Postgres database (via `TRAVELTIDE_DATABASE_URL`)
 
-### Step 1 (EDA) artifact generation (TT-012)
-
-Generate a versioned EDA report + cleaned tables (requires `TRAVELTIDE_DATABASE_URL`):
+### Setup (local venv)
 
 ```bash
+python -m venv venv
+source venv/bin/activate
+python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 python -m pip install -e .
+```
 
-# Generate EDA artifact into artifacts/eda/<timestamp>/
+**Windows PowerShell**
+
+```powershell
+py -3.12 -m venv venv
+.\venv\Scripts\Activate.ps1
+```
+
+If PowerShell blocks activation scripts (current session only):
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+```
+
+### CLI (golden path)
+
+```bash
+python -m traveltide --help
+```
+
+### Generate EDA artifacts (TT-012)
+
+```bash
 python -m traveltide eda --config config/eda.yaml --outdir artifacts/eda
 ```
 
+### Outputs
 
-## How We Define Done
+Generated outputs go under `artifacts/`, for example:
 
-This project uses an explicit Definition of Done and an Excellence Scorecard to ensure consistent, portfolio-grade quality across all phases.
+- exported customer-level feature tables (CSV/Parquet)
+- segment profiles (tables + plots)
+- presentation assets (figures for slides/report)
 
-- **Definition of Done (repo + phase level):**See [`docs/definition_of_done.md`](docs/definition_of_done.md)
-- **Excellence Scorecard (quality rubric):**
-  See [`docs/excellence_scorecard.md`](docs/excellence_scorecard.md)
+### Quality gates (CI/local)
 
-These documents answer one question unambiguously:
-**“Is this work done?”**
-
----
-
-## Business context (problem framing)
-
-TravelTide is growing quickly, but customer loyalty is uneven. The business hypothesis is that **different customer archetypes respond to different incentives**, so a single blanket offer is suboptimal.
-
-This project therefore:
-
-- segments customers using behavioral signals, and
-- proposes a rewards/perks program that is **personalized by segment** and can be tested via **pilot + A/B experimentation**.
+```bash
+pytest -q
+python -m ruff check .
+python -m ruff format --check .
+```
 
 ---
 
@@ -89,210 +143,6 @@ The TravelTide dataset is hosted in a PostgreSQL database and organized around f
 Credentials/connection details must **not** be committed to Git. Use environment variables (and optionally a local `.env` file, which is gitignored) when you implement data access.
 
 ---
-
-## Data architecture (layer model)
-
-This project follows a classic Lakehouse/ELT layer model to cleanly separate raw data from analysis-ready and versionable data.
-
-### 1) Bronze layer → S3
-
-- **Location:** `s3://traveltide-data/bronze/`
-- **Contents:** full raw data, unchanged and uncleaned (CSV/Parquet), large files, sensitive and non-versionable data
-- **Rules:** data is read-only (never written), never stored in the repo, only used temporarily locally
-- **Validation:** Pandera validation immediately after load against a RAW schema
-
-### 2) Silver layer → repo (`data/`)
-
-- **Location in repo:**
-  - `data/sessions_clean.parquet`
-  - `data/users_agg.parquet`
-- **Contents:** cleaned session-level data, enriched fields (e.g., `session_duration_sec`, `age_years`), outliers filtered, validity rules applied
-- **Validation:** Pandera-validated (`SESSION_CLEAN_SCHEMA`, `USER_AGGREGATE_SCHEMA`)
-- **Properties:** small (only relevant columns), safe (no sensitive raw data), compressed (Parquet), commit-ready
-- **Rule:** the Silver layer is the source for cohorts/features/segments
-
-### 3) Gold layer → repo (`data/features/`, `data/cohort/`, `reports/`)
-
-- **Location in repo:**
-  - `data/features/*.parquet`
-  - `data/cohort/*.csv`
-  - `reports/*.md`
-- **Contents:** feature engineering outputs, segmentations, cohort definitions, KPIs, reports & insights
-- **Properties:** highly compressed, anonymized/aggregated, commit-ready, no sensitive fields, fully reproducible from Silver
-
-### End-to-end flow (compact)
-
-**Bronze (S3)** → load raw data → validate with Pandera RAW schema  
-**Silver (repo `data/`)** → preprocessing, derived columns, validity, outlier removal → Silver Parquet  
-**Gold (repo `data/features/` + `reports/`)** → cohorts, features, segments, reports → persisted & versioned
-
-### Why this model is correct
-
-- **Bronze = source of truth**, but not versionable
-- **Silver = cleaned, standardized core** for all analyses
-- **Gold = consumption-ready output** for BI, data science, reporting
-
-This is the standard Lakehouse/ELT layer model used in professional analytics projects.
-
----
-
-## Methodology (how the project is approached)
-
-The project follows an industry-style flow:
-
-1) **Exploration & data quality**
-
-   - Validate schema expectations and join keys
-   - Handle missingness/outliers
-   - Define analysis population and exclusions (if needed)
-2) **Feature engineering (customer-level)**
-
-   - Aggregate session behavior into stable customer features (e.g., discount affinity, research intensity)
-   - Aggregate booking behavior into stable customer features (e.g., spend levels, trip structure)
-   - Produce a single customer-level table suitable for clustering
-3) **Segmentation**
-
-   - Scale/normalize features appropriately
-   - Fit clustering (e.g., k-means / alternatives) and select `k` with quantitative + qualitative checks
-   - Profile clusters into interpretable segments
-4) **Rewards/perks strategy**
-
-   - Translate segment behavior into a targeted reward hypothesis
-   - Define success metrics (e.g., rewards sign-up conversion, retention uplift, incremental CLV)
-   - Recommend rollout: pilot + A/B test + measurement plan
-
----
-
-## Segment-to-reward framing (example)
-
-A practical mapping (to be validated with your final segment profiles) is:
-
-- **Cost optimizers:** respond to *exclusive discounts / targeted offers*
-- **Efficiency-focused travelers:** respond to *friction reduction + upgrades* (faster booking/experience improvements)
-- **Flexibility seekers:** respond to *free cancellation / flexibility guarantees*
-
-Your final project should justify the mapping with segment evidence and propose measurable KPIs.
-
----
-
-## Quickstart (local venv)
-
-### Prerequisites
-
-- Python **3.12.x** (project standard)
-
-### 1) Create venv
-
-```bash
-python -m venv venv
-```
-
-If `python` does not point to your Python 3.12 interpreter on Windows, use:
-
-<pre class="overflow-visible! px-0!" data-start="5563" data-end="5603"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-powershell"><span><span>py </span><span>-3</span><span>.</span><span>126</span><span></span><span>-m</span><span> venv venv
-</span></span></code></div></div></pre>
-
-### 2) Activate venv
-
-**Windows PowerShell**
-
-<pre class="overflow-visible! px-0!" data-start="5651" data-end="5696"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-powershell"><span><span>.\venv\Scripts\Activate.ps1
-</span></span></code></div></div></pre>
-
-If PowerShell blocks activation scripts (current session only):
-
-<pre class="overflow-visible! px-0!" data-start="5763" data-end="5839"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-powershell"><span><span>Set-ExecutionPolicy</span><span></span><span>-Scope</span><span></span><span>Process</span><span></span><span>-ExecutionPolicy</span><span> Bypass
-</span></span></code></div></div></pre>
-
-**macOS / Linux**
-
-<pre class="overflow-visible! px-0!" data-start="5860" data-end="5896"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-bash"><span><span>source</span><span> venv/bin/activate
-</span></span></code></div></div></pre>
-
-### 3) Install dependencies + install package (editable)
-
-<pre class="overflow-visible! px-0!" data-start="5956" data-end="6072"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-bash"><span><span>python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-python -m pip install -e .
-</span></span></code></div></div></pre>
-
-### 4) Sanity check (expected to pass)
-
-<pre class="overflow-visible! px-0!" data-start="6114" data-end="6218"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-bash"><span><span>python -m traveltide --</span><span>help</span><span>
-pytest -q
-python -m ruff check .
-python -m ruff format --check .
-</span></span></code></div></div></pre>
-
-### 5) Deactivate
-
-<pre class="overflow-visible! px-0!" data-start="6239" data-end="6261"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-bash"><span><span>deactivate
-</span></span></code></div></div></pre>
-
----
-
-## Using the CLI
-
-The CLI is the intended “golden path” entry point:
-
-<pre class="overflow-visible! px-0!" data-start="6338" data-end="6377"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-bash"><span><span>python -m traveltide --</span><span>help</span><span>
-</span></span></code></div></div></pre>
-
-Note: At the moment, CLI commands are placeholders; the pipeline will be wired in as the project progresses.
-
----
-
-## Outputs
-
-Generated outputs should go under `artifacts/`, for example:
-
-* exported customer-level feature tables (CSV/Parquet)
-* segment profiles (tables + plots)
-* presentation assets (figures for slides/report)
-
----
-
-## Quality gates (CI/local)
-
-The repository enforces a minimal baseline:
-
-* `pytest` for tests
-* `ruff` for lint/format checks
-* `pip-audit` for dependency auditing
-
-Run the same checks locally as CI:
-
-<pre class="overflow-visible! px-0!" data-start="6917" data-end="6993"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-bash"><span><span>pytest -q
-python -m ruff check .
-python -m ruff format --check .
-</span></span></code></div></div></pre>
-
----
-
-## Local quality gates (pre-commit)
-
-To reduce “fail-in-CI” loops, you can run the same baseline checks locally via **pre-commit**.
-
-### Install
-
-```bash
-python -m pip install --upgrade pip
-python -m pip install pre-commit
-pre-commit install
-pre-commit install --hook-type pre-push
-```
-
-### Run all hooks manually
-
-```bash
-pre-commit run -a
-```
-
-### Notes
-
-- Commit-time hooks are kept fast (basic hygiene + Ruff lint/format checks).
-- Heavier checks run on **pre-push** (pytest + pip-audit), matching CI intent.
-- Emergency bypass (use sparingly): `SKIP=pytest,pip-audit git push`
 
 ## License
 
