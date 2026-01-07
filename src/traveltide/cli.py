@@ -14,8 +14,8 @@ from typing import Sequence
 
 from traveltide import __version__
 from traveltide.eda import run_eda
-from traveltide.features import run_user_features
 from traveltide.eda.dq_report import cmd_dq_report
+from traveltide.features import run_user_features
 
 
 def build_parser() -> argparse.ArgumentParser:
