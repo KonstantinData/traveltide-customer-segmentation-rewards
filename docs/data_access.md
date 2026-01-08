@@ -22,9 +22,11 @@ Raw data is stored in a private S3 bucket and accessed via AWS IAM (read-only).
 
 Set the following environment variables (do not commit credentials):
 
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
+- `S3_ACCESS_KEY_ID` (fallback: `AWS_ACCESS_KEY_ID`)
+- `S3_SECRET_ACCESS_KEY` (fallback: `AWS_SECRET_ACCESS_KEY`)
 - `AWS_DEFAULT_REGION`
+- `TRAVELTIDE_S3_BUCKET`
+- `TRAVELTIDE_S3_PREFIX`
 
 ## Verification commands
 
