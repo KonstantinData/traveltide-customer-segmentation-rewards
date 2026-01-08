@@ -54,7 +54,7 @@ The remaining analytical pipeline (feature engineering → clustering → final 
 
 ### Step 1 (EDA) artifact generation (TT-012)
 
-Generate a versioned EDA report + cleaned tables (loads from S3 Bronze; requires S3 environment variables):
+Generate a versioned EDA report + cleaned tables (loads from local Bronze files in `data/bronze`):
 
 ```bash
 python -m pip install -r requirements.txt
@@ -101,43 +101,38 @@ This project therefore:
 
 ## Data source (high level)
 
-The TravelTide raw dataset (Bronze layer) is hosted in a private **S3 bucket** and organized around four core tables:
+The TravelTide raw dataset (Bronze layer) lives in the repository under
+`data/bronze` and is organized around four core tables:
 
 - `users` — user demographic / account attributes
 - `sessions` — browsing sessions (behavioral events; e.g., clicks, discounts surfaced, cancellation intent)
 - `flights` — purchased flight attributes (pricing, discounts, trip structure)
 - `hotels` — purchased hotel stays (pricing, discounts, stay structure)
 
-Credentials/access details must **not** be committed to Git. Use environment variables (and optionally a local `.env` file, which is gitignored) for data access.
+The dataset is versioned with the repository to support fully reproducible,
+offline analysis.
 
-> Note (legacy): A PostgreSQL connection can be supported as an optional fallback via `TRAVELTIDE_DATABASE_URL`,
-> but S3 is the source of truth for this project.
+> Note (legacy): A PostgreSQL connection can be supported as an optional fallback
+> via `TRAVELTIDE_DATABASE_URL`.
 
 ## Data architecture (layer model)
 
 This project follows a classic Lakehouse/ELT layer model to cleanly separate raw data from analysis-ready and versionable data.
 
-### 1) Bronze layer → S3
+### 1) Bronze layer → repo (`data/bronze/`)
 
-### S3 configuration
+Raw (Bronze) data is loaded from local files committed under `data/bronze`. The
+EDA pipeline automatically loads the `users`, `sessions`, `flights`, and `hotels`
+tables from this directory.
 
-Raw (Bronze) data is loaded from an S3 bucket.To (re)build the pipelines from scratch, the following environment variables must be set:
+The cleaned Silver artifacts (e.g. `sessions_clean.parquet`, `users_agg.parquet`)
+and the Gold artifacts (features, segments, perks) are written to `data/silver/`
+and `data/gold/` respectively and are committed to the repository. This keeps
+the project fully reproducible without external storage dependencies.
 
-* `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY` – credentials for accessing the S3 bucket.
-* `AWS_DEFAULT_REGION` – AWS region of the bucket (default: `us-east-1`).
-* `TRAVELTIDE_S3_BUCKET` – name of the S3 bucket (e.g. `traveltide-data`).
-* `TRAVELTIDE_S3_PREFIX` – prefix for the Bronze layer within the bucket (default: `bronze`).
-
-If no `TRAVELTIDE_DATABASE_URL` is configured, the EDA pipeline automatically loads the
-`users`, `sessions`, `flights`, and `hotels` tables from S3.
-
-The cleaned Silver artifacts (e.g. `sessions_clean.parquet`, `users_agg.parquet`) and
-the Gold artifacts (features, segments, perks) are written to `data/silver/` and `data/gold/`
-respectively and are committed to the repository.This allows the project to be reproduced locally **without requiring S3 access**.
-
-- **Location:** `s3://traveltide-data/bronze/`
-- **Contents:** full raw data, unchanged and uncleaned (CSV/Parquet), large files, sensitive and non-versionable data
-- **Rules:** data is read-only (never written), never stored in the repo, only used temporarily locally
+- **Location:** `data/bronze/`
+- **Contents:** full raw data, unchanged and uncleaned (CSV/Parquet)
+- **Rules:** data is read-only (never overwritten by the pipeline)
 - **Validation:** Pandera validation immediately after load against a RAW schema
 
 ### 2) Silver layer → repo (`data/silver/`)
@@ -169,7 +164,7 @@ respectively and are committed to the repository.This allows the project to be r
 
 ### End-to-end flow (compact)
 
-**Bronze (S3)** → load raw data → validate with Pandera RAW schema
+**Bronze (local)** → load raw data → validate with Pandera RAW schema
 **Silver (repo `data/`)** → preprocessing, derived columns, validity, outlier removal → Silver Parquet
 **Gold (repo `data/features/` + `reports/`)** → cohorts, features, segments, reports → persisted & versioned
 
@@ -294,18 +289,11 @@ python -m traveltide exec-summary --source docs/step4_presentation/executive_sum
 
 ---
 
-## S3 Data Access (Bronze)
+## Local Bronze Data Access
 
-Raw (Bronze) data lives in a private S3 bucket and is **not** committed to the repo.
-Configure access via environment variables and follow the data-access notes:
-
-- `S3_ACCESS_KEY_ID`
-- `S3_SECRET_ACCESS_KEY`
-- `TRAVELTIDE_S3_BUCKET`
-- `TRAVELTIDE_S3_PREFIX`
-
-See [`docs/data_access.md`](docs/data_access.md) for the full access model and verification
-commands.
+Raw (Bronze) data is committed to `data/bronze`, so no credentials or network
+access are required. See [`docs/data_access.md`](docs/data_access.md) for the
+layout and verification command.
 
 ---
 

@@ -10,13 +10,13 @@ Why it exists
 The TravelTide Mastery project expects a medallion architecture:
 Bronze (raw) -> Silver (cleaned) -> Gold (features/segments).
 
-The project's source-of-truth is an S3 bucket (Bronze layer). Therefore EDA
-extraction loads Bronze tables from S3 and assembles the session-level dataset
-in-memory.
+The project's source-of-truth is the local Bronze layer under `data/bronze`.
+Therefore EDA extraction loads Bronze tables from disk and assembles the
+session-level dataset in-memory.
 
 How it works
 ------------
-- Load Bronze tables from S3 via `load_bronze_tables(...)`
+- Load Bronze tables from disk via `load_bronze_tables(...)`
 - Assemble the session-level dataset by joining:
     sessions + users + (optional) flights + (optional) hotels
 - Apply cohort filtering on sign_up_date (user dimension)
@@ -24,7 +24,7 @@ How it works
 
 Notes
 -----
-- The S3 join intentionally mirrors the legacy SQL logic:
+- The Bronze join intentionally mirrors the legacy SQL logic:
     sessions (fact) + users (dimension) + left joins on trip_id for flights/hotels
 """
 
@@ -118,6 +118,8 @@ _INT_COLS: Final[list[str]] = [
 
 def _normalize_session_level_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Ensure we return a stable set/order of columns."""
+
+    # Notes: Normalization keeps downstream schema checks deterministic.
     out = df.copy()
 
     # Add missing columns as NA
@@ -130,10 +132,12 @@ def _normalize_session_level_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _coerce_types(df: pd.DataFrame) -> pd.DataFrame:
-    """Coerce S3 bronze dtypes into stable, schema-friendly types."""
+    """Coerce Bronze dtypes into stable, schema-friendly types."""
+
+    # Notes: Casting aligns raw local files with Pandera expectations.
     out = df.copy()
 
-    # IDs: S3 often uses UUID-like strings for session_id/trip_id.
+    # IDs: Bronze exports often use UUID-like strings for session_id/trip_id.
     if "session_id" in out.columns:
         out["session_id"] = out["session_id"].astype("string")
     if "trip_id" in out.columns:
@@ -172,7 +176,7 @@ def _coerce_types(df: pd.DataFrame) -> pd.DataFrame:
 
 def extract_session_level(config: EDAConfig) -> pd.DataFrame:
     """
-    Build the session-level dataset used in the EDA pipeline from S3 Bronze.
+    Build the session-level dataset used in the EDA pipeline from Bronze files.
 
     Parameters
     ----------
@@ -184,7 +188,7 @@ def extract_session_level(config: EDAConfig) -> pd.DataFrame:
     pd.DataFrame
         Session-level dataframe enriched with user, flight, and hotel columns.
     """
-    # Load raw/bronze tables from S3 (source-of-truth)
+    # Notes: Load raw Bronze tables from the local data directory (source-of-truth).
     tables = load_bronze_tables(["users", "sessions", "flights", "hotels"])
 
     users = tables["users"]
@@ -227,5 +231,6 @@ def extract_table_row_counts() -> dict[str, int]:
 
     Used in pipeline metadata as an audit trail (scale/context).
     """
+    # Notes: Keep counts unfiltered to reflect the full Bronze footprint.
     tables = load_bronze_tables(["users", "sessions", "flights", "hotels"])
     return {name: int(len(df)) for name, df in tables.items()}
