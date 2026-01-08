@@ -140,9 +140,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Path to segmentation YAML config (default: config/segmentation.yaml).",
     )
 
-    perks = sub.add_parser(
-        "perks", help="Map customer segments to persona perks."
-    )
+    perks = sub.add_parser("perks", help="Map customer segments to persona perks.")
     perks.add_argument(
         "--assignments",
         default=str(Path("data") / "segments" / "segment_assignments.parquet"),

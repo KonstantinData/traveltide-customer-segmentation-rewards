@@ -12,10 +12,7 @@ def load_mapping(config_path: str) -> pd.DataFrame:
     """Load the segment-to-perk mapping from YAML."""
 
     cfg = yaml.safe_load(Path(config_path).read_text(encoding="utf-8"))
-    rows = [
-        {"segment": int(seg), **values}
-        for seg, values in cfg["mapping"].items()
-    ]
+    rows = [{"segment": int(seg), **values} for seg, values in cfg["mapping"].items()]
     return pd.DataFrame(rows)
 
 
