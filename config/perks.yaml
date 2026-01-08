@@ -1,0 +1,16 @@
+mapping:
+  0:
+    persona_name: "Explorer Planners"
+    primary_perk: "Planning tools + itinerary support"
+  1:
+    persona_name: "Deal-Driven Flyers"
+    primary_perk: "Flight discounting"
+  2:
+    persona_name: "Staycation Bundlers"
+    primary_perk: "Hotel/room perks"
+  3:
+    persona_name: "Frequent Business Travelers"
+    primary_perk: "Loyalty accelerators"
+  4:
+    persona_name: "Cautious Evaluators"
+    primary_perk: "Risk-reduction perks"
