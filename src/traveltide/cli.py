@@ -16,6 +16,7 @@ from traveltide import __version__
 from traveltide.eda import run_eda
 from traveltide.eda.dq_report import cmd_dq_report
 from traveltide.features.pipeline import run_features
+from traveltide.perks.mapping import write_customer_perks
 from traveltide.reports.executive_summary import cmd_executive_summary
 from traveltide.reports.final_report import cmd_final_report
 from traveltide.segmentation.run import run_segmentation_job
@@ -139,6 +140,26 @@ def build_parser() -> argparse.ArgumentParser:
         help="Path to segmentation YAML config (default: config/segmentation.yaml).",
     )
 
+    perks = sub.add_parser("perks", help="Map customer segments to persona perks.")
+    perks.add_argument(
+        "--assignments",
+        default=str(Path("data") / "segments" / "segment_assignments.parquet"),
+        help=(
+            "Path to segment assignments parquet "
+            "(default: data/segments/segment_assignments.parquet)."
+        ),
+    )
+    perks.add_argument(
+        "--config",
+        default=str(Path("config") / "perks.yaml"),
+        help="Path to perks mapping YAML config (default: config/perks.yaml).",
+    )
+    perks.add_argument(
+        "--out",
+        default=str(Path("data") / "perks" / "customer_perks.csv"),
+        help="Path to the output customer perks CSV (default: data/perks/customer_perks.csv).",
+    )
+
     return parser
 
 
@@ -211,6 +232,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "segmentation":
         out_path = run_segmentation_job(config_path=str(args.config))
         print(f"Segmentation outputs written to: {out_path}")
+        return 0
+
+    if args.command == "perks":
+        out_path = write_customer_perks(
+            assignments_path=str(args.assignments),
+            config_path=str(args.config),
+            out_path=str(args.out),
+        )
+        print(f"Customer perks written to: {out_path}")
         return 0
 
     # Notes: Default behavior (no subcommand): show help to keep UX self-documenting.
