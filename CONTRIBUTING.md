@@ -26,7 +26,7 @@ python scripts/ci.py
 
   * `python -m ruff format --check .`
   * `python -m ruff check .`
-  * `python -m pytest`
+  * `pytest -q`
 
 To auto-format locally:
 
