@@ -25,8 +25,8 @@ Set the following environment variables (do not commit credentials):
 - `S3_ACCESS_KEY_ID` (fallback: `AWS_ACCESS_KEY_ID`)
 - `S3_SECRET_ACCESS_KEY` (fallback: `AWS_SECRET_ACCESS_KEY`)
 - `AWS_DEFAULT_REGION`
-- `TRAVELTIDE_S3_BUCKET`
-- `TRAVELTIDE_S3_PREFIX`
+- `TRAVELTIDE_S3_BUCKET` (e.g., `traveltide-data`)
+- `TRAVELTIDE_S3_PREFIX` (e.g., `bronze/`)
 
 ## Verification commands
 

@@ -253,6 +253,55 @@ python -m ruff format --check .
 
 ---
 
+## End-to-End Quickstart
+
+Once the environment is set up, you can run the full pipeline end-to-end using the
+CLI entry points below (documentation only; adjust configs and paths as needed):
+
+```bash
+python -m traveltide eda --config config/eda.yaml --outdir artifacts/eda
+python -m traveltide features --config config/features.yaml --outdir data/features
+python -m traveltide segmentation --config config/segmentation.yaml
+python -m traveltide perks --assignments data/segments/segment_assignments.parquet \
+  --config config/perks.yaml --out data/perks/customer_perks.csv
+python -m traveltide exec-summary --source docs/step4_presentation/executive_summary.md --out reports/executive_summary.pdf
+```
+
+---
+
+## S3 Data Access (Bronze)
+
+Raw (Bronze) data lives in a private S3 bucket and is **not** committed to the repo.
+Configure access via environment variables and follow the data-access notes:
+
+- `S3_ACCESS_KEY_ID`
+- `S3_SECRET_ACCESS_KEY`
+- `TRAVELTIDE_S3_BUCKET`
+- `TRAVELTIDE_S3_PREFIX`
+
+See [`docs/data_access.md`](docs/data_access.md) for the full access model and verification
+commands.
+
+---
+
+## Artefakte & Pfade
+
+Key generated artifacts live in predictable locations so they can be reviewed and
+versioned consistently:
+
+- **Features** → `data/features/` (customer-level feature tables)
+- **Segments** → `data/segments/` (segment assignments + profiles)
+- **Perks** → `data/perks/` (per-segment/customer perk assignments)
+- **Reports** → `reports/` (executive summary PDF, final report, visuals)
+
+Step 4 presentation assets live in `docs/step4_presentation/`:
+
+- [`executive_summary.md`](docs/step4_presentation/executive_summary.md)
+- [`final_report.md`](docs/step4_presentation/final_report.md)
+- [`measurement_plan.md`](docs/step4_presentation/measurement_plan.md)
+
+---
+
 ## Using the CLI
 
 The CLI is the intended “golden path” entry point:

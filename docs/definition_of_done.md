@@ -105,6 +105,11 @@ In addition to the repo-level Definition of Done, each analytical phase is only 
 - Feature dictionary (column, definition, rationale).
 - Notes on excluded or discarded features.
 
+**Acceptance criteria (Step 2):**
+
+- Features are exported to a reproducible path (e.g., `data/features/`).
+- The feature table is loadable and documented in `docs/step2_features_segmentation/`.
+
 ---
 
 ### Phase 3 — Segmentation
@@ -124,6 +129,13 @@ In addition to the repo-level Definition of Done, each analytical phase is only 
 - Segment assignment table.
 - Segment summary tables and/or plots.
 - Written segment profiles with clear differentiators.
+
+**Acceptance criteria (Step 3):**
+
+- Segment assignments are exported to `data/segments/segment_assignments.parquet`
+  (or equivalent documented path).
+- A perks assignment CSV exists at `data/perks/customer_perks.csv` with segment-to-perk
+  mapping traceable to `docs/step3_insights_strategy/`.
 
 ---
 
@@ -147,6 +159,12 @@ In addition to the repo-level Definition of Done, each analytical phase is only 
 - One-page executive summary.
 - Slide deck or equivalent presentation artifact.
 - KPI definitions and measurement plan.
+
+**Acceptance criteria (Step 4):**
+
+- `docs/step4_presentation/executive_summary.md` is complete and referenced in the final deliverables.
+- `docs/step4_presentation/final_report.md` exists with the project narrative and results.
+- `docs/step4_presentation/measurement_plan.md` documents KPIs and rollout plan.
 
 ---
 
