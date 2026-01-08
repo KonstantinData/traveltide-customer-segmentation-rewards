@@ -84,9 +84,7 @@ def run_segmentation_job(config_path: str) -> Path:
 
     assignments.to_parquet(outdir / "segment_assignments.parquet", index=False)
     summary = (
-        df.merge(assignments, on="user_id")
-        .groupby("segment")
-        .mean(numeric_only=True)
+        df.merge(assignments, on="user_id").groupby("segment").mean(numeric_only=True)
     )
     counts = assignments["segment"].value_counts().rename("n_users")
     summary = summary.join(counts)
