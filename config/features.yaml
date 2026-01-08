@@ -1,7 +1,7 @@
 input:
-  sessions_clean_path: "artifacts/eda/latest/data/sessions_clean.parquet"
+  sessions_clean_path: "data/silver/sessions_clean.parquet"
 output:
-  customer_features_path: "data/features/customer_features.parquet"
+  customer_features_path: "data/gold/customer_features.parquet"
 
 features:
   id_col: "user_id"

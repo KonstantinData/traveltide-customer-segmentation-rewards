@@ -1,3 +1,4 @@
+
 # TravelTide — Customer Segmentation & Data-Driven Rewards
 
 [![CI](https://img.shields.io/badge/CI-GitHub_Actions-blue?logo=githubactions&logoColor=white)](actions/workflows/ci.yml)
@@ -53,7 +54,7 @@ The remaining analytical pipeline (feature engineering → clustering → final 
 
 ### Step 1 (EDA) artifact generation (TT-012)
 
-Generate a versioned EDA report + cleaned tables (requires `TRAVELTIDE_DATABASE_URL`):
+Generate a versioned EDA report + cleaned tables (loads from S3 Bronze; requires S3 environment variables):
 
 ```bash
 python -m pip install -r requirements.txt
