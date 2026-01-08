@@ -144,8 +144,8 @@ This project follows a classic Lakehouse/ELT layer model to cleanly separate raw
 
 ### End-to-end flow (compact)
 
-**Bronze (S3)** → load raw data → validate with Pandera RAW schema  
-**Silver (repo `data/`)** → preprocessing, derived columns, validity, outlier removal → Silver Parquet  
+**Bronze (S3)** → load raw data → validate with Pandera RAW schema
+**Silver (repo `data/`)** → preprocessing, derived columns, validity, outlier removal → Silver Parquet
 **Gold (repo `data/features/` + `reports/`)** → cohorts, features, segments, reports → persisted & versioned
 
 ### Why this model is correct
