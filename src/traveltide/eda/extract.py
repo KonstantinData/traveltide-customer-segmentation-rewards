@@ -85,6 +85,37 @@ _SESSION_LEVEL_COLUMNS: Final[list[str]] = [
 ]
 
 
+_DATETIME_COLS: Final[list[str]] = [
+    "session_start",
+    "session_end",
+    "birthdate",
+    "sign_up_date",
+    "departure_time",
+    "return_time",
+    "check_in_time",
+    "check_out_time",
+]
+
+_NUMERIC_FLOAT_COLS: Final[list[str]] = [
+    "flight_discount",
+    "hotel_discount",
+    "flight_discount_amount",
+    "hotel_discount_amount",
+    "base_fare_usd",
+    "hotel_per_room_usd",
+    "nights",
+    "rooms",
+    # keep these as float to avoid pandas NaN->float coercion issues for ints
+    "seats",
+    "checked_bags",
+]
+
+_INT_COLS: Final[list[str]] = [
+    "user_id",
+    "page_clicks",
+]
+
+
 def _normalize_session_level_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Ensure we return a stable set/order of columns."""
     out = df.copy()
@@ -96,6 +127,47 @@ def _normalize_session_level_columns(df: pd.DataFrame) -> pd.DataFrame:
 
     # Keep only expected columns, in order
     return out.loc[:, _SESSION_LEVEL_COLUMNS]
+
+
+def _coerce_types(df: pd.DataFrame) -> pd.DataFrame:
+    """Coerce S3 bronze dtypes into stable, schema-friendly types."""
+    out = df.copy()
+
+    # IDs: S3 often uses UUID-like strings for session_id/trip_id.
+    if "session_id" in out.columns:
+        out["session_id"] = out["session_id"].astype("string")
+    if "trip_id" in out.columns:
+        out["trip_id"] = out["trip_id"].astype("string")
+
+    # user_id is expected numeric (if your export is UUID, change schema + cast to string)
+    for c in _INT_COLS:
+        if c in out.columns:
+            out[c] = pd.to_numeric(out[c], errors="coerce").astype("Int64")
+
+    # Datetimes: parse strings/objects -> datetime64[ns]
+    for c in _DATETIME_COLS:
+        if c in out.columns:
+            out[c] = pd.to_datetime(out[c], errors="coerce")
+
+    # Floats: ensure numeric where expected
+    for c in _NUMERIC_FLOAT_COLS:
+        if c in out.columns:
+            out[c] = pd.to_numeric(out[c], errors="coerce").astype("float64")
+
+    # Booleans: ensure True/False/NA consistency (no hard-cast to avoid breaking on odd values)
+    for c in [
+        "flight_booked",
+        "hotel_booked",
+        "cancellation",
+        "married",
+        "has_children",
+        "return_flight_booked",
+    ]:
+        if c in out.columns:
+            # Pandera can coerce bool-like values; keep as-is unless clearly numeric/strings.
+            pass
+
+    return out
 
 
 def extract_session_level(config: EDAConfig) -> pd.DataFrame:
@@ -130,20 +202,23 @@ def extract_session_level(config: EDAConfig) -> pd.DataFrame:
     if hotels is not None and "trip_id" in df.columns and "trip_id" in hotels.columns:
         df = df.merge(hotels, on="trip_id", how="left")
 
+    # Coerce types BEFORE cohort filtering and schema validation.
+    df = _coerce_types(df)
+
     # Cohort filter on sign_up_date
-    sign_up = pd.to_datetime(df["sign_up_date"], errors="coerce")
+    sign_up = df["sign_up_date"]
     start = pd.to_datetime(config.cohort.sign_up_date_start)
     end = pd.to_datetime(config.cohort.sign_up_date_end)
     mask = (sign_up >= start) & (sign_up <= end)
 
     # Optional filter on minimum session_start
     if config.extraction.session_start_min:
-        session_start = pd.to_datetime(df["session_start"], errors="coerce")
         min_start = pd.to_datetime(config.extraction.session_start_min)
-        mask &= session_start >= min_start
+        mask &= df["session_start"] >= min_start
 
     df = df.loc[mask].reset_index(drop=True)
-    return _normalize_session_level_columns(df)
+    df = _normalize_session_level_columns(df)
+    return df
 
 
 def extract_table_row_counts() -> dict[str, int]:

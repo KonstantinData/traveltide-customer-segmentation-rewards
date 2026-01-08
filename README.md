@@ -67,12 +67,11 @@ python -m traveltide eda --config config/eda.yaml --outdir artifacts/eda
 
 The EDA pipeline produces lightweight plots that are versioned in `artifacts/` for quick review. The gallery below links to the latest committed examples.
 
-| Plot | Preview |
-| --- | --- |
-| Missingness overview | [artifacts/gallery/eda_missingness.svg](artifacts/gallery/eda_missingness.svg) |
+| Plot                       | Preview                                                                                 |
+| -------------------------- | --------------------------------------------------------------------------------------- |
+| Missingness overview       | [artifacts/gallery/eda_missingness.svg](artifacts/gallery/eda_missingness.svg)             |
 | Session duration histogram | [artifacts/gallery/session_duration_hist.svg](artifacts/gallery/session_duration_hist.svg) |
-| Base fare histogram | [artifacts/gallery/base_fare_hist.svg](artifacts/gallery/base_fare_hist.svg) |
-
+| Base fare histogram        | [artifacts/gallery/base_fare_hist.svg](artifacts/gallery/base_fare_hist.svg)               |
 
 ## How We Define Done
 
@@ -101,16 +100,17 @@ This project therefore:
 
 ## Data source (high level)
 
-The TravelTide dataset is hosted in a PostgreSQL database and organized around four core tables:
+The TravelTide raw dataset (Bronze layer) is hosted in a private **S3 bucket** and organized around four core tables:
 
 - `users` — user demographic / account attributes
 - `sessions` — browsing sessions (behavioral events; e.g., clicks, discounts surfaced, cancellation intent)
 - `flights` — purchased flight attributes (pricing, discounts, trip structure)
 - `hotels` — purchased hotel stays (pricing, discounts, stay structure)
 
-Credentials/connection details must **not** be committed to Git. Use environment variables (and optionally a local `.env` file, which is gitignored) when you implement data access.
+Credentials/access details must **not** be committed to Git. Use environment variables (and optionally a local `.env` file, which is gitignored) for data access.
 
----
+> Note (legacy): A PostgreSQL connection can be supported as an optional fallback via `TRAVELTIDE_DATABASE_URL`,
+> but S3 is the source of truth for this project.
 
 ## Data architecture (layer model)
 
@@ -118,14 +118,38 @@ This project follows a classic Lakehouse/ELT layer model to cleanly separate raw
 
 ### 1) Bronze layer → S3
 
+### S3 configuration
+
+Raw (Bronze) data is loaded from an S3 bucket.To (re)build the pipelines from scratch, the following environment variables must be set:
+
+* `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY` – credentials for accessing the S3 bucket.
+* `AWS_DEFAULT_REGION` – AWS region of the bucket (default: `us-east-1`).
+* `TRAVELTIDE_S3_BUCKET` – name of the S3 bucket (e.g. `traveltide-data`).
+* `TRAVELTIDE_S3_PREFIX` – prefix for the Bronze layer within the bucket (default: `bronze`).
+
+If no `TRAVELTIDE_DATABASE_URL` is configured, the EDA pipeline automatically loads the
+`users`, `sessions`, `flights`, and `hotels` tables from S3.
+
+The cleaned Silver artifacts (e.g. `sessions_clean.parquet`, `users_agg.parquet`) and
+the Gold artifacts (features, segments, perks) are written to `data/silver/` and `data/gold/`
+respectively and are committed to the repository.This allows the project to be reproduced locally **without requiring S3 access**.
+
 - **Location:** `s3://traveltide-data/bronze/`
 - **Contents:** full raw data, unchanged and uncleaned (CSV/Parquet), large files, sensitive and non-versionable data
 - **Rules:** data is read-only (never written), never stored in the repo, only used temporarily locally
 - **Validation:** Pandera validation immediately after load against a RAW schema
 
-### 2) Silver layer → repo (`data/`)
+### 2) Silver layer → repo (`data/silver/`)
 
 - **Location in repo:**
+
+  - `data/silver/sessions_clean.parquet`
+  - `data/silver/users_agg.parquet`
+- **Contents:** cleaned session-level data, enriched fields, outliers filtered
+- **Validation:** Pandera-validated
+- **Rule:** Silver is the source for all downstream features and segmentation
+- **Location in repo:**
+
   - `data/sessions_clean.parquet`
   - `data/users_agg.parquet`
 - **Contents:** cleaned session-level data, enriched fields (e.g., `session_duration_sec`, `age_years`), outliers filtered, validity rules applied
