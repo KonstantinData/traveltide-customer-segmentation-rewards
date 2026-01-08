@@ -1,17 +1,19 @@
 """Data access utilities for TravelTide."""
 
-from traveltide.data.s3_loader import (
-    S3Config,
-    build_s3_uri,
+from traveltide.data.bronze_loader import (
+    BronzeConfig,
+    build_bronze_path,
     load_bronze_tables,
-    load_env,
-    load_table_from_s3,
+    load_table_from_bronze,
+    resolve_bronze_config,
+    resolve_bronze_table_path,
 )
 
 __all__ = [
-    "S3Config",
-    "build_s3_uri",
+    "BronzeConfig",
+    "build_bronze_path",
     "load_bronze_tables",
-    "load_env",
-    "load_table_from_s3",
+    "load_table_from_bronze",
+    "resolve_bronze_config",
+    "resolve_bronze_table_path",
 ]
