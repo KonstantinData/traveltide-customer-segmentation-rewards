@@ -19,10 +19,16 @@ def _apply_time_derivations(
     birthdate_col: str | None = None,
 ) -> pd.DataFrame:
     out = df.copy()
-    out[session_start_col] = pd.to_datetime(out[session_start_col], utc=True, errors="coerce")
-    out[sign_up_date_col] = pd.to_datetime(out[sign_up_date_col], utc=False, errors="coerce")
+    out[session_start_col] = pd.to_datetime(
+        out[session_start_col], utc=True, errors="coerce"
+    )
+    out[sign_up_date_col] = pd.to_datetime(
+        out[sign_up_date_col], utc=False, errors="coerce"
+    )
     if birthdate_col:
-        out[birthdate_col] = pd.to_datetime(out[birthdate_col], utc=False, errors="coerce")
+        out[birthdate_col] = pd.to_datetime(
+            out[birthdate_col], utc=False, errors="coerce"
+        )
         out["age_years"] = (
             out[session_start_col].dt.tz_convert(None) - out[birthdate_col]
         ).dt.days / 365.25
