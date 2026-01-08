@@ -1,0 +1,38 @@
+input:
+  sessions_clean_path: "artifacts/eda/latest/data/sessions_clean.parquet"
+output:
+  customer_features_path: "data/features/customer_features.parquet"
+
+features:
+  id_col: "user_id"
+  session_col: "session_id"
+  time_cols:
+    session_start: "session_start"
+    sign_up_date: "sign_up_date"
+    birthdate: "birthdate"
+  numeric_means:
+    - session_duration_sec
+    - page_clicks
+    - flight_discount_amount
+    - hotel_discount_amount
+    - base_fare_usd
+    - hotel_per_room_usd
+    - nights
+    - rooms
+    - seats
+    - checked_bags
+  boolean_means:
+    - flight_booked
+    - hotel_booked
+    - cancellation
+    - flight_discount
+    - hotel_discount
+    - return_flight_booked
+  first_non_null:
+    - home_country
+    - home_city
+    - home_airport
+    - gender
+    - married
+    - has_children
+    - birthdate

@@ -15,6 +15,7 @@ from typing import Sequence
 from traveltide import __version__
 from traveltide.eda import run_eda
 from traveltide.eda.dq_report import cmd_dq_report
+from traveltide.features.pipeline import run_features
 from traveltide.reports.executive_summary import cmd_executive_summary
 from traveltide.reports.final_report import cmd_final_report
 
@@ -114,6 +115,20 @@ def build_parser() -> argparse.ArgumentParser:
         help="Maximum number of pages allowed for the final report.",
     )
 
+    features = sub.add_parser(
+        "features", help="Generate customer-level features from sessions_clean."
+    )
+    features.add_argument(
+        "--config",
+        default=str(Path("config") / "features.yaml"),
+        help="Path to features YAML config (default: config/features.yaml).",
+    )
+    features.add_argument(
+        "--outdir",
+        default=str(Path("data") / "features"),
+        help="Output directory for customer features (default: data/features).",
+    )
+
     return parser
 
 
@@ -177,6 +192,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             out=Path(args.out),
             max_pages=int(args.max_pages),
         )
+
+    if args.command == "features":
+        out_path = run_features(config_path=str(args.config), outdir=str(args.outdir))
+        print(f"Customer features written to: {out_path}")
+        return 0
 
     # Notes: Default behavior (no subcommand): show help to keep UX self-documenting.
     parser.print_help()
