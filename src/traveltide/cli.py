@@ -18,6 +18,7 @@ from traveltide.eda.dq_report import cmd_dq_report
 from traveltide.features.pipeline import run_features
 from traveltide.reports.executive_summary import cmd_executive_summary
 from traveltide.reports.final_report import cmd_final_report
+from traveltide.segmentation.run import run_segmentation_job
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -129,6 +130,15 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output directory for customer features (default: data/features).",
     )
 
+    segmentation = sub.add_parser(
+        "segmentation", help="Run the customer segmentation pipeline."
+    )
+    segmentation.add_argument(
+        "--config",
+        default=str(Path("config") / "segmentation.yaml"),
+        help="Path to segmentation YAML config (default: config/segmentation.yaml).",
+    )
+
     return parser
 
 
@@ -196,6 +206,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "features":
         out_path = run_features(config_path=str(args.config), outdir=str(args.outdir))
         print(f"Customer features written to: {out_path}")
+        return 0
+
+    if args.command == "segmentation":
+        out_path = run_segmentation_job(config_path=str(args.config))
+        print(f"Segmentation outputs written to: {out_path}")
         return 0
 
     # Notes: Default behavior (no subcommand): show help to keep UX self-documenting.

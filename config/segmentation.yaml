@@ -1,0 +1,34 @@
+input:
+  customer_features_path: "data/features/customer_features.parquet"
+output:
+  outdir: "data/segments"
+
+segmentation:
+  features:
+    - n_sessions
+    - avg_session_duration_sec
+    - avg_page_clicks
+    - p_flight_booked
+    - p_hotel_booked
+    - p_cancellation_session
+    - p_flight_discount_shown
+    - p_hotel_discount_shown
+    - avg_flight_discount_amount
+    - avg_hotel_discount_amount
+    - avg_base_fare_usd
+    - avg_hotel_per_room_usd
+    - avg_nights
+    - avg_rooms
+    - avg_seats
+    - avg_checked_bags
+    - p_return_flight_booked
+  k_sweep: [3, 4, 5, 6, 7]
+  seed_sweep: [1, 7, 21, 42]
+  chosen_k: 5
+  pca:
+    enabled: true
+    n_components: 0.9
+  dbscan:
+    enabled: true
+    eps: 0.5
+    min_samples: 5
