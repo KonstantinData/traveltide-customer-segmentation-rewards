@@ -46,6 +46,7 @@ from .preprocess import (
 )
 from .report import (
     build_basic_charts,
+    build_validation_summary,
     correlation_pairs,
     data_overview,
     derive_hypotheses,
@@ -98,9 +99,12 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
     # 2) Preprocess
     # Notes: Derive consistent columns, then apply anomaly fixes and outlier removal.
     df = add_derived_columns(raw)
-    df_valid, validity_rules, invalid_hotel_nights_meta = apply_validity_rules(
-        df, config
-    )
+    (
+        df_valid,
+        validity_rules,
+        invalid_hotel_nights_meta,
+        validation_checks,
+    ) = apply_validity_rules(df, config)
     df_clean, outlier_rules = remove_outliers(df_valid, config)
     df_clean = SESSION_CLEAN_SCHEMA.validate(df_clean, lazy=True)
 
@@ -118,6 +122,9 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
     key_insights = derive_key_insights(session_missing, outlier_rules, correlations)
     hypotheses = derive_hypotheses(correlations)
     charts = build_basic_charts(df_clean)
+    validation_summary = build_validation_summary(
+        {"validation_checks": validation_checks}
+    )
     workflow_steps = annotate_steps(
         workflow,
         outputs={
@@ -200,6 +207,7 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
         validity_rules=validity_rules,
         outlier_rules=outlier_rules,
         invalid_hotel_nights_meta=invalid_hotel_nights_meta,
+        validation_checks=validation_checks,
     )
     meta["workflow"] = {
         "definition": workflow_to_dict(workflow),
@@ -234,6 +242,7 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
         correlations=correlations,
         key_insights=key_insights,
         hypotheses=hypotheses,
+        validation_summary=validation_summary,
     )
 
     latest_dir = base / "latest"

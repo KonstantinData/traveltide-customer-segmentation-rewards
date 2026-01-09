@@ -112,6 +112,38 @@
       </div>
     </div>
 
+    <h2>Validity & consistency checks</h2>
+    {% if validation_summary %}
+      <table>
+        <thead>
+          <tr>
+            <th>check</th>
+            <th>type</th>
+            <th>details</th>
+            <th>invalid_count</th>
+            <th>decision</th>
+            <th>action</th>
+            <th>rationale</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in validation_summary %}
+            <tr>
+              <td>{{ r.check }}</td>
+              <td>{{ r.type }}</td>
+              <td>{{ r.details }}</td>
+              <td>{{ r.invalid_count }}</td>
+              <td>{{ r.decision }}</td>
+              <td>{{ r.action }}</td>
+              <td>{{ r.rationale }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">No validity checks recorded for this run.</p>
+    {% endif %}
+
     <h2>Descriptive statistics</h2>
     <div class="grid">
       <div>
