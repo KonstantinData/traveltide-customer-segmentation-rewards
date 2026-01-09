@@ -109,7 +109,9 @@ def render_dq_report_md(meta: dict[str, Any]) -> str:
 
     def _render_validation_checks(checks: dict[str, Any]) -> str:
         if not checks:
-            return "## Validity & consistency checks\n\nNo additional checks recorded.\n\n"
+            return (
+                "## Validity & consistency checks\n\nNo additional checks recorded.\n\n"
+            )
 
         lines = ["## Validity & consistency checks\n\n"]
         lines.append(
@@ -150,9 +152,7 @@ def render_dq_report_md(meta: dict[str, Any]) -> str:
                 if status == "skipped"
                 else _fmt_int(int(entry.get("invalid_count", 0)))
             )
-            detail = (
-                f"range: {entry.get('min_allowed')} to {entry.get('max_allowed')}"
-            )
+            detail = f"range: {entry.get('min_allowed')} to {entry.get('max_allowed')}"
             lines.append(
                 "| {name} | range | {detail} | {invalid} | {decision} | {rationale} |\n".format(
                     name=name,
