@@ -119,9 +119,7 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
             "distribution_analysis": [
                 f"Distribution charts: {', '.join(charts.keys()) or 'none'}."
             ],
-            "visualization": [
-                "Visualization charts embedded in the EDA report."
-            ],
+            "visualization": ["Visualization charts embedded in the EDA report."],
             "relationship_analysis": [
                 f"Top correlations computed: {len(correlations)} pairs."
             ],

@@ -167,9 +167,7 @@ def derive_key_insights(
         )
 
     if outlier_rules:
-        most_removed = max(
-            outlier_rules.items(), key=lambda item: item[1].rows_removed
-        )
+        most_removed = max(outlier_rules.items(), key=lambda item: item[1].rows_removed)
         insights.append(
             f"Most outliers removed: {most_removed[0]} ({most_removed[1].rows_removed} rows)."
         )
@@ -184,7 +182,9 @@ def derive_key_insights(
     return insights
 
 
-def derive_hypotheses(correlations: Iterable[dict[str, Any]], *, top_n: int = 3) -> list[str]:
+def derive_hypotheses(
+    correlations: Iterable[dict[str, Any]], *, top_n: int = 3
+) -> list[str]:
     """Generate lightweight hypothesis candidates based on correlations."""
 
     hypotheses = []
