@@ -55,6 +55,7 @@ from .report import (
     missingness_table,
     render_html_report,
 )
+from .transform_experiments import run_transform_experiments
 from .workflow import annotate_steps, load_workflow, workflow_to_dict
 
 
@@ -125,6 +126,10 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
     validation_summary = build_validation_summary(
         {"validation_checks": validation_checks}
     )
+    transform_experiments = run_transform_experiments(
+        session_df=df_clean,
+        out_dir=run_dir,
+    )
     workflow_steps = annotate_steps(
         workflow,
         outputs={
@@ -152,6 +157,9 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
             ],
             "key_insights": key_insights,
             "hypothesis_generation": hypotheses,
+            "exploratory_transformations": [
+                "Exploratory scaling and feature derivations captured; no downstream changes."
+            ],
         },
     )
 
@@ -214,6 +222,7 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
         "overview": overview,
         "steps": workflow_steps,
     }
+    meta["exploratory_transformations"] = transform_experiments
     (run_dir / "metadata.yaml").write_text(
         yaml.safe_dump(meta, sort_keys=False, allow_unicode=True), encoding="utf-8"
     )
@@ -243,6 +252,7 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
         key_insights=key_insights,
         hypotheses=hypotheses,
         validation_summary=validation_summary,
+        transform_experiments=transform_experiments,
     )
 
     latest_dir = base / "latest"
