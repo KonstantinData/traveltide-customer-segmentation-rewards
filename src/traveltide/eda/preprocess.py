@@ -106,15 +106,16 @@ def transform_users_table(df: pd.DataFrame) -> pd.DataFrame:
     """Return the transformed users table with EDA-ready derived features."""
 
     out = df.copy()
+    now_utc = pd.Timestamp.now(tz="UTC").normalize()
     if "birthdate" in out.columns:
-        today = datetime.utcnow().date()
+        birthdates = pd.to_datetime(out["birthdate"], utc=True, errors="coerce")
         out["age_years"] = (
-            pd.to_datetime(today) - pd.to_datetime(out["birthdate"])
+            now_utc - birthdates
         ).dt.days / 365.25
     if "sign_up_date" in out.columns:
-        today = datetime.utcnow().date()
+        signups = pd.to_datetime(out["sign_up_date"], utc=True, errors="coerce")
         out["tenure_days"] = (
-            pd.to_datetime(today) - pd.to_datetime(out["sign_up_date"])
+            now_utc - signups
         ).dt.days
     return out
 
