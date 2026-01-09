@@ -1,22 +1,38 @@
--- sql/cohort_2022/flights.sql
+/*
+Description:
+Trip-level extraction restricted to cohort-eligible users to keep feature engineering downstream valid.
+
+# Notes:
+# - Always derive eligible_users from sessions within the cohort window.
+# - Join to trips/flights/hotels only after cohort restriction.
+*/
+
+WITH cohort_sessions AS (
+    SELECT
+        ses.user_id,
+        ses.trip_id
+    FROM sessions AS ses
+    WHERE ses.session_start >= '2023-01-04'
+),
+eligible_users AS (
+    SELECT
+        user_id
+    FROM cohort_sessions
+    GROUP BY user_id
+    HAVING COUNT(*) > 7
+),
+cohort_trips AS (
+    SELECT DISTINCT
+        cs.trip_id,
+        cs.user_id
+    FROM cohort_sessions AS cs
+    JOIN eligible_users AS eu
+        ON eu.user_id = cs.user_id
+    WHERE cs.trip_id IS NOT NULL
+)
+-- Then join cohort_trips to flights/hotels on trip_id
 SELECT
-  fli.base_fare_usd,
-  fli.checked_bags,
-  fli.departure_time,
-  fli.destination,
-  fli.destination_airport,
-  fli.destination_airport_lat,
-  fli.destination_airport_lon,
-  fli.origin_airport,
-  fli.return_flight_booked,
-  fli.return_time,
-  fli.seats,
-  fli.trip_airline,
-  fli.trip_id
-FROM flights AS fli
-JOIN sessions AS ses
-  ON ses.trip_id = fli.trip_id
-JOIN users AS use
-  ON use.user_id = ses.user_id
-WHERE use.sign_up_date >= '2022-01-01'
-  AND use.sign_up_date <  '2023-01-01';
+    f.*
+FROM flights AS f
+JOIN cohort_trips AS ct
+    ON ct.trip_id = f.trip_id;
