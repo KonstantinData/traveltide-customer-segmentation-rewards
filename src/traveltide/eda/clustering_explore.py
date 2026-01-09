@@ -83,7 +83,9 @@ def _select_features(
     return selected, criteria
 
 
-def _prepare_matrix(df: pd.DataFrame, features: list[str]) -> tuple[np.ndarray, pd.DataFrame]:
+def _prepare_matrix(
+    df: pd.DataFrame, features: list[str]
+) -> tuple[np.ndarray, pd.DataFrame]:
     subset = df[features].copy()
     for col in features:
         series = pd.to_numeric(subset[col], errors="coerce")
@@ -216,9 +218,7 @@ def run_clustering_exploration(
     exploratory_dir.mkdir(parents=True, exist_ok=True)
 
     selected_source = "users_agg"
-    features, criteria = _select_features(
-        user_df, max_missing_pct=0.25, min_unique=3
-    )
+    features, criteria = _select_features(user_df, max_missing_pct=0.25, min_unique=3)
     data_df = user_df
     if len(features) < 2:
         selected_source = "sessions_clean"
@@ -264,9 +264,7 @@ def run_clustering_exploration(
     kmeans_plot = None
     kmeans_labels = None
     if kmeans_selected:
-        model = KMeans(
-            n_clusters=kmeans_selected["k"], n_init="auto", random_state=42
-        )
+        model = KMeans(n_clusters=kmeans_selected["k"], n_init="auto", random_state=42)
         kmeans_labels = model.fit_predict(matrix)
         kmeans_plot = _plot_clusters(
             matrix,
