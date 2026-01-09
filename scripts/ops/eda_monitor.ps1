@@ -12,6 +12,11 @@ param(
 
 $ErrorActionPreference = "SilentlyContinue"
 
+$monitorStart = Get-Date
+$baselineRun = Get-LatestRunDir
+$baselineRunName = if ($null -ne $baselineRun) { $baselineRun.Name } else { $null }
+$activeRun = $null
+
 # Notes: Default refresh/auto-close values are tuned for near-real-time feedback without spamming the console.
 # Notes: Resolve the most recent EDA run folder in the output directory.
 function Get-LatestRunDir {
@@ -64,17 +69,32 @@ while ($true) {
     continue
   }
 
-  Write-Host ("Latest run: " + $latest.Name)
-  Write-Host ("Path: " + $latest.FullName)
+  if ($null -eq $activeRun) {
+    if ($null -eq $baselineRunName -or $latest.Name -ne $baselineRunName) {
+      $activeRun = $latest
+    } else {
+      Write-Host ("Latest run: " + $latest.Name)
+      Write-Host ("Path: " + $latest.FullName)
+      Write-Host ""
+      Write-Host ("Waiting for a new run (latest run predates monitor start at " + $monitorStart + ").")
+      Start-Sleep -Seconds $RefreshSeconds
+      continue
+    }
+  } elseif ($latest.Name -ne $activeRun.Name -and $latest.LastWriteTime -gt $activeRun.LastWriteTime) {
+    $activeRun = $latest
+  }
+
+  Write-Host ("Latest run: " + $activeRun.Name)
+  Write-Host ("Path: " + $activeRun.FullName)
   Write-Host ""
 
   # Notes: Show the 30 most recently updated files as a lightweight progress proxy.
-  Get-ChildItem -Recurse -Path $latest.FullName |
+  Get-ChildItem -Recurse -Path $activeRun.FullName |
     Sort-Object LastWriteTime -Descending |
     Select-Object -First 30 FullName, Length, LastWriteTime |
     Format-Table -AutoSize
 
-  $dataDir  = Join-Path $latest.FullName "data"
+  $dataDir  = Join-Path $activeRun.FullName "data"
   $cleanedDir = Join-Path $dataDir "cleaned"
   $transformedDir = Join-Path $dataDir "transformed"
   $sessions = Test-Path (Join-Path $dataDir "sessions_clean.parquet")
@@ -87,9 +107,9 @@ while ($true) {
   $transformedUsers    = Test-Path (Join-Path $transformedDir "users_transformed.parquet")
   $transformedFlights  = Test-Path (Join-Path $transformedDir "flights_transformed.parquet")
   $transformedHotels   = Test-Path (Join-Path $transformedDir "hotels_transformed.parquet")
-  $metaYaml = Test-Path (Join-Path $latest.FullName "metadata.yaml")
-  $metaJson = Test-Path (Join-Path $latest.FullName "metadata.json")
-  $report   = Test-Path (Join-Path $latest.FullName "eda_report.html")
+  $metaYaml = Test-Path (Join-Path $activeRun.FullName "metadata.yaml")
+  $metaJson = Test-Path (Join-Path $activeRun.FullName "metadata.json")
+  $report   = Test-Path (Join-Path $activeRun.FullName "eda_report.html")
 
   Write-Host ""
   Write-Host "Milestones:"
@@ -112,7 +132,7 @@ while ($true) {
   if ($sessions -and $users -and $cleanedSessions -and $cleanedUsers -and $cleanedFlights -and $cleanedHotels `
       -and $transformedSessions -and $transformedUsers -and $transformedFlights -and $transformedHotels `
       -and $metaYaml -and $metaJson -and $report) {
-    Show-CompletionAndExit -RunName $latest.Name -RunPath $latest.FullName -Seconds $AutoCloseSeconds
+    Show-CompletionAndExit -RunName $activeRun.Name -RunPath $activeRun.FullName -Seconds $AutoCloseSeconds
     # If KeepOpen was set, we continue monitoring.
   }
 
