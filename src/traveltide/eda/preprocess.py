@@ -569,7 +569,7 @@ def build_metadata(
     validity_rules: dict[str, RuleImpact],
     outlier_rules: dict[str, RuleImpact],
     invalid_hotel_nights_meta: dict[str, int | str],
-    validation_checks: dict[str, object],
+    validation_checks: dict[str, object] | None = None,
 ) -> dict[str, object]:
     """Create a run metadata payload saved next to artifacts.
 
@@ -589,7 +589,7 @@ def build_metadata(
         "validity_rules": {
             name: asdict(impact) for name, impact in validity_rules.items()
         },
-        "validation_checks": validation_checks,
+        "validation_checks": validation_checks or {},
         "outliers": {col: asdict(impact) for col, impact in outlier_rules.items()},
         "invalid_hotel_nights": invalid_hotel_nights_meta,
         "outliers_removed_by_column": {
