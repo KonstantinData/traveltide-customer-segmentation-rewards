@@ -6,10 +6,10 @@ import pandera as pa
 from pandera import Column, DataFrameSchema
 
 # NOTE:
-# The Bronze layer uses UUID-like IDs for session_id/trip_id in many exports.
+# Raw exports often use UUID-like IDs for session_id/trip_id.
 # Therefore we validate them as strings (not int64).
 # user_id is kept as Int64 (typical TravelTide dataset uses numeric user IDs).
-# If your Bronze export uses UUIDs for user_id too, switch user_id to pa.String.
+# If your raw export uses UUIDs for user_id too, switch user_id to pa.String.
 
 SESSION_RAW_SCHEMA = DataFrameSchema(
     {
@@ -17,7 +17,7 @@ SESSION_RAW_SCHEMA = DataFrameSchema(
         "user_id": Column(pa.Int64, nullable=False),
         "trip_id": Column(pa.String, nullable=True),
         "session_start": Column(pa.DateTime, nullable=False),
-        # Bronze exports may have missing/empty values -> allow null
+        # Raw exports may have missing/empty values -> allow null
         "session_end": Column(pa.DateTime, nullable=True),
         "flight_discount": Column(pa.Float64, nullable=True),
         "hotel_discount": Column(pa.Float64, nullable=True),

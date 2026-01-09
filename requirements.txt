@@ -29,7 +29,7 @@ pip-audit>=2.7
 pre-commit>=3.7
 
 # =========================
-# Optional legacy database access (local Bronze files are source-of-truth)
+# Optional legacy database access (local raw files are source-of-truth)
 # =========================
 sqlalchemy>=2.0
 psycopg[binary]>=3.1

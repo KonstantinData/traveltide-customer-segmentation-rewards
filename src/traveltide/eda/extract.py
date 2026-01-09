@@ -1,4 +1,4 @@
-# Description: Extract session-level EDA datasets from Bronze tables.
+# Description: Extract session-level EDA datasets from raw tables.
 """
 traveltide.eda.extract
 
@@ -8,16 +8,15 @@ This module extracts the raw session-level dataset required for the EDA pipeline
 
 Why it exists
 -------------
-The TravelTide Mastery project expects a medallion architecture:
-Bronze (raw) -> Silver (cleaned) -> Gold (features/segments).
+The TravelTide Mastery project uses raw -> cleaned -> transformed tables.
 
-The project's source-of-truth is the local Bronze layer under `data/bronze`.
-Therefore EDA extraction loads Bronze tables from disk and assembles the
+The project's source-of-truth is the local raw layer under `data/`.
+Therefore EDA extraction loads raw tables from disk and assembles the
 session-level dataset in-memory.
 
 How it works
 ------------
-- Load Bronze tables from disk via `load_bronze_tables(...)`
+- Load raw tables from disk via `load_raw_tables(...)`
 - Assemble the session-level dataset by joining:
     sessions + users + (optional) flights + (optional) hotels
 - Apply cohort filtering on sign_up_date (user dimension)
@@ -25,7 +24,7 @@ How it works
 
 Notes
 -----
-- The Bronze join intentionally mirrors the legacy SQL logic:
+- The raw join intentionally mirrors the legacy SQL logic:
     sessions (fact) + users (dimension) + left joins on trip_id for flights/hotels
 """
 
@@ -35,12 +34,12 @@ from typing import Final
 
 import pandas as pd
 
-from traveltide.data import load_bronze_tables
+from traveltide.data import load_raw_tables
 
 from .config import EDAConfig
 
 # Stable output contract: keep column order consistent across runs.
-# If some columns are missing in Bronze, they will be created as NA.
+# If some columns are missing in raw, they will be created as NA.
 _SESSION_LEVEL_COLUMNS: Final[list[str]] = [
     # Session facts
     "session_id",
@@ -133,14 +132,14 @@ def _normalize_session_level_columns(df: pd.DataFrame) -> pd.DataFrame:
     return out.loc[:, _SESSION_LEVEL_COLUMNS]
 
 
-# Notes: Coerce raw Bronze column types to predictable dtypes.
+# Notes: Coerce raw column types to predictable dtypes.
 def _coerce_types(df: pd.DataFrame) -> pd.DataFrame:
-    """Coerce Bronze dtypes into stable, schema-friendly types."""
+    """Coerce raw dtypes into stable, schema-friendly types."""
 
     # Notes: Casting aligns raw local files with Pandera expectations.
     out = df.copy()
 
-    # IDs: Bronze exports often use UUID-like strings for session_id/trip_id.
+    # IDs: Raw exports often use UUID-like strings for session_id/trip_id.
     if "session_id" in out.columns:
         out["session_id"] = out["session_id"].astype("string")
     if "trip_id" in out.columns:
@@ -180,7 +179,7 @@ def _coerce_types(df: pd.DataFrame) -> pd.DataFrame:
 # Notes: Build the cohort-scoped session-level dataset for EDA.
 def extract_session_level(config: EDAConfig) -> pd.DataFrame:
     """
-    Build the session-level dataset used in the EDA pipeline from Bronze files.
+    Build the session-level dataset used in the EDA pipeline from raw files.
 
     Parameters
     ----------
@@ -192,8 +191,8 @@ def extract_session_level(config: EDAConfig) -> pd.DataFrame:
     pd.DataFrame
         Session-level dataframe enriched with user, flight, and hotel columns.
     """
-    # Notes: Load raw Bronze tables from the local data directory (source-of-truth).
-    tables = load_bronze_tables(["users", "sessions", "flights", "hotels"])
+    # Notes: Load raw tables from the local data directory (source-of-truth).
+    tables = load_raw_tables(["users", "sessions", "flights", "hotels"])
 
     users = tables["users"]
     sessions = tables["sessions"]
@@ -229,26 +228,26 @@ def extract_session_level(config: EDAConfig) -> pd.DataFrame:
     return df
 
 
-# Notes: Load raw Bronze tables for EDA cleaning/transformation.
+# Notes: Load raw tables for EDA cleaning/transformation.
 def extract_eda_tables() -> dict[str, pd.DataFrame]:
-    """Load raw Bronze tables needed for the EDA context.
+    """Load raw tables needed for the EDA context.
 
     Notes
     -----
     - Returns raw tables with no filtering so they can be cleaned/transformed separately.
-    - Includes flights/hotels alongside sessions/users for silver/gold artifact creation.
+    - Includes flights/hotels alongside sessions/users for cleaned/transformed artifact creation.
     """
 
-    return load_bronze_tables(["users", "sessions", "flights", "hotels"])
+    return load_raw_tables(["users", "sessions", "flights", "hotels"])
 
 
 # Notes: Capture raw row counts for audit metadata.
 def extract_table_row_counts() -> dict[str, int]:
     """
-    Return raw row counts for core Bronze tables (unfiltered).
+    Return raw row counts for core raw tables (unfiltered).
 
     Used in pipeline metadata as an audit trail (scale/context).
     """
-    # Notes: Keep counts unfiltered to reflect the full Bronze footprint.
-    tables = load_bronze_tables(["users", "sessions", "flights", "hotels"])
+    # Notes: Keep counts unfiltered to reflect the full raw footprint.
+    tables = load_raw_tables(["users", "sessions", "flights", "hotels"])
     return {name: int(len(df)) for name, df in tables.items()}

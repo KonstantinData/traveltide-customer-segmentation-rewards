@@ -21,17 +21,17 @@ from .config import EDAConfig
 from .dq_report import RuleImpact
 
 
-# Notes: Normalize Bronze table dtypes for silver tables.
+# Notes: Normalize raw table dtypes for cleaned tables.
 def coerce_columns(
     df: pd.DataFrame,
     *,
     datetime_cols: tuple[str, ...] = (),
     numeric_cols: tuple[str, ...] = (),
 ) -> pd.DataFrame:
-    """Coerce datetimes and numerics for cleaned (silver) EDA tables.
+    """Coerce datetimes and numerics for cleaned EDA tables.
 
     Notes:
-    - "Cleaned" means the raw Bronze table is type-stable with no feature derivations.
+    - "Cleaned" means the raw table is type-stable with no feature derivations.
     - "Transformed" variants add derived features for EDA summaries (see *_transformed helpers).
     """
 

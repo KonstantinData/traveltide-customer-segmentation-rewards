@@ -11,6 +11,7 @@ Notes:
 from __future__ import annotations
 
 import json
+import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -83,10 +84,10 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
     # Notes: Keep data artifacts separate from report/metadata within the run directory.
     data_dir = run_dir / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
-    silver_dir = data_dir / "silver"
-    gold_dir = data_dir / "gold"
-    silver_dir.mkdir(parents=True, exist_ok=True)
-    gold_dir.mkdir(parents=True, exist_ok=True)
+    cleaned_dir = data_dir / "cleaned"
+    transformed_dir = data_dir / "transformed"
+    cleaned_dir.mkdir(parents=True, exist_ok=True)
+    transformed_dir.mkdir(parents=True, exist_ok=True)
 
     # 1) Extract
     # Notes: Capture raw DB scale and then cohort-filtered extraction dataset.
@@ -154,36 +155,38 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
     df_clean.to_parquet(session_path, index=False)
     user.to_parquet(user_path, index=False)
 
-    # 4a) Silver + Gold layer artifacts
-    silver_raw = extract_eda_tables()
-    silver_tables = {
-        "sessions": clean_sessions_table(silver_raw["sessions"]),
-        "users": clean_users_table(silver_raw["users"]),
-        "flights": clean_flights_table(silver_raw["flights"]),
-        "hotels": clean_hotels_table(silver_raw["hotels"]),
+    # 4a) Cleaned + transformed artifacts
+    raw_tables = extract_eda_tables()
+    cleaned_tables = {
+        "sessions": clean_sessions_table(raw_tables["sessions"]),
+        "users": clean_users_table(raw_tables["users"]),
+        "flights": clean_flights_table(raw_tables["flights"]),
+        "hotels": clean_hotels_table(raw_tables["hotels"]),
     }
-    silver_tables["flights"].to_parquet(
-        silver_dir / "flights_cleaned.parquet", index=False
+    cleaned_tables["flights"].to_parquet(
+        cleaned_dir / "flights_cleaned.parquet", index=False
     )
-    silver_tables["hotels"].to_parquet(
-        silver_dir / "hotels_cleaned.parquet", index=False
+    cleaned_tables["hotels"].to_parquet(
+        cleaned_dir / "hotels_cleaned.parquet", index=False
     )
-    silver_tables["sessions"].to_parquet(
-        silver_dir / "sessions_cleaned.parquet", index=False
+    cleaned_tables["sessions"].to_parquet(
+        cleaned_dir / "sessions_cleaned.parquet", index=False
     )
-    silver_tables["users"].to_parquet(silver_dir / "users_cleaned.parquet", index=False)
+    cleaned_tables["users"].to_parquet(
+        cleaned_dir / "users_cleaned.parquet", index=False
+    )
 
-    transform_flights_table(silver_tables["flights"]).to_parquet(
-        gold_dir / "flights_transformed.parquet", index=False
+    transform_flights_table(cleaned_tables["flights"]).to_parquet(
+        transformed_dir / "flights_transformed.parquet", index=False
     )
-    transform_hotels_table(silver_tables["hotels"]).to_parquet(
-        gold_dir / "hotels_transformed.parquet", index=False
+    transform_hotels_table(cleaned_tables["hotels"]).to_parquet(
+        transformed_dir / "hotels_transformed.parquet", index=False
     )
-    transform_sessions_table(silver_tables["sessions"]).to_parquet(
-        gold_dir / "sessions_transformed.parquet", index=False
+    transform_sessions_table(cleaned_tables["sessions"]).to_parquet(
+        transformed_dir / "sessions_transformed.parquet", index=False
     )
-    transform_users_table(silver_tables["users"]).to_parquet(
-        gold_dir / "users_transformed.parquet", index=False
+    transform_users_table(cleaned_tables["users"]).to_parquet(
+        transformed_dir / "users_transformed.parquet", index=False
     )
 
     # 5) Metadata
@@ -232,5 +235,16 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
         key_insights=key_insights,
         hypotheses=hypotheses,
     )
+
+    latest_dir = base / "latest"
+    if latest_dir.exists() or latest_dir.is_symlink():
+        if latest_dir.is_symlink():
+            latest_dir.unlink()
+        else:
+            shutil.rmtree(latest_dir)
+    try:
+        latest_dir.symlink_to(run_dir, target_is_directory=True)
+    except OSError:
+        shutil.copytree(run_dir, latest_dir)
 
     return run_dir

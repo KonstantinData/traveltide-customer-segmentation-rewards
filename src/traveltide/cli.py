@@ -129,8 +129,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     features.add_argument(
         "--outdir",
-        default=str(Path("data") / "features"),
-        help="Output directory for customer features (default: data/features).",
+        default=str(Path("artifacts") / "outputs"),
+        help="Output directory for customer features (default: artifacts/outputs).",
     )
 
     segmentation = sub.add_parser(
@@ -145,10 +145,12 @@ def build_parser() -> argparse.ArgumentParser:
     perks = sub.add_parser("perks", help="Map customer segments to persona perks.")
     perks.add_argument(
         "--assignments",
-        default=str(Path("data") / "segments" / "segment_assignments.parquet"),
+        default=str(
+            Path("artifacts") / "outputs" / "segments" / "segment_assignments.parquet"
+        ),
         help=(
             "Path to segment assignments parquet "
-            "(default: data/segments/segment_assignments.parquet)."
+            "(default: artifacts/outputs/segments/segment_assignments.parquet)."
         ),
     )
     perks.add_argument(
@@ -158,8 +160,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     perks.add_argument(
         "--out",
-        default=str(Path("data") / "perks" / "customer_perks.csv"),
-        help="Path to the output customer perks CSV (default: data/perks/customer_perks.csv).",
+        default=str(Path("artifacts") / "outputs" / "perks" / "customer_perks.csv"),
+        help=(
+            "Path to the output customer perks CSV "
+            "(default: artifacts/outputs/perks/customer_perks.csv)."
+        ),
     )
 
     return parser
