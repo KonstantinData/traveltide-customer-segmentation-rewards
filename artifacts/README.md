@@ -51,7 +51,7 @@ The pipeline uses **local raw files** committed under `data/`.
 - Key assumptions:
   - Primary keys: `users.user_id`, `sessions.session_id`, `flights.trip_id`, `hotels.trip_id`.【F:data/README.md†L50-L66】
   - Join path: `users → sessions → flights/hotels` via `user_id` and `trip_id`.【F:data/README.md†L58-L62】
-  - Cohort filter is based on `sign_up_date` (default: 2022).【F:config/eda.yaml†L5-L13】【F:src/traveltide/eda/extract.py†L132-L154】
+  - EDA exploration uses the full dataset; cohort-scoped outputs filter to 2022 signups with a 2023-01-04+ session window, `page_clicks >= 2`, and users with >7 qualifying sessions.【F:config/eda.yaml†L5-L17】【F:src/traveltide/eda/extract.py†L180-L215】【F:src/traveltide/eda/pipeline.py†L96-L205】
 
 ### Timezones and typing
 

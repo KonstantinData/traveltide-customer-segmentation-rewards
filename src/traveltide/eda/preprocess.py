@@ -561,13 +561,13 @@ def build_metadata(
     config: EDAConfig,
     row_counts: dict[str, int],
     n_rows_raw: int,
-    n_rows_raw_full: int | None = None,
     n_rows_after_validity: int,
     n_rows_clean: int,
     validity_rules: dict[str, RuleImpact],
     outlier_rules: dict[str, RuleImpact],
     invalid_hotel_nights_meta: dict[str, int | str],
     validation_checks: dict[str, object] | None = None,
+    n_rows_raw_full: int | None = None,
 ) -> dict[str, object]:
     """Create a run metadata payload saved next to artifacts.
 

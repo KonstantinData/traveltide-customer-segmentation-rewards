@@ -37,12 +37,16 @@ data/
 
 ## Cohort definition (analysis scope)
 
-To ensure fair behavioral comparisons, the analysis is scoped to a defined cohort based on account creation date.
+EDA begins with a **full-dataset exploration** before any cohort filtering. After the
+exploration step, the analysis scope is constrained to a cohort and observation window
+for behavioral comparisons.
 
-**Default cohort (recommended half-open interval):**
+**Cohort + observation window (post-exploration):**
 
-- `sign_up_date >= '2022-01-01'`
-- `sign_up_date <  '2023-01-01'`
+- Cohort users: `sign_up_date >= '2022-01-01'` and `sign_up_date < '2023-01-01'`
+- Session window: `session_start >= '2023-01-04'`
+- Engagement filter: `page_clicks >= 2`
+- Active users: keep only users with **more than 7** qualifying sessions in the window
 
 Half-open intervals are robust if `sign_up_date` is stored as a timestamp rather than a date.
 
@@ -115,9 +119,27 @@ WHERE sign_up_date >= '2022-01-01'
   AND sign_up_date <  '2023-01-01';
 ```
 
-### 2) Sessions (cohort-scoped)
+### 2) Sessions (cohort-scoped + observation window)
 
 ```sql
+WITH cohort_users AS (
+  SELECT user_id
+  FROM users
+  WHERE sign_up_date >= '2022-01-01'
+    AND sign_up_date <  '2023-01-01'
+),
+filtered_sessions AS (
+  SELECT *
+  FROM sessions
+  WHERE session_start >= '2023-01-04'
+    AND page_clicks >= 2
+),
+active_users AS (
+  SELECT user_id
+  FROM filtered_sessions
+  GROUP BY user_id
+  HAVING COUNT(*) > 7
+)
 SELECT
   ses.cancellation,
   ses.flight_booked,
@@ -132,16 +154,34 @@ SELECT
   ses.session_start,
   ses.trip_id,
   ses.user_id
-FROM sessions AS ses
-JOIN users AS use
+FROM filtered_sessions AS ses
+JOIN cohort_users AS use
   ON use.user_id = ses.user_id
-WHERE use.sign_up_date >= '2022-01-01'
-  AND use.sign_up_date <  '2023-01-01';
+JOIN active_users AS act
+  ON act.user_id = ses.user_id;
 ```
 
 ### 3) Flights (cohort-scoped via sessions → users)
 
 ```sql
+WITH cohort_users AS (
+  SELECT user_id
+  FROM users
+  WHERE sign_up_date >= '2022-01-01'
+    AND sign_up_date <  '2023-01-01'
+),
+filtered_sessions AS (
+  SELECT ses.trip_id, ses.user_id
+  FROM sessions AS ses
+  WHERE ses.session_start >= '2023-01-04'
+    AND ses.page_clicks >= 2
+),
+active_users AS (
+  SELECT user_id
+  FROM filtered_sessions
+  GROUP BY user_id
+  HAVING COUNT(*) > 7
+)
 SELECT
   fli.base_fare_usd,
   fli.checked_bags,
@@ -157,17 +197,35 @@ SELECT
   fli.trip_airline,
   fli.trip_id
 FROM flights AS fli
-JOIN sessions AS ses
+JOIN filtered_sessions AS ses
   ON ses.trip_id = fli.trip_id
-JOIN users AS use
+JOIN cohort_users AS use
   ON use.user_id = ses.user_id
-WHERE use.sign_up_date >= '2022-01-01'
-  AND use.sign_up_date <  '2023-01-01';
+JOIN active_users AS act
+  ON act.user_id = ses.user_id;
 ```
 
 ### 4) Hotels (cohort-scoped via sessions → users)
 
 ```sql
+WITH cohort_users AS (
+  SELECT user_id
+  FROM users
+  WHERE sign_up_date >= '2022-01-01'
+    AND sign_up_date <  '2023-01-01'
+),
+filtered_sessions AS (
+  SELECT ses.trip_id, ses.user_id
+  FROM sessions AS ses
+  WHERE ses.session_start >= '2023-01-04'
+    AND ses.page_clicks >= 2
+),
+active_users AS (
+  SELECT user_id
+  FROM filtered_sessions
+  GROUP BY user_id
+  HAVING COUNT(*) > 7
+)
 SELECT
   hot.check_in_time,
   hot.check_out_time,
@@ -177,12 +235,12 @@ SELECT
   hot.rooms,
   hot.trip_id
 FROM hotels AS hot
-JOIN sessions AS ses
+JOIN filtered_sessions AS ses
   ON ses.trip_id = hot.trip_id
-JOIN users AS use
+JOIN cohort_users AS use
   ON use.user_id = ses.user_id
-WHERE use.sign_up_date >= '2022-01-01'
-  AND use.sign_up_date <  '2023-01-01';
+JOIN active_users AS act
+  ON act.user_id = ses.user_id;
 ```
 
 ---
