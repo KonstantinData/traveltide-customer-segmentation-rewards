@@ -1,3 +1,4 @@
+# Description: Preprocessing, cleaning, and aggregation for Step 1 EDA data.
 """Preprocessing, cleaning, outlier handling, and aggregation for Step 1 (EDA) (TT-012).
 
 Notes:
@@ -20,6 +21,7 @@ from .config import EDAConfig
 from .dq_report import RuleImpact
 
 
+# Notes: Normalize Bronze table dtypes for silver tables.
 def coerce_columns(
     df: pd.DataFrame,
     *,
@@ -43,6 +45,7 @@ def coerce_columns(
     return out
 
 
+# Notes: Clean session tables to stable types without derived features.
 def clean_sessions_table(df: pd.DataFrame) -> pd.DataFrame:
     """Return the cleaned sessions table (type-stable, no derived features)."""
 
@@ -53,6 +56,7 @@ def clean_sessions_table(df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
+# Notes: Clean user tables to stable types without derived features.
 def clean_users_table(df: pd.DataFrame) -> pd.DataFrame:
     """Return the cleaned users table (type-stable, no derived features)."""
 
@@ -63,6 +67,7 @@ def clean_users_table(df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
+# Notes: Clean flight tables to stable types without derived features.
 def clean_flights_table(df: pd.DataFrame) -> pd.DataFrame:
     """Return the cleaned flights table (type-stable, no derived features)."""
 
@@ -73,6 +78,7 @@ def clean_flights_table(df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
+# Notes: Clean hotel tables to stable types without derived features.
 def clean_hotels_table(df: pd.DataFrame) -> pd.DataFrame:
     """Return the cleaned hotels table (type-stable, no derived features)."""
 
@@ -83,6 +89,7 @@ def clean_hotels_table(df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
+# Notes: Add derived session-level metrics for EDA.
 def transform_sessions_table(df: pd.DataFrame) -> pd.DataFrame:
     """Return the transformed sessions table with EDA-ready derived features."""
 
@@ -94,6 +101,7 @@ def transform_sessions_table(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+# Notes: Add derived user-level metrics for EDA.
 def transform_users_table(df: pd.DataFrame) -> pd.DataFrame:
     """Return the transformed users table with EDA-ready derived features."""
 
@@ -111,6 +119,7 @@ def transform_users_table(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+# Notes: Add derived flight-level metrics for EDA.
 def transform_flights_table(df: pd.DataFrame) -> pd.DataFrame:
     """Return the transformed flights table with EDA-ready derived features."""
 
@@ -122,6 +131,7 @@ def transform_flights_table(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+# Notes: Add derived hotel-level metrics for EDA.
 def transform_hotels_table(df: pd.DataFrame) -> pd.DataFrame:
     """Return the transformed hotels table with EDA-ready derived features."""
 
@@ -133,6 +143,7 @@ def transform_hotels_table(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+# Notes: Create derived session features used in EDA summaries.
 def add_derived_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Add derived, analysis-friendly columns.
 
@@ -172,6 +183,7 @@ def add_derived_columns(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+# Notes: Apply the configured policy for invalid hotel nights.
 def fix_invalid_hotel_nights(df: pd.DataFrame, policy: str) -> pd.DataFrame:
     """Handle invalid values in hotels.nights (0 or negative).
 
@@ -220,6 +232,7 @@ def fix_invalid_hotel_nights(df: pd.DataFrame, policy: str) -> pd.DataFrame:
     return out
 
 
+# Notes: Apply validity rules and log their impact for metadata.
 def apply_validity_rules(
     df: pd.DataFrame, config: EDAConfig
 ) -> tuple[pd.DataFrame, dict[str, RuleImpact], dict[str, int | str]]:
@@ -266,6 +279,7 @@ def apply_validity_rules(
     return out, validity_rules, invalid_hotel_nights_meta
 
 
+# Notes: Remove outliers based on configured method and thresholds.
 def remove_outliers(
     df: pd.DataFrame, config: EDAConfig
 ) -> tuple[pd.DataFrame, dict[str, RuleImpact]]:
@@ -326,6 +340,7 @@ def remove_outliers(
     return out.loc[mask_keep].copy(), rules
 
 
+# Notes: Aggregate session data to a customer-level table.
 def aggregate_user_level(df: pd.DataFrame) -> pd.DataFrame:
     """Aggregate session-level data to one row per user.
 
@@ -379,6 +394,7 @@ def aggregate_user_level(df: pd.DataFrame) -> pd.DataFrame:
     return user
 
 
+# Notes: Build the EDA run metadata payload.
 def build_metadata(
     config: EDAConfig,
     row_counts: dict[str, int],

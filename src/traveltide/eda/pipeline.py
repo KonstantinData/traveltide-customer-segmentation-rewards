@@ -1,3 +1,4 @@
+# Description: Orchestrated EDA pipeline for Step 1 artifacts.
 """Orchestrated EDA pipeline for Step 1 (TT-012).
 
 Notes:
@@ -55,11 +56,13 @@ from .report import (
 from .workflow import annotate_steps, load_workflow, workflow_to_dict
 
 
+# Notes: Create deterministic UTC run directory names.
 def _timestamp_slug() -> str:
     # Notes: Generates a stable UTC timestamp folder name to version artifacts deterministically.
     return datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%SZ")
 
 
+# Notes: Orchestrate extraction, cleaning, aggregation, and report generation.
 def run_eda(*, config_path: str, outdir: str) -> Path:
     """Run the Step 1 EDA pipeline and write a versioned artifact directory.
 

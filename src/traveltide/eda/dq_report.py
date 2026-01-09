@@ -1,3 +1,4 @@
+# Description: Data Quality (DQ) report generator for EDA artifacts.
 """Data Quality (DQ) report generator for TT-015.
 
 Notes:
@@ -15,6 +16,7 @@ from typing import Any
 import yaml
 
 
+# Notes: Encapsulates before/after row impact for a single rule.
 @dataclass(frozen=True)
 class RuleImpact:
     """Single rule impact snapshot."""
@@ -40,6 +42,7 @@ def _fmt_pct(x: float) -> str:
     return f"{x:.2f}%"
 
 
+# Notes: Load the most recent EDA run metadata payload.
 def load_metadata(run_dir: Path) -> dict[str, Any]:
     """Load EDA run metadata from a run directory."""
     path = run_dir / "metadata.yaml"
@@ -48,6 +51,7 @@ def load_metadata(run_dir: Path) -> dict[str, Any]:
     return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
 
 
+# Notes: Resolve the latest timestamped EDA run directory.
 def find_latest_run(artifacts_base: Path) -> Path:
     """Find the latest timestamped EDA run directory within artifacts_base."""
     if not artifacts_base.exists():
@@ -59,6 +63,7 @@ def find_latest_run(artifacts_base: Path) -> Path:
     return sorted(runs)[-1]
 
 
+# Notes: Convert metadata into a markdown audit report.
 def render_dq_report_md(meta: dict[str, Any]) -> str:
     """Render a markdown DQ report from EDA metadata."""
 
@@ -157,11 +162,13 @@ def render_dq_report_md(meta: dict[str, Any]) -> str:
     return "".join(md)
 
 
+# Notes: Persist the rendered report to disk.
 def write_dq_report(out_path: Path, md: str) -> None:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(md, encoding="utf-8")
 
 
+# Notes: CLI entrypoint for generating the DQ report.
 def cmd_dq_report(*, artifacts_base: Path, out: Path) -> int:
     run_dir = find_latest_run(artifacts_base)
     meta = load_metadata(run_dir)

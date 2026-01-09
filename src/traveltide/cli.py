@@ -1,3 +1,4 @@
+# Description: Command-line interface for TravelTide workflows and reports.
 """CLI entry point for the TravelTide repository.
 
 Notes:
@@ -22,6 +23,7 @@ from traveltide.reports.final_report import cmd_final_report
 from traveltide.segmentation.run import run_segmentation_job
 
 
+# Notes: Define the CLI contract and subcommand registry.
 def build_parser() -> argparse.ArgumentParser:
     # Notes: Defines the CLI contract (commands + arguments) and keeps UX consistent across environments.
     parser = argparse.ArgumentParser(
@@ -163,6 +165,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+# Notes: Emit version and environment diagnostics for reproducibility.
 def cmd_info(show_env: bool) -> int:
     # Notes: Prints minimal versioning/runtime context to help debugging and ensure reproducibility.
     print("TravelTide Customer Segmentation & Rewards")
@@ -173,6 +176,7 @@ def cmd_info(show_env: bool) -> int:
     return 0
 
 
+# Notes: Placeholder command to preserve a stable automation entrypoint.
 def cmd_run(mode: str) -> int:
     # Notes: Provides a stable placeholder command so automation/docs can reference it before implementation.
     print("Golden path placeholder: pipeline not implemented yet.")
@@ -180,6 +184,7 @@ def cmd_run(mode: str) -> int:
     return 0
 
 
+# Notes: Run the Step 1 EDA pipeline and report artifact locations.
 def cmd_eda(config_path: str, outdir: str) -> int:
     # Notes: Executes TT-012 EDA pipeline and prints artifact locations for fast navigation.
     run_dir = run_eda(config_path=config_path, outdir=outdir)
@@ -188,6 +193,7 @@ def cmd_eda(config_path: str, outdir: str) -> int:
     return 0
 
 
+# Notes: Parse arguments and dispatch to the selected subcommand.
 def main(argv: Sequence[str] | None = None) -> int:
     # Notes: Entrypoint dispatcher — parses argv and routes to the correct subcommand implementation.
     parser = build_parser()

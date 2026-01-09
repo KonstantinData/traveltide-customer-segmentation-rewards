@@ -1,3 +1,4 @@
+# Description: Monitor EDA artifact generation and show milestone status.
 param(
   [Parameter(Mandatory = $true)][string]$OutDir,
   [int]$RefreshSeconds = 2,
@@ -7,11 +8,13 @@ param(
 
 $ErrorActionPreference = "SilentlyContinue"
 
+# Notes: Resolve the most recent EDA run folder in the output directory.
 function Get-LatestRunDir {
   if (-not (Test-Path $OutDir)) { return $null }
   Get-ChildItem -Path $OutDir -Directory | Sort-Object Name -Descending | Select-Object -First 1
 }
 
+# Notes: Display completion details and optionally close the monitor window.
 function Show-CompletionAndExit {
   param(
     [string]$RunName,
