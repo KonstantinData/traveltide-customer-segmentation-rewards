@@ -21,7 +21,11 @@ $activeRun = $null
 # Notes: Resolve the most recent EDA run folder in the output directory.
 function Get-LatestRunDir {
   if (-not (Test-Path $OutDir)) { return $null }
-  Get-ChildItem -Path $OutDir -Directory | Sort-Object Name -Descending | Select-Object -First 1
+  $runDirs = Get-ChildItem -Path $OutDir -Directory | Where-Object { $_.Name -ne "latest" }
+  if ($runDirs) {
+    return $runDirs | Sort-Object Name -Descending | Select-Object -First 1
+  }
+  Get-ChildItem -Path $OutDir -Directory | Where-Object { $_.Name -eq "latest" } | Select-Object -First 1
 }
 
 # Notes: Display completion details and optionally close the monitor window.
