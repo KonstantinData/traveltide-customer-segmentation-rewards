@@ -13,3 +13,8 @@ This folder mirrors the Mastery project narrative:
 
 Common abbreviations and terminology used in this project
 are defined in `docs/terminology.md`.
+
+## Process documentation vs. runtime config
+
+- `config/eda.yaml` contains **operational pipeline parameters** for running the EDA generator.
+- `eda.yml` describes the **EDA process steps** used in this project.

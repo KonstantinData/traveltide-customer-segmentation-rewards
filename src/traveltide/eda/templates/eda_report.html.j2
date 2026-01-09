@@ -40,6 +40,32 @@
       <pre>{{ metadata | tojson(indent=2) }}</pre>
     </div>
 
+    <h2>EDA workflow</h2>
+    <p class="muted"><strong>{{ workflow.name }}</strong> — {{ workflow.description }}</p>
+    <ol>
+      {% for step in workflow_steps %}
+        <li>
+          <strong>{{ step.title }}</strong> <span class="muted">({{ step.id }})</span>
+          <div class="muted">{{ step.purpose }}</div>
+          <div class="muted">{{ step.note }}</div>
+          {% if step.outputs %}
+            <ul>
+              {% for output in step.outputs %}
+                <li>{{ output }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+
+    <h2>Data overview</h2>
+    <ul>
+      <li><strong>Rows:</strong> {{ overview.rows }}</li>
+      <li><strong>Columns:</strong> {{ overview.columns }}</li>
+      <li><strong>Numeric ranges:</strong> {{ overview.numeric_ranges | length }} columns</li>
+    </ul>
+
     <h2>Shapes</h2>
     <ul>
       <li><strong>Session-level table:</strong> {{ session_shape[0] }} rows × {{ session_shape[1] }} columns</li>
@@ -86,6 +112,50 @@
       </div>
     </div>
 
+    <h2>Descriptive statistics</h2>
+    <div class="grid">
+      <div>
+        <h3>Session-level (numeric)</h3>
+        <table>
+          <thead>
+            <tr><th>column</th><th>mean</th><th>median</th><th>min</th><th>max</th><th>std</th></tr>
+          </thead>
+          <tbody>
+            {% for r in session_stats[:25] %}
+              <tr>
+                <td>{{ r.column }}</td>
+                <td>{{ r.mean }}</td>
+                <td>{{ r.median }}</td>
+                <td>{{ r.min }}</td>
+                <td>{{ r.max }}</td>
+                <td>{{ r.std }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h3>User-level (numeric)</h3>
+        <table>
+          <thead>
+            <tr><th>column</th><th>mean</th><th>median</th><th>min</th><th>max</th><th>std</th></tr>
+          </thead>
+          <tbody>
+            {% for r in user_stats[:25] %}
+              <tr>
+                <td>{{ r.column }}</td>
+                <td>{{ r.mean }}</td>
+                <td>{{ r.median }}</td>
+                <td>{{ r.min }}</td>
+                <td>{{ r.max }}</td>
+                <td>{{ r.std }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <h2>Core charts</h2>
     <div class="grid">
       <!-- Notes: Charts are base64 images embedded by the renderer (no external files required). -->
@@ -96,6 +166,36 @@
         </div>
       {% endfor %}
     </div>
+
+    <h2>Relationship analysis</h2>
+    <table>
+      <thead>
+        <tr><th>column A</th><th>column B</th><th>|corr|</th></tr>
+      </thead>
+      <tbody>
+        {% for r in correlations %}
+          <tr>
+            <td>{{ r.col_a }}</td>
+            <td>{{ r.col_b }}</td>
+            <td>{{ r.corr }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h2>Key insights</h2>
+    <ul>
+      {% for insight in key_insights %}
+        <li>{{ insight }}</li>
+      {% endfor %}
+    </ul>
+
+    <h2>Hypothesis generation</h2>
+    <ul>
+      {% for hypothesis in hypotheses %}
+        <li>{{ hypothesis }}</li>
+      {% endfor %}
+    </ul>
 
     <h2>Data previews</h2>
     <h3>Session-level sample</h3>

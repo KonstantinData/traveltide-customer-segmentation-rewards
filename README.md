@@ -64,6 +64,11 @@ python -m pip install -e .
 python -m traveltide eda --config config/eda.yaml --outdir artifacts/eda
 ```
 
+**Process vs. runtime config**
+
+- `config/eda.yaml` defines **operational pipeline parameters** for running the EDA generator.
+- `eda.yml` documents the **EDA process workflow** used in this project.
+
 ## Visual gallery (generated plots)
 
 The EDA pipeline produces lightweight plots that are versioned in `artifacts/` for quick review. The gallery below links to the latest committed examples.
