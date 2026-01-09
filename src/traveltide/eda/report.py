@@ -126,6 +126,84 @@ def data_overview(df: pd.DataFrame) -> dict[str, Any]:
     }
 
 
+def build_validation_summary(metadata: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build a compact validity/consistency summary for reporting."""
+
+    checks = metadata.get("validation_checks", {}) or {}
+    rows: list[dict[str, Any]] = []
+
+    duplicates = checks.get("duplicates")
+    if duplicates:
+        status = duplicates.get("status", "evaluated")
+        keys = duplicates.get("keys") or []
+        detail = (
+            f"keys: {', '.join(keys)}"
+            if keys
+            else duplicates.get("reason", "Missing key columns.")
+        )
+        invalid_count = (
+            "N/A"
+            if status == "skipped"
+            else int(duplicates.get("rows_in_duplicate_groups", 0))
+        )
+        rows.append(
+            {
+                "check": "Duplicate sessions",
+                "type": "duplicates",
+                "details": detail,
+                "invalid_count": invalid_count,
+                "decision": duplicates.get("decision", ""),
+                "action": duplicates.get("action", ""),
+                "rationale": duplicates.get("rationale", ""),
+                "status": status,
+            }
+        )
+
+    range_checks = checks.get("range_checks", {}) or {}
+    for name, entry in range_checks.items():
+        status = entry.get("status", "evaluated")
+        invalid_count = (
+            "N/A" if status == "skipped" else int(entry.get("invalid_count", 0))
+        )
+        min_allowed = entry.get("min_allowed")
+        max_allowed = entry.get("max_allowed")
+        detail = f"range: {min_allowed} to {max_allowed}"
+        rows.append(
+            {
+                "check": name,
+                "type": "range",
+                "details": detail,
+                "invalid_count": invalid_count,
+                "decision": entry.get("decision", ""),
+                "action": entry.get("action", ""),
+                "rationale": entry.get("rationale", ""),
+                "status": status,
+            }
+        )
+
+    logical_checks = checks.get("logical_checks", {}) or {}
+    for name, entry in logical_checks.items():
+        status = entry.get("status", "evaluated")
+        invalid_count = (
+            "N/A" if status == "skipped" else int(entry.get("invalid_count", 0))
+        )
+        detail = entry.get("comparison", "")
+        rows.append(
+            {
+                "check": name,
+                "type": "logical",
+                "details": detail,
+                "invalid_count": invalid_count,
+                "decision": entry.get("decision", ""),
+                "action": entry.get("action", ""),
+                "rationale": entry.get("rationale", ""),
+                "status": status,
+            }
+        )
+
+    return rows
+
+
 # Notes: Calculate descriptive statistics for numeric columns.
 def descriptive_stats_table(df: pd.DataFrame) -> list[dict[str, Any]]:
     """Return descriptive statistics for numeric columns."""
@@ -226,6 +304,7 @@ def render_html_report(
     correlations: list[dict[str, Any]],
     key_insights: list[str],
     hypotheses: list[str],
+    validation_summary: list[dict[str, Any]],
 ) -> None:
     """Render the EDA report as a standalone HTML file.
 
@@ -260,6 +339,7 @@ def render_html_report(
         correlations=correlations,
         key_insights=key_insights,
         hypotheses=hypotheses,
+        validation_summary=validation_summary,
     )
 
     # Notes: Write as UTF-8 for portability; output becomes part of the artifact directory.
