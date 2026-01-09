@@ -21,6 +21,8 @@ How it works
     sessions + users + (optional) flights + (optional) hotels
 - Apply cohort filtering on sign_up_date (user dimension)
 - Optionally apply a minimum session_start filter via config
+- Optionally enforce a minimum session count per user during the filtered window
+- Optionally enforce a minimum page_clicks threshold in the observation window
 
 Notes
 -----
@@ -176,21 +178,56 @@ def _coerce_types(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-# Notes: Build the cohort-scoped session-level dataset for EDA.
-def extract_session_level(config: EDAConfig) -> pd.DataFrame:
-    """
-    Build the session-level dataset used in the EDA pipeline from raw files.
+# Notes: Apply cohort + extraction filters to a session-level dataframe.
+def _apply_extraction_filters(df: pd.DataFrame, config: EDAConfig) -> pd.DataFrame:
+    """Return cohort-filtered session-level data based on config rules."""
 
-    Parameters
-    ----------
-    config:
-        EDA configuration containing cohort boundaries and optional filters.
+    # Cohort filter on sign_up_date.
+    mask = pd.Series(True, index=df.index)
+    if "sign_up_date" in df.columns:
+        sign_up = df["sign_up_date"]
+        start = pd.to_datetime(config.cohort.sign_up_date_start)
+        end = pd.to_datetime(config.cohort.sign_up_date_end)
+        mask &= (sign_up >= start) & (sign_up <= end)
 
-    Returns
-    -------
-    pd.DataFrame
-        Session-level dataframe enriched with user, flight, and hotel columns.
-    """
+    # Optional filter on minimum session_start.
+    if config.extraction.session_start_min and "session_start" in df.columns:
+        min_start = pd.to_datetime(config.extraction.session_start_min)
+        mask &= df["session_start"] >= min_start
+
+    filtered = df.loc[mask]
+
+    # Optional filter on minimum page_clicks per session.
+    if (
+        config.extraction.min_page_clicks is not None
+        and "page_clicks" in filtered.columns
+    ):
+        filtered = filtered[
+            filtered["page_clicks"] >= config.extraction.min_page_clicks
+        ]
+
+    # Optional filter on minimum session count per user.
+    if config.extraction.min_sessions and "user_id" in filtered.columns:
+        session_counts = (
+            filtered.groupby("user_id")["session_id"].nunique().sort_index()
+        )
+        keep_users = session_counts[session_counts > config.extraction.min_sessions]
+        filtered = filtered[filtered["user_id"].isin(keep_users.index)]
+
+    return filtered.reset_index(drop=True)
+
+
+# Notes: Public helper for reusing cohort filters on pre-joined dataframes.
+def filter_session_level(df: pd.DataFrame, config: EDAConfig) -> pd.DataFrame:
+    """Filter a session-level dataframe using cohort/extraction config rules."""
+
+    return _apply_extraction_filters(df, config)
+
+
+# Notes: Build the unfiltered session-level dataset for EDA exploration.
+def extract_session_level_full() -> pd.DataFrame:
+    """Build the full session-level dataset without cohort filtering."""
+
     # Notes: Load raw tables from the local data directory (source-of-truth).
     tables = load_raw_tables(["users", "sessions", "flights", "hotels"])
 
@@ -209,22 +246,29 @@ def extract_session_level(config: EDAConfig) -> pd.DataFrame:
     if hotels is not None and "trip_id" in df.columns and "trip_id" in hotels.columns:
         df = df.merge(hotels, on="trip_id", how="left")
 
-    # Coerce types BEFORE cohort filtering and schema validation.
+    # Coerce types BEFORE downstream filtering and schema validation.
     df = _coerce_types(df)
-
-    # Cohort filter on sign_up_date
-    sign_up = df["sign_up_date"]
-    start = pd.to_datetime(config.cohort.sign_up_date_start)
-    end = pd.to_datetime(config.cohort.sign_up_date_end)
-    mask = (sign_up >= start) & (sign_up <= end)
-
-    # Optional filter on minimum session_start
-    if config.extraction.session_start_min:
-        min_start = pd.to_datetime(config.extraction.session_start_min)
-        mask &= df["session_start"] >= min_start
-
-    df = df.loc[mask].reset_index(drop=True)
     df = _normalize_session_level_columns(df)
+    return df
+
+
+# Notes: Build the cohort-scoped session-level dataset for EDA.
+def extract_session_level(config: EDAConfig) -> pd.DataFrame:
+    """
+    Build the session-level dataset used in the EDA pipeline from raw files.
+
+    Parameters
+    ----------
+    config:
+        EDA configuration containing cohort boundaries and optional filters.
+
+    Returns
+    -------
+    pd.DataFrame
+        Session-level dataframe enriched with user, flight, and hotel columns.
+    """
+    df = extract_session_level_full()
+    df = _apply_extraction_filters(df, config)
     return df
 
 

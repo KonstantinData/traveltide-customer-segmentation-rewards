@@ -43,6 +43,8 @@ class ExtractionConfig:
     """
 
     session_start_min: str | None
+    min_sessions: int | None
+    min_page_clicks: int | None
 
 
 # Notes: Cleaning policies for known data anomalies.
@@ -144,7 +146,17 @@ def load_config(path: str | Path) -> EDAConfig:
         ),
         extraction=ExtractionConfig(
             # Notes: Optional constraint; can be null in YAML to disable session_start filtering.
-            session_start_min=extraction.get("session_start_min")
+            session_start_min=extraction.get("session_start_min"),
+            min_sessions=(
+                int(extraction.get("min_sessions"))
+                if extraction.get("min_sessions") is not None
+                else None
+            ),
+            min_page_clicks=(
+                int(extraction.get("min_page_clicks"))
+                if extraction.get("min_page_clicks") is not None
+                else None
+            ),
         ),
         cleaning=CleaningConfig(
             # Notes: Normalized to lowercase to ensure comparisons are stable across YAML styles.
