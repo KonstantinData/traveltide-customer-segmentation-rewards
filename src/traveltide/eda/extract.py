@@ -225,6 +225,18 @@ def extract_session_level(config: EDAConfig) -> pd.DataFrame:
     return df
 
 
+def extract_eda_tables() -> dict[str, pd.DataFrame]:
+    """Load raw Bronze tables needed for the EDA context.
+
+    Notes
+    -----
+    - Returns raw tables with no filtering so they can be cleaned/transformed separately.
+    - Includes flights/hotels alongside sessions/users for silver/gold artifact creation.
+    """
+
+    return load_bronze_tables(["users", "sessions", "flights", "hotels"])
+
+
 def extract_table_row_counts() -> dict[str, int]:
     """
     Return raw row counts for core Bronze tables (unfiltered).
