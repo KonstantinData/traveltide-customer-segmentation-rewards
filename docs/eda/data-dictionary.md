@@ -113,12 +113,12 @@ These fields are attached using a **first non-null** rule within each `user_id`:
 
 ---
 
-## Silver layer (cleaned datasets)
+## Cleaned datasets
 
-These datasets are **cleaned, typed, and validity-checked**. They are the Silver layer outputs
-used as the baseline for downstream transformations and Gold-level outputs.
+These datasets are **cleaned, typed, and validity-checked**. They are the cleaned outputs
+used as the baseline for downstream transformations and modeling outputs.
 
-**Location:** `artifacts/eda/<timestamp>/data/silver/`
+**Location:** `artifacts/eda/<timestamp>/data/cleaned/`
 
 ### `sessions_cleaned.parquet`
 
@@ -142,32 +142,32 @@ used as the baseline for downstream transformations and Gold-level outputs.
 
 ---
 
-## Gold layer (transformed datasets)
+## Transformed datasets
 
-These datasets are **transformed** for consumption-ready analytics, aligned with Silver grain
+These datasets are **transformed** for consumption-ready analytics, aligned with cleaned grain
 and nomenclature but enriched for downstream modeling and reporting.
 
-**Location:** `artifacts/eda/<timestamp>/data/gold/`
+**Location:** `artifacts/eda/<timestamp>/data/transformed/`
 
 ### `sessions_transformed.parquet`
 
 - **Grain:** 1 row per `session_id`
-- **Description:** Transformed sessions dataset derived from Silver sessions.
+- **Description:** Transformed sessions dataset derived from cleaned sessions.
 
 ### `users_transformed.parquet`
 
 - **Grain:** 1 row per `user_id`
-- **Description:** Transformed users dataset derived from Silver users.
+- **Description:** Transformed users dataset derived from cleaned users.
 
 ### `flights_transformed.parquet`
 
 - **Grain:** 1 row per `trip_id` (nullable for non-flight sessions)
-- **Description:** Transformed flights dataset derived from Silver flights.
+- **Description:** Transformed flights dataset derived from cleaned flights.
 
 ### `hotels_transformed.parquet`
 
 - **Grain:** 1 row per `trip_id` (nullable for non-hotel sessions)
-- **Description:** Transformed hotels dataset derived from Silver hotels.
+- **Description:** Transformed hotels dataset derived from cleaned hotels.
 
 ---
 

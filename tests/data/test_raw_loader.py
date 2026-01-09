@@ -1,4 +1,4 @@
-"""Unit tests for local Bronze data loading utilities."""
+"""Unit tests for local raw data loading utilities."""
 
 from __future__ import annotations
 
@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pandas as pd
 
-from traveltide.data.bronze_loader import (
-    BronzeConfig,
-    load_table_from_bronze,
+from traveltide.data.raw_loader import (
+    RawConfig,
+    load_table_from_raw,
 )
 
 
@@ -30,43 +30,43 @@ def _write_parquet(path: Path) -> pd.DataFrame:
     return df
 
 
-def test_load_table_from_bronze_csv(tmp_path: Path) -> None:
-    """Load a CSV Bronze table from a custom base path."""
+def test_load_table_from_raw_csv(tmp_path: Path) -> None:
+    """Load a CSV raw table from a custom base path."""
 
     # Notes: Use a per-test directory to keep filesystem effects isolated.
-    base_path = tmp_path / "bronze"
+    base_path = tmp_path / "raw"
     base_path.mkdir()
     expected = _write_csv(base_path / "sessions.csv")
-    config = BronzeConfig(base_path=base_path)
+    config = RawConfig(base_path=base_path)
 
-    result = load_table_from_bronze("sessions", ext="csv", config=config)
+    result = load_table_from_raw("sessions", ext="csv", config=config)
 
     pd.testing.assert_frame_equal(result, expected)
 
 
-def test_load_table_from_bronze_parquet(tmp_path: Path) -> None:
-    """Load a Parquet Bronze table from a custom base path."""
+def test_load_table_from_raw_parquet(tmp_path: Path) -> None:
+    """Load a Parquet raw table from a custom base path."""
 
     # Notes: Confirm parquet loading respects the same base path contract.
-    base_path = tmp_path / "bronze"
+    base_path = tmp_path / "raw"
     base_path.mkdir()
     expected = _write_parquet(base_path / "sessions.parquet")
-    config = BronzeConfig(base_path=base_path)
+    config = RawConfig(base_path=base_path)
 
-    result = load_table_from_bronze("sessions", ext="parquet", config=config)
+    result = load_table_from_raw("sessions", ext="parquet", config=config)
 
     pd.testing.assert_frame_equal(result, expected)
 
 
-def test_load_table_from_bronze_full_suffix(tmp_path: Path) -> None:
+def test_load_table_from_raw_full_suffix(tmp_path: Path) -> None:
     """Fallback to the `_full` naming convention when base names are absent."""
 
-    # Notes: Mirrors the repository's bronze filenames (e.g., users_full.csv).
-    base_path = tmp_path / "bronze"
+    # Notes: Mirrors the repository's raw filenames (e.g., users_full.csv).
+    base_path = tmp_path / "raw"
     base_path.mkdir()
     expected = _write_csv(base_path / "users_full.csv")
-    config = BronzeConfig(base_path=base_path)
+    config = RawConfig(base_path=base_path)
 
-    result = load_table_from_bronze("users", ext="csv", config=config)
+    result = load_table_from_raw("users", ext="csv", config=config)
 
     pd.testing.assert_frame_equal(result, expected)

@@ -10,12 +10,12 @@ source fields that populate them.
 
 ## Artifact: `customer_features.parquet`
 
-**Location:** `data/features/customer_features.parquet` (Gold layer)
+**Location:** `artifacts/outputs/customer_features.parquet`
 **Grain:** **1 row per `user_id`**
 **Primary source:** `artifacts/eda/<timestamp>/data/sessions_clean.parquet`
 
 > Note: `sessions_clean.parquet` is the cleaned, cohort-scoped session table produced in Step 1 EDA
-> (see `docs/eda/data-dictionary.md` for the Silver-layer contract).
+> (see `docs/eda/data-dictionary.md` for the cleaned dataset contract).
 
 ---
 
@@ -57,7 +57,7 @@ Boolean flags are encoded as `0/1` for aggregation.
 
 ## Feature engineering notes
 
-- Features are computed from the **cohort-scoped** Silver table (`sessions_clean.parquet`).
+- Features are computed from the **cohort-scoped** cleaned table (`sessions_clean.parquet`).
 - Any additional transformations (e.g., scaling, log transforms) should be applied **after** this
   feature table is produced and should be documented in the segmentation workflow.
 - Null-safe means are computed using available values only; if no values exist for a user, the
