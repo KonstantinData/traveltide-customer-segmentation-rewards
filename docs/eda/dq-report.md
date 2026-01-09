@@ -8,6 +8,11 @@ by the Step-1 EDA pipeline.
 
 All counts refer to **cohort-scoped session-level data** extracted by the EDA run.
 
+The same EDA run also writes Silver (cleaned) and Gold (transformed) datasets to:
+
+- `artifacts/eda/<timestamp>/data/silver/*.parquet` (cleaned)
+- `artifacts/eda/<timestamp>/data/gold/*.parquet` (transformed)
+
 ---
 
 ## Structure
