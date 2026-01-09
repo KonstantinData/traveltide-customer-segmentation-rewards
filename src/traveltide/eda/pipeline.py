@@ -13,6 +13,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+import pandas as pd
 import yaml
 
 from traveltide.contracts.eda import (
@@ -20,6 +21,7 @@ from traveltide.contracts.eda import (
     SESSION_RAW_SCHEMA,
     USER_AGGREGATE_SCHEMA,
 )
+from traveltide.data import load_bronze_tables
 
 from .config import load_config
 from .extract import extract_session_level, extract_table_row_counts
@@ -48,6 +50,94 @@ def _timestamp_slug() -> str:
     return datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%SZ")
 
 
+def _coerce_columns(
+    df: pd.DataFrame,
+    *,
+    datetime_cols: tuple[str, ...] = (),
+    numeric_cols: tuple[str, ...] = (),
+) -> pd.DataFrame:
+    out = df.copy()
+    for col in datetime_cols:
+        if col in out.columns:
+            out[col] = pd.to_datetime(out[col], errors="coerce", utc=True)
+    for col in numeric_cols:
+        if col in out.columns:
+            out[col] = pd.to_numeric(out[col], errors="coerce")
+    return out
+
+
+def _build_silver_tables() -> dict[str, pd.DataFrame]:
+    tables = load_bronze_tables(["users", "sessions", "flights", "hotels"])
+    sessions = _coerce_columns(
+        tables["sessions"],
+        datetime_cols=("session_start", "session_end"),
+        numeric_cols=("user_id", "page_clicks"),
+    )
+    users = _coerce_columns(
+        tables["users"],
+        datetime_cols=("birthdate", "sign_up_date"),
+        numeric_cols=("user_id",),
+    )
+    flights = _coerce_columns(
+        tables["flights"],
+        datetime_cols=("departure_time", "return_time"),
+        numeric_cols=("seats", "checked_bags", "base_fare_usd"),
+    )
+    hotels = _coerce_columns(
+        tables["hotels"],
+        datetime_cols=("check_in_time", "check_out_time"),
+        numeric_cols=("nights", "rooms", "hotel_per_room_usd"),
+    )
+    return {
+        "sessions": sessions,
+        "users": users,
+        "flights": flights,
+        "hotels": hotels,
+    }
+
+
+def _transform_sessions(df: pd.DataFrame) -> pd.DataFrame:
+    out = df.copy()
+    if "session_start" in out.columns and "session_end" in out.columns:
+        out["session_duration_sec"] = (
+            out["session_end"] - out["session_start"]
+        ).dt.total_seconds()
+    return out
+
+
+def _transform_users(df: pd.DataFrame) -> pd.DataFrame:
+    out = df.copy()
+    if "birthdate" in out.columns:
+        today = datetime.utcnow().date()
+        out["age_years"] = (
+            pd.to_datetime(today) - pd.to_datetime(out["birthdate"])
+        ).dt.days / 365.25
+    if "sign_up_date" in out.columns:
+        today = datetime.utcnow().date()
+        out["tenure_days"] = (
+            pd.to_datetime(today) - pd.to_datetime(out["sign_up_date"])
+        ).dt.days
+    return out
+
+
+def _transform_flights(df: pd.DataFrame) -> pd.DataFrame:
+    out = df.copy()
+    if "departure_time" in out.columns and "return_time" in out.columns:
+        out["trip_duration_hours"] = (
+            out["return_time"] - out["departure_time"]
+        ).dt.total_seconds() / 3600.0
+    return out
+
+
+def _transform_hotels(df: pd.DataFrame) -> pd.DataFrame:
+    out = df.copy()
+    if "check_in_time" in out.columns and "check_out_time" in out.columns:
+        out["stay_duration_nights"] = (
+            out["check_out_time"] - out["check_in_time"]
+        ).dt.total_seconds() / 86400.0
+    return out
+
+
 def run_eda(*, config_path: str, outdir: str) -> Path:
     """Run the Step 1 EDA pipeline and write a versioned artifact directory.
 
@@ -68,6 +158,10 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
     # Notes: Keep data artifacts separate from report/metadata within the run directory.
     data_dir = run_dir / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
+    silver_dir = data_dir / "silver"
+    gold_dir = data_dir / "gold"
+    silver_dir.mkdir(parents=True, exist_ok=True)
+    gold_dir.mkdir(parents=True, exist_ok=True)
 
     # 1) Extract
     # Notes: Capture raw DB scale and then cohort-filtered extraction dataset.
@@ -134,6 +228,34 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
     user_path = data_dir / "users_agg.parquet"
     df_clean.to_parquet(session_path, index=False)
     user.to_parquet(user_path, index=False)
+
+    # 4a) Silver + Gold layer artifacts
+    silver_tables = _build_silver_tables()
+    silver_tables["flights"].to_parquet(
+        silver_dir / "flights_cleaned.parquet", index=False
+    )
+    silver_tables["hotels"].to_parquet(
+        silver_dir / "hotels_cleaned.parquet", index=False
+    )
+    silver_tables["sessions"].to_parquet(
+        silver_dir / "sessions_cleaned.parquet", index=False
+    )
+    silver_tables["users"].to_parquet(
+        silver_dir / "users_cleaned.parquet", index=False
+    )
+
+    _transform_flights(silver_tables["flights"]).to_parquet(
+        gold_dir / "flights_transformed.parquet", index=False
+    )
+    _transform_hotels(silver_tables["hotels"]).to_parquet(
+        gold_dir / "hotels_transformed.parquet", index=False
+    )
+    _transform_sessions(silver_tables["sessions"]).to_parquet(
+        gold_dir / "sessions_transformed.parquet", index=False
+    )
+    _transform_users(silver_tables["users"]).to_parquet(
+        gold_dir / "users_transformed.parquet", index=False
+    )
 
     # 5) Metadata
     # Notes: Persist config + row counts + outlier impact as audit trail.
