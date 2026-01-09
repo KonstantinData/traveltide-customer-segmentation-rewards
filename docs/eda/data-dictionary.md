@@ -111,6 +111,66 @@ These fields are attached using a **first non-null** rule within each `user_id`:
 
 ---
 
+---
+
+## Silver layer (cleaned datasets)
+
+These datasets are **cleaned, typed, and validity-checked**. They are the Silver layer outputs
+used as the baseline for downstream transformations and Gold-level outputs.
+
+**Location:** `artifacts/eda/<timestamp>/data/silver/`
+
+### `sessions_cleaned.parquet`
+
+- **Grain:** 1 row per `session_id`
+- **Description:** Cleaned sessions data with standardized types and core session fields.
+
+### `users_cleaned.parquet`
+
+- **Grain:** 1 row per `user_id`
+- **Description:** Cleaned user dimension data with standardized demographic attributes.
+
+### `flights_cleaned.parquet`
+
+- **Grain:** 1 row per `trip_id` (nullable for non-flight sessions)
+- **Description:** Cleaned flight dimension data with standardized fares, airports, and timestamps.
+
+### `hotels_cleaned.parquet`
+
+- **Grain:** 1 row per `trip_id` (nullable for non-hotel sessions)
+- **Description:** Cleaned hotel dimension data with standardized pricing and stay details.
+
+---
+
+## Gold layer (transformed datasets)
+
+These datasets are **transformed** for consumption-ready analytics, aligned with Silver grain
+and nomenclature but enriched for downstream modeling and reporting.
+
+**Location:** `artifacts/eda/<timestamp>/data/gold/`
+
+### `sessions_transformed.parquet`
+
+- **Grain:** 1 row per `session_id`
+- **Description:** Transformed sessions dataset derived from Silver sessions.
+
+### `users_transformed.parquet`
+
+- **Grain:** 1 row per `user_id`
+- **Description:** Transformed users dataset derived from Silver users.
+
+### `flights_transformed.parquet`
+
+- **Grain:** 1 row per `trip_id` (nullable for non-flight sessions)
+- **Description:** Transformed flights dataset derived from Silver flights.
+
+### `hotels_transformed.parquet`
+
+- **Grain:** 1 row per `trip_id` (nullable for non-hotel sessions)
+- **Description:** Transformed hotels dataset derived from Silver hotels.
+
+---
+
 ## Associated run files (context)
 
 - `eda_report.html`: Human-readable EDA report (shapes, missingness, charts, previews)
