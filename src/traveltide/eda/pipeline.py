@@ -20,8 +20,13 @@ from traveltide.contracts.eda import (
     SESSION_RAW_SCHEMA,
     USER_AGGREGATE_SCHEMA,
 )
+
 from .config import load_config
-from .extract import extract_eda_tables, extract_session_level, extract_table_row_counts
+from .extract import (
+    extract_eda_tables,
+    extract_session_level,
+    extract_table_row_counts,
+)
 from .preprocess import (
     add_derived_columns,
     aggregate_user_level,
