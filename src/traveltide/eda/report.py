@@ -14,6 +14,9 @@ import io
 from pathlib import Path
 from typing import Any, Iterable
 
+import matplotlib
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader, select_autoescape
