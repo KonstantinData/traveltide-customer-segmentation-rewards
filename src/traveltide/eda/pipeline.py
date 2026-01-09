@@ -23,8 +23,8 @@ from traveltide.contracts.eda import (
     USER_AGGREGATE_SCHEMA,
 )
 
-from .config import load_config
 from .clustering_explore import run_clustering_exploration
+from .config import load_config
 from .extract import (
     extract_eda_tables,
     extract_session_level,
