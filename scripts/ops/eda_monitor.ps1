@@ -1,3 +1,7 @@
+# Purpose: Monitor EDA artifact generation and surface milestone status in the console.
+# Inputs: OutDir (required), RefreshSeconds (poll interval), AutoCloseSeconds (countdown), KeepOpen (switch).
+# Outputs (path + format): None; prints status to the console and exits with a process status code.
+# How to run: powershell -File scripts/ops/eda_monitor.ps1 -OutDir artifacts/eda [-RefreshSeconds 2] [-AutoCloseSeconds 5] [-KeepOpen]
 # Description: Operational helper to monitor EDA artifact generation (non-EDA utility).
 param(
   [Parameter(Mandatory = $true)][string]$OutDir,
@@ -8,6 +12,7 @@ param(
 
 $ErrorActionPreference = "SilentlyContinue"
 
+# Notes: Default refresh/auto-close values are tuned for near-real-time feedback without spamming the console.
 # Notes: Resolve the most recent EDA run folder in the output directory.
 function Get-LatestRunDir {
   if (-not (Test-Path $OutDir)) { return $null }
@@ -63,6 +68,7 @@ while ($true) {
   Write-Host ("Path: " + $latest.FullName)
   Write-Host ""
 
+  # Notes: Show the 30 most recently updated files as a lightweight progress proxy.
   Get-ChildItem -Recurse -Path $latest.FullName |
     Sort-Object LastWriteTime -Descending |
     Select-Object -First 30 FullName, Length, LastWriteTime |
@@ -101,6 +107,7 @@ while ($true) {
   Write-Host ("- metadata.json:          " + ($(if ($metaJson) { "OK" } else { "..." })))
   Write-Host ("- eda_report.html:        " + ($(if ($report)   { "OK" } else { "..." })))
 
+  # Notes: Treat all expected artifacts as a completion threshold before auto-close.
   # Auto-finish: if all milestones are present, show completion message and exit.
   if ($sessions -and $users -and $cleanedSessions -and $cleanedUsers -and $cleanedFlights -and $cleanedHotels `
       -and $transformedSessions -and $transformedUsers -and $transformedFlights -and $transformedHotels `
