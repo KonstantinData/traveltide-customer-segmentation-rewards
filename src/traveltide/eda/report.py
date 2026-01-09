@@ -1,3 +1,4 @@
+# Description: Report rendering utilities for Step 1 EDA artifacts.
 """Report rendering utilities for the Step 1 (EDA) artifact (TT-012).
 
 Notes:
@@ -18,6 +19,7 @@ import pandas as pd
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 
+# Notes: Serialize the current Matplotlib figure for HTML embedding.
 def _fig_to_base64() -> str:
     # Notes: Serializes the current matplotlib figure to a base64 PNG for HTML embedding.
     buf = io.BytesIO()
@@ -27,6 +29,7 @@ def _fig_to_base64() -> str:
     return base64.b64encode(buf.read()).decode("ascii")
 
 
+# Notes: Build a compact, review-friendly chart set for the report.
 def build_basic_charts(df: pd.DataFrame) -> dict[str, str]:
     """Build a small set of universally useful EDA charts.
 
@@ -80,6 +83,7 @@ def dataframe_preview_html(df: pd.DataFrame, n: int) -> str:
     return df.head(n).to_html(index=False, escape=True)
 
 
+# Notes: Summarize column-level missingness for report tables.
 def missingness_table(df: pd.DataFrame) -> pd.DataFrame:
     """Return missingness summary sorted by missing % descending.
 
@@ -101,6 +105,7 @@ def missingness_table(df: pd.DataFrame) -> pd.DataFrame:
     return out.reset_index(names=["column"])
 
 
+# Notes: Provide lightweight dataset shape and numeric range metadata.
 def data_overview(df: pd.DataFrame) -> dict[str, Any]:
     """Return a compact data overview for reporting."""
 
@@ -118,6 +123,7 @@ def data_overview(df: pd.DataFrame) -> dict[str, Any]:
     }
 
 
+# Notes: Calculate descriptive statistics for numeric columns.
 def descriptive_stats_table(df: pd.DataFrame) -> list[dict[str, Any]]:
     """Return descriptive statistics for numeric columns."""
 
@@ -132,6 +138,7 @@ def descriptive_stats_table(df: pd.DataFrame) -> list[dict[str, Any]]:
     return stats.to_dict(orient="records")
 
 
+# Notes: Find the strongest numeric correlations for hypothesis framing.
 def correlation_pairs(df: pd.DataFrame, *, top_n: int = 10) -> list[dict[str, Any]]:
     """Return top absolute correlation pairs for numeric columns."""
 
@@ -151,6 +158,7 @@ def correlation_pairs(df: pd.DataFrame, *, top_n: int = 10) -> list[dict[str, An
     return pairs[:top_n]
 
 
+# Notes: Derive concise insights based on missingness, outliers, and correlations.
 def derive_key_insights(
     missingness: pd.DataFrame,
     outlier_rules: dict[str, Any],
@@ -182,6 +190,7 @@ def derive_key_insights(
     return insights
 
 
+# Notes: Generate hypothesis prompts from correlation pairs.
 def derive_hypotheses(
     correlations: Iterable[dict[str, Any]], *, top_n: int = 3
 ) -> list[str]:
@@ -196,6 +205,7 @@ def derive_hypotheses(
     return hypotheses
 
 
+# Notes: Render the full HTML report from templates and EDA artifacts.
 def render_html_report(
     *,
     out_path: Path,

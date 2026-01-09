@@ -1,3 +1,4 @@
+# Description: EDA workflow definition loader and helpers.
 """EDA workflow definition loader and helpers."""
 
 from __future__ import annotations
@@ -9,6 +10,7 @@ from typing import Any
 import yaml
 
 
+# Notes: Describe a single EDA workflow step for reporting.
 @dataclass(frozen=True)
 class EDAWorkflowStep:
     """Single workflow step definition."""
@@ -19,6 +21,7 @@ class EDAWorkflowStep:
     note: str
 
 
+# Notes: Represent the full EDA workflow configuration.
 @dataclass(frozen=True)
 class EDAWorkflow:
     """EDA workflow definition."""
@@ -28,6 +31,7 @@ class EDAWorkflow:
     steps: tuple[EDAWorkflowStep, ...]
 
 
+# Notes: Load and validate the EDA workflow definition from YAML.
 def load_workflow(path: str | Path) -> EDAWorkflow:
     """Load the EDA workflow definition from eda.yml."""
 
@@ -47,6 +51,7 @@ def load_workflow(path: str | Path) -> EDAWorkflow:
     )
 
 
+# Notes: Convert workflow objects to report-friendly dicts.
 def workflow_to_dict(workflow: EDAWorkflow) -> dict[str, Any]:
     """Serialize workflow to a dict suitable for metadata/report output."""
 
@@ -57,6 +62,7 @@ def workflow_to_dict(workflow: EDAWorkflow) -> dict[str, Any]:
     }
 
 
+# Notes: Attach outputs and completion status to workflow steps.
 def annotate_steps(
     workflow: EDAWorkflow, outputs: dict[str, list[str] | dict[str, Any]]
 ) -> list[dict[str, Any]]:

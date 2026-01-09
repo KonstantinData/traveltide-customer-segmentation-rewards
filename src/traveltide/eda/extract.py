@@ -1,3 +1,4 @@
+# Description: Extract session-level EDA datasets from Bronze tables.
 """
 traveltide.eda.extract
 
@@ -116,6 +117,7 @@ _INT_COLS: Final[list[str]] = [
 ]
 
 
+# Notes: Normalize session-level columns and order for schema stability.
 def _normalize_session_level_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Ensure we return a stable set/order of columns."""
 
@@ -131,6 +133,7 @@ def _normalize_session_level_columns(df: pd.DataFrame) -> pd.DataFrame:
     return out.loc[:, _SESSION_LEVEL_COLUMNS]
 
 
+# Notes: Coerce raw Bronze column types to predictable dtypes.
 def _coerce_types(df: pd.DataFrame) -> pd.DataFrame:
     """Coerce Bronze dtypes into stable, schema-friendly types."""
 
@@ -174,6 +177,7 @@ def _coerce_types(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+# Notes: Build the cohort-scoped session-level dataset for EDA.
 def extract_session_level(config: EDAConfig) -> pd.DataFrame:
     """
     Build the session-level dataset used in the EDA pipeline from Bronze files.
@@ -225,6 +229,7 @@ def extract_session_level(config: EDAConfig) -> pd.DataFrame:
     return df
 
 
+# Notes: Load raw Bronze tables for EDA cleaning/transformation.
 def extract_eda_tables() -> dict[str, pd.DataFrame]:
     """Load raw Bronze tables needed for the EDA context.
 
@@ -237,6 +242,7 @@ def extract_eda_tables() -> dict[str, pd.DataFrame]:
     return load_bronze_tables(["users", "sessions", "flights", "hotels"])
 
 
+# Notes: Capture raw row counts for audit metadata.
 def extract_table_row_counts() -> dict[str, int]:
     """
     Return raw row counts for core Bronze tables (unfiltered).
