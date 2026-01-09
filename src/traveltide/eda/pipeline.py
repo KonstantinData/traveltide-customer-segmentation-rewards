@@ -240,9 +240,7 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
     silver_tables["sessions"].to_parquet(
         silver_dir / "sessions_cleaned.parquet", index=False
     )
-    silver_tables["users"].to_parquet(
-        silver_dir / "users_cleaned.parquet", index=False
-    )
+    silver_tables["users"].to_parquet(silver_dir / "users_cleaned.parquet", index=False)
 
     _transform_flights(silver_tables["flights"]).to_parquet(
         gold_dir / "flights_transformed.parquet", index=False
