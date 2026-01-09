@@ -561,6 +561,7 @@ def build_metadata(
     config: EDAConfig,
     row_counts: dict[str, int],
     n_rows_raw: int,
+    n_rows_raw_full: int | None = None,
     n_rows_after_validity: int,
     n_rows_clean: int,
     validity_rules: dict[str, RuleImpact],
@@ -575,14 +576,18 @@ def build_metadata(
     - This enables reviewers (and future you) to reproduce the artifact precisely.
     """
 
+    rows = {
+        "session_level_raw": n_rows_raw,
+        "session_level_after_validity": n_rows_after_validity,
+        "session_level_clean": n_rows_clean,
+    }
+    if n_rows_raw_full is not None:
+        rows["session_level_raw_full"] = n_rows_raw_full
+
     return {
         "config": asdict(config),
         "source_table_row_counts": row_counts,
-        "rows": {
-            "session_level_raw": n_rows_raw,
-            "session_level_after_validity": n_rows_after_validity,
-            "session_level_clean": n_rows_clean,
-        },
+        "rows": rows,
         "validity_rules": {
             name: asdict(impact) for name, impact in validity_rules.items()
         },

@@ -27,8 +27,9 @@ from .clustering_explore import run_clustering_exploration
 from .config import load_config
 from .extract import (
     extract_eda_tables,
-    extract_session_level,
+    extract_session_level_full,
     extract_table_row_counts,
+    filter_session_level,
 )
 from .preprocess import (
     add_derived_columns,
@@ -93,46 +94,67 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
     transformed_dir.mkdir(parents=True, exist_ok=True)
 
     # 1) Extract
-    # Notes: Capture raw DB scale and then cohort-filtered extraction dataset.
+    # Notes: Capture raw DB scale and the unfiltered extraction dataset for exploration.
     row_counts = extract_table_row_counts()
-    raw = extract_session_level(config)
+    raw_full = extract_session_level_full()
+    raw_full = SESSION_RAW_SCHEMA.validate(raw_full, lazy=True)
+
+    # Notes: Apply cohort/extraction filters only after exploration is assembled.
+    raw = filter_session_level(raw_full, config)
     raw = SESSION_RAW_SCHEMA.validate(raw, lazy=True)
 
-    # 2) Preprocess
+    # 2) Preprocess (full dataset for exploration/reporting)
     # Notes: Derive consistent columns, then apply anomaly fixes and outlier removal.
-    df = add_derived_columns(raw)
+    full_df = add_derived_columns(raw_full)
     (
-        df_valid,
-        validity_rules,
-        invalid_hotel_nights_meta,
-        validation_checks,
-    ) = apply_validity_rules(df, config)
-    df_clean, outlier_rules = remove_outliers(df_valid, config)
-    df_clean = SESSION_CLEAN_SCHEMA.validate(df_clean, lazy=True)
+        full_df_valid,
+        full_validity_rules,
+        full_invalid_hotel_nights_meta,
+        full_validation_checks,
+    ) = apply_validity_rules(full_df, config)
+    full_df_clean, full_outlier_rules = remove_outliers(full_df_valid, config)
+    full_df_clean = SESSION_CLEAN_SCHEMA.validate(full_df_clean, lazy=True)
 
-    # 3) Aggregate
+    # 2b) Preprocess (cohort-scoped dataset for downstream artifacts)
+    cohort_df = add_derived_columns(raw)
+    (
+        cohort_df_valid,
+        cohort_validity_rules,
+        cohort_invalid_hotel_nights_meta,
+        cohort_validation_checks,
+    ) = apply_validity_rules(cohort_df, config)
+    cohort_df_clean, cohort_outlier_rules = remove_outliers(cohort_df_valid, config)
+    cohort_df_clean = SESSION_CLEAN_SCHEMA.validate(cohort_df_clean, lazy=True)
+
+    # 3) Aggregate (full dataset for exploration)
     # Notes: Create a first customer-level table; deeper feature engineering comes later.
-    user = aggregate_user_level(df_clean)
+    user = aggregate_user_level(full_df_clean)
     user = USER_AGGREGATE_SCHEMA.validate(user, lazy=True)
 
+    # 3b) Aggregate (cohort-scoped dataset for artifacts)
+    cohort_user = aggregate_user_level(cohort_df_clean)
+    cohort_user = USER_AGGREGATE_SCHEMA.validate(cohort_user, lazy=True)
+
     # 3a) EDA summaries for workflow steps and reporting
-    overview = data_overview(raw)
-    session_missing = missingness_table(df_clean)
-    correlations = correlation_pairs(df_clean)
-    session_stats = descriptive_stats_table(df_clean)
+    overview = data_overview(raw_full)
+    session_missing = missingness_table(full_df_clean)
+    correlations = correlation_pairs(full_df_clean)
+    session_stats = descriptive_stats_table(full_df_clean)
     user_stats = descriptive_stats_table(user)
-    key_insights = derive_key_insights(session_missing, outlier_rules, correlations)
+    key_insights = derive_key_insights(
+        session_missing, full_outlier_rules, correlations
+    )
     hypotheses = derive_hypotheses(correlations)
-    charts = build_basic_charts(df_clean)
+    charts = build_basic_charts(full_df_clean)
     validation_summary = build_validation_summary(
-        {"validation_checks": validation_checks}
+        {"validation_checks": full_validation_checks}
     )
     transform_experiments = run_transform_experiments(
-        session_df=df_clean,
+        session_df=full_df_clean,
         out_dir=run_dir,
     )
     clustering_exploration = run_clustering_exploration(
-        session_df=df_clean,
+        session_df=full_df_clean,
         user_df=user,
         out_dir=run_dir,
     )
@@ -176,8 +198,8 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
     # Notes: Parquet is efficient and preserves dtypes; artifacts are used by later steps.
     session_path = data_dir / "sessions_clean.parquet"
     user_path = data_dir / "users_agg.parquet"
-    df_clean.to_parquet(session_path, index=False)
-    user.to_parquet(user_path, index=False)
+    cohort_df_clean.to_parquet(session_path, index=False)
+    cohort_user.to_parquet(user_path, index=False)
 
     # 4a) Cleaned + transformed artifacts
     raw_tables = extract_eda_tables()
@@ -219,12 +241,13 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
         config=config,
         row_counts=row_counts,
         n_rows_raw=int(len(raw)),
-        n_rows_after_validity=int(len(df_valid)),
-        n_rows_clean=int(len(df_clean)),
-        validity_rules=validity_rules,
-        outlier_rules=outlier_rules,
-        invalid_hotel_nights_meta=invalid_hotel_nights_meta,
-        validation_checks=validation_checks,
+        n_rows_raw_full=int(len(raw_full)),
+        n_rows_after_validity=int(len(cohort_df_valid)),
+        n_rows_clean=int(len(cohort_df_clean)),
+        validity_rules=cohort_validity_rules,
+        outlier_rules=cohort_outlier_rules,
+        invalid_hotel_nights_meta=cohort_invalid_hotel_nights_meta,
+        validation_checks=cohort_validation_checks,
     )
     meta["workflow"] = {
         "definition": workflow_to_dict(workflow),
@@ -249,7 +272,7 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
         out_path=run_dir / "eda_report.html",
         title=config.report.title,
         metadata=meta,
-        session_df=df_clean,
+        session_df=full_df_clean,
         user_df=user,
         charts=charts,
         sample_rows=config.report.include_sample_rows,

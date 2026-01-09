@@ -11,7 +11,11 @@ cohort:
 extraction:
   # Notes: Limit extraction window to reduce runtime while keeping EDA representative.
   # Set to null to disable session_start filtering.
-  session_start_min: null
+  session_start_min: "2023-01-04"
+  # Notes: Keep users with more than this many sessions in the filtered window.
+  min_sessions: 7
+  # Notes: Keep only sessions with at least this many page clicks.
+  min_page_clicks: 2
 
 cleaning:
   # Notes: Hotels table can contain invalid nights (0 or negative). This policy controls handling.

@@ -26,7 +26,9 @@ def _make_config() -> EDAConfig:
             sign_up_date_start="2022-01-01",
             sign_up_date_end="2022-12-31",
         ),
-        extraction=ExtractionConfig(session_start_min=None),
+        extraction=ExtractionConfig(
+            session_start_min=None, min_sessions=None, min_page_clicks=None
+        ),
         cleaning=CleaningConfig(invalid_hotel_nights_policy="recompute"),
         outliers=OutliersConfig(
             method="iqr",
