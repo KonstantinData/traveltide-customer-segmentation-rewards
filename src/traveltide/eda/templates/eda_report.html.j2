@@ -199,6 +199,88 @@
       {% endfor %}
     </div>
 
+    <h2>Exploratory transformations</h2>
+    <p class="muted">
+      Exploratory scaling and feature derivations only; downstream artifacts remain unchanged.
+      Machine-readable output: <code>{{ transform_experiments.artifact_path }}</code>
+    </p>
+
+    <h3>Scaling summaries</h3>
+    {% if transform_experiments.scaling_summary %}
+      <table>
+        <thead>
+          <tr>
+            <th>column</th>
+            <th>before mean</th>
+            <th>before std</th>
+            <th>before skew</th>
+            <th>standard mean</th>
+            <th>standard std</th>
+            <th>standard skew</th>
+            <th>min-max mean</th>
+            <th>min-max std</th>
+            <th>min-max skew</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in transform_experiments.scaling_summary %}
+            <tr>
+              <td>{{ r.column }}</td>
+              <td>{{ r.before.mean }}</td>
+              <td>{{ r.before.std }}</td>
+              <td>{{ r.before.skew }}</td>
+              <td>{{ r.standard_scaled.mean }}</td>
+              <td>{{ r.standard_scaled.std }}</td>
+              <td>{{ r.standard_scaled.skew }}</td>
+              <td>{{ r.minmax_scaled.mean }}</td>
+              <td>{{ r.minmax_scaled.std }}</td>
+              <td>{{ r.minmax_scaled.skew }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">No scaling summaries available for this run.</p>
+    {% endif %}
+
+    <h3>Candidate feature derivations</h3>
+    {% if transform_experiments.feature_derivations %}
+      <table>
+        <thead>
+          <tr>
+            <th>feature</th>
+            <th>description</th>
+            <th>skew before</th>
+            <th>skew after</th>
+            <th>delta skew</th>
+            <th>top correlations</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in transform_experiments.feature_derivations %}
+            <tr>
+              <td>{{ r.name }}</td>
+              <td>{{ r.description }}</td>
+              <td>{{ r.distribution_shift.skew_before }}</td>
+              <td>{{ r.distribution_shift.skew_after }}</td>
+              <td>{{ r.distribution_shift.delta_skew }}</td>
+              <td>
+                {% if r.top_correlations %}
+                  {% for corr in r.top_correlations %}
+                    {{ corr.column }} ({{ corr.corr }}){% if not loop.last %}, {% endif %}
+                  {% endfor %}
+                {% else %}
+                  <span class="muted">n/a</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">No feature derivations evaluated.</p>
+    {% endif %}
+
     <h2>Relationship analysis</h2>
     <table>
       <thead>
