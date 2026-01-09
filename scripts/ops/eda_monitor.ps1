@@ -1,4 +1,4 @@
-# Description: Monitor EDA artifact generation and show milestone status.
+# Description: Operational helper to monitor EDA artifact generation (non-EDA utility).
 param(
   [Parameter(Mandatory = $true)][string]$OutDir,
   [int]$RefreshSeconds = 2,
