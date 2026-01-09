@@ -13,7 +13,6 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-import pandas as pd
 import yaml
 
 from traveltide.contracts.eda import (
@@ -21,16 +20,27 @@ from traveltide.contracts.eda import (
     SESSION_RAW_SCHEMA,
     USER_AGGREGATE_SCHEMA,
 )
-from traveltide.data import load_bronze_tables
 
 from .config import load_config
-from .extract import extract_session_level, extract_table_row_counts
+from .extract import (
+    extract_eda_tables,
+    extract_session_level,
+    extract_table_row_counts,
+)
 from .preprocess import (
     add_derived_columns,
     aggregate_user_level,
     apply_validity_rules,
     build_metadata,
+    clean_flights_table,
+    clean_hotels_table,
+    clean_sessions_table,
+    clean_users_table,
     remove_outliers,
+    transform_flights_table,
+    transform_hotels_table,
+    transform_sessions_table,
+    transform_users_table,
 )
 from .report import (
     build_basic_charts,
@@ -48,94 +58,6 @@ from .workflow import annotate_steps, load_workflow, workflow_to_dict
 def _timestamp_slug() -> str:
     # Notes: Generates a stable UTC timestamp folder name to version artifacts deterministically.
     return datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%SZ")
-
-
-def _coerce_columns(
-    df: pd.DataFrame,
-    *,
-    datetime_cols: tuple[str, ...] = (),
-    numeric_cols: tuple[str, ...] = (),
-) -> pd.DataFrame:
-    out = df.copy()
-    for col in datetime_cols:
-        if col in out.columns:
-            out[col] = pd.to_datetime(out[col], errors="coerce", utc=True)
-    for col in numeric_cols:
-        if col in out.columns:
-            out[col] = pd.to_numeric(out[col], errors="coerce")
-    return out
-
-
-def _build_silver_tables() -> dict[str, pd.DataFrame]:
-    tables = load_bronze_tables(["users", "sessions", "flights", "hotels"])
-    sessions = _coerce_columns(
-        tables["sessions"],
-        datetime_cols=("session_start", "session_end"),
-        numeric_cols=("user_id", "page_clicks"),
-    )
-    users = _coerce_columns(
-        tables["users"],
-        datetime_cols=("birthdate", "sign_up_date"),
-        numeric_cols=("user_id",),
-    )
-    flights = _coerce_columns(
-        tables["flights"],
-        datetime_cols=("departure_time", "return_time"),
-        numeric_cols=("seats", "checked_bags", "base_fare_usd"),
-    )
-    hotels = _coerce_columns(
-        tables["hotels"],
-        datetime_cols=("check_in_time", "check_out_time"),
-        numeric_cols=("nights", "rooms", "hotel_per_room_usd"),
-    )
-    return {
-        "sessions": sessions,
-        "users": users,
-        "flights": flights,
-        "hotels": hotels,
-    }
-
-
-def _transform_sessions(df: pd.DataFrame) -> pd.DataFrame:
-    out = df.copy()
-    if "session_start" in out.columns and "session_end" in out.columns:
-        out["session_duration_sec"] = (
-            out["session_end"] - out["session_start"]
-        ).dt.total_seconds()
-    return out
-
-
-def _transform_users(df: pd.DataFrame) -> pd.DataFrame:
-    out = df.copy()
-    if "birthdate" in out.columns:
-        today = datetime.utcnow().date()
-        out["age_years"] = (
-            pd.to_datetime(today) - pd.to_datetime(out["birthdate"])
-        ).dt.days / 365.25
-    if "sign_up_date" in out.columns:
-        today = datetime.utcnow().date()
-        out["tenure_days"] = (
-            pd.to_datetime(today) - pd.to_datetime(out["sign_up_date"])
-        ).dt.days
-    return out
-
-
-def _transform_flights(df: pd.DataFrame) -> pd.DataFrame:
-    out = df.copy()
-    if "departure_time" in out.columns and "return_time" in out.columns:
-        out["trip_duration_hours"] = (
-            out["return_time"] - out["departure_time"]
-        ).dt.total_seconds() / 3600.0
-    return out
-
-
-def _transform_hotels(df: pd.DataFrame) -> pd.DataFrame:
-    out = df.copy()
-    if "check_in_time" in out.columns and "check_out_time" in out.columns:
-        out["stay_duration_nights"] = (
-            out["check_out_time"] - out["check_in_time"]
-        ).dt.total_seconds() / 86400.0
-    return out
 
 
 def run_eda(*, config_path: str, outdir: str) -> Path:
@@ -230,7 +152,13 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
     user.to_parquet(user_path, index=False)
 
     # 4a) Silver + Gold layer artifacts
-    silver_tables = _build_silver_tables()
+    silver_raw = extract_eda_tables()
+    silver_tables = {
+        "sessions": clean_sessions_table(silver_raw["sessions"]),
+        "users": clean_users_table(silver_raw["users"]),
+        "flights": clean_flights_table(silver_raw["flights"]),
+        "hotels": clean_hotels_table(silver_raw["hotels"]),
+    }
     silver_tables["flights"].to_parquet(
         silver_dir / "flights_cleaned.parquet", index=False
     )
@@ -242,16 +170,16 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
     )
     silver_tables["users"].to_parquet(silver_dir / "users_cleaned.parquet", index=False)
 
-    _transform_flights(silver_tables["flights"]).to_parquet(
+    transform_flights_table(silver_tables["flights"]).to_parquet(
         gold_dir / "flights_transformed.parquet", index=False
     )
-    _transform_hotels(silver_tables["hotels"]).to_parquet(
+    transform_hotels_table(silver_tables["hotels"]).to_parquet(
         gold_dir / "hotels_transformed.parquet", index=False
     )
-    _transform_sessions(silver_tables["sessions"]).to_parquet(
+    transform_sessions_table(silver_tables["sessions"]).to_parquet(
         gold_dir / "sessions_transformed.parquet", index=False
     )
-    _transform_users(silver_tables["users"]).to_parquet(
+    transform_users_table(silver_tables["users"]).to_parquet(
         gold_dir / "users_transformed.parquet", index=False
     )
 

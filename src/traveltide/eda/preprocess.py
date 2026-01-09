@@ -20,6 +20,119 @@ from .config import EDAConfig
 from .dq_report import RuleImpact
 
 
+def coerce_columns(
+    df: pd.DataFrame,
+    *,
+    datetime_cols: tuple[str, ...] = (),
+    numeric_cols: tuple[str, ...] = (),
+) -> pd.DataFrame:
+    """Coerce datetimes and numerics for cleaned (silver) EDA tables.
+
+    Notes:
+    - "Cleaned" means the raw Bronze table is type-stable with no feature derivations.
+    - "Transformed" variants add derived features for EDA summaries (see *_transformed helpers).
+    """
+
+    out = df.copy()
+    for col in datetime_cols:
+        if col in out.columns:
+            out[col] = pd.to_datetime(out[col], errors="coerce", utc=True)
+    for col in numeric_cols:
+        if col in out.columns:
+            out[col] = pd.to_numeric(out[col], errors="coerce")
+    return out
+
+
+def clean_sessions_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Return the cleaned sessions table (type-stable, no derived features)."""
+
+    return coerce_columns(
+        df,
+        datetime_cols=("session_start", "session_end"),
+        numeric_cols=("user_id", "page_clicks"),
+    )
+
+
+def clean_users_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Return the cleaned users table (type-stable, no derived features)."""
+
+    return coerce_columns(
+        df,
+        datetime_cols=("birthdate", "sign_up_date"),
+        numeric_cols=("user_id",),
+    )
+
+
+def clean_flights_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Return the cleaned flights table (type-stable, no derived features)."""
+
+    return coerce_columns(
+        df,
+        datetime_cols=("departure_time", "return_time"),
+        numeric_cols=("seats", "checked_bags", "base_fare_usd"),
+    )
+
+
+def clean_hotels_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Return the cleaned hotels table (type-stable, no derived features)."""
+
+    return coerce_columns(
+        df,
+        datetime_cols=("check_in_time", "check_out_time"),
+        numeric_cols=("nights", "rooms", "hotel_per_room_usd"),
+    )
+
+
+def transform_sessions_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Return the transformed sessions table with EDA-ready derived features."""
+
+    out = df.copy()
+    if "session_start" in out.columns and "session_end" in out.columns:
+        out["session_duration_sec"] = (
+            out["session_end"] - out["session_start"]
+        ).dt.total_seconds()
+    return out
+
+
+def transform_users_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Return the transformed users table with EDA-ready derived features."""
+
+    out = df.copy()
+    if "birthdate" in out.columns:
+        today = datetime.utcnow().date()
+        out["age_years"] = (
+            pd.to_datetime(today) - pd.to_datetime(out["birthdate"])
+        ).dt.days / 365.25
+    if "sign_up_date" in out.columns:
+        today = datetime.utcnow().date()
+        out["tenure_days"] = (
+            pd.to_datetime(today) - pd.to_datetime(out["sign_up_date"])
+        ).dt.days
+    return out
+
+
+def transform_flights_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Return the transformed flights table with EDA-ready derived features."""
+
+    out = df.copy()
+    if "departure_time" in out.columns and "return_time" in out.columns:
+        out["trip_duration_hours"] = (
+            out["return_time"] - out["departure_time"]
+        ).dt.total_seconds() / 3600.0
+    return out
+
+
+def transform_hotels_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Return the transformed hotels table with EDA-ready derived features."""
+
+    out = df.copy()
+    if "check_in_time" in out.columns and "check_out_time" in out.columns:
+        out["stay_duration_nights"] = (
+            out["check_out_time"] - out["check_in_time"]
+        ).dt.total_seconds() / 86400.0
+    return out
+
+
 def add_derived_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Add derived, analysis-friendly columns.
 
