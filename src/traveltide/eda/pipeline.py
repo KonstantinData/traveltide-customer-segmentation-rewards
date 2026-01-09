@@ -34,9 +34,9 @@ from .report import (
     build_basic_charts,
     correlation_pairs,
     data_overview,
-    descriptive_stats_table,
     derive_hypotheses,
     derive_key_insights,
+    descriptive_stats_table,
     missingness_table,
     render_html_report,
 )
