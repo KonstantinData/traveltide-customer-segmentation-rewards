@@ -306,6 +306,7 @@ def render_html_report(
     hypotheses: list[str],
     validation_summary: list[dict[str, Any]],
     transform_experiments: dict[str, Any],
+    clustering_exploration: dict[str, Any],
 ) -> None:
     """Render the EDA report as a standalone HTML file.
 
@@ -342,6 +343,7 @@ def render_html_report(
         hypotheses=hypotheses,
         validation_summary=validation_summary,
         transform_experiments=transform_experiments,
+        clustering_exploration=clustering_exploration,
     )
 
     # Notes: Write as UTF-8 for portability; output becomes part of the artifact directory.

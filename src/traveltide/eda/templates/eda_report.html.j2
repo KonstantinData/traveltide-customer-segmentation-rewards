@@ -281,6 +281,86 @@
       <p class="muted">No feature derivations evaluated.</p>
     {% endif %}
 
+    <h2>Exploratory clustering (hypotheses only)</h2>
+    <p class="muted">
+      Clusters in this section are exploratory hypotheses and <strong>not</strong> production outputs.
+      Machine-readable output: <code>{{ clustering_exploration.artifact_path }}</code>
+    </p>
+    {% if clustering_exploration.status == "completed" %}
+      <ul>
+        <li><strong>Source table:</strong> {{ clustering_exploration.source_table }}</li>
+        <li><strong>Rows used:</strong> {{ clustering_exploration.n_rows }}{% if clustering_exploration.sampled %} (sampled) {% endif %}</li>
+        <li><strong>Feature count:</strong> {{ clustering_exploration.n_features }}</li>
+        <li><strong>Selection criteria:</strong> max missing {{ clustering_exploration.feature_criteria.max_missing_pct }},
+          min unique {{ clustering_exploration.feature_criteria.min_unique }},
+          imputation {{ clustering_exploration.feature_criteria.imputation }},
+          scaling {{ clustering_exploration.feature_criteria.scaling }}</li>
+      </ul>
+      <p class="muted">
+        Candidate features: {{ clustering_exploration.feature_columns | join(', ') }}
+      </p>
+      <ul>
+        <li><strong>K-Means metrics:</strong> <code>{{ clustering_exploration.artifacts.kmeans_metrics_csv }}</code></li>
+        <li><strong>DBSCAN metrics:</strong> <code>{{ clustering_exploration.artifacts.dbscan_metrics_csv }}</code></li>
+      </ul>
+
+      <h3>K-Means trials</h3>
+      {% if clustering_exploration.kmeans.metrics %}
+        <table>
+          <thead>
+            <tr><th>k</th><th>inertia</th><th>silhouette</th><th>label_count</th></tr>
+          </thead>
+          <tbody>
+            {% for r in clustering_exploration.kmeans.metrics %}
+              <tr>
+                <td>{{ r.k }}</td>
+                <td>{{ r.inertia }}</td>
+                <td>{{ r.silhouette }}</td>
+                <td>{{ r.label_count }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="muted">No K-Means metrics available.</p>
+      {% endif %}
+      {% if clustering_exploration.plots.kmeans %}
+        <div class="chart">
+          <div class="muted"><code>{{ clustering_exploration.plots.kmeans.path }}</code></div>
+          <img src="data:image/png;base64,{{ clustering_exploration.plots.kmeans.base64 }}" style="max-width:100%" />
+        </div>
+      {% endif %}
+
+      <h3>DBSCAN trials</h3>
+      {% if clustering_exploration.dbscan.metrics %}
+        <table>
+          <thead>
+            <tr><th>eps</th><th>min_samples</th><th>n_clusters</th><th>noise_ratio</th></tr>
+          </thead>
+          <tbody>
+            {% for r in clustering_exploration.dbscan.metrics %}
+              <tr>
+                <td>{{ r.eps }}</td>
+                <td>{{ r.min_samples }}</td>
+                <td>{{ r.n_clusters }}</td>
+                <td>{{ r.noise_ratio }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="muted">No DBSCAN metrics available.</p>
+      {% endif %}
+      {% if clustering_exploration.plots.dbscan %}
+        <div class="chart">
+          <div class="muted"><code>{{ clustering_exploration.plots.dbscan.path }}</code></div>
+          <img src="data:image/png;base64,{{ clustering_exploration.plots.dbscan.base64 }}" style="max-width:100%" />
+        </div>
+      {% endif %}
+    {% else %}
+      <p class="muted">{{ clustering_exploration.reason }}</p>
+    {% endif %}
+
     <h2>Relationship analysis</h2>
     <table>
       <thead>

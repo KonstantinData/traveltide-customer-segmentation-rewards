@@ -23,6 +23,7 @@ from traveltide.contracts.eda import (
     USER_AGGREGATE_SCHEMA,
 )
 
+from .clustering_explore import run_clustering_exploration
 from .config import load_config
 from .extract import (
     extract_eda_tables,
@@ -130,6 +131,11 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
         session_df=df_clean,
         out_dir=run_dir,
     )
+    clustering_exploration = run_clustering_exploration(
+        session_df=df_clean,
+        user_df=user,
+        out_dir=run_dir,
+    )
     workflow_steps = annotate_steps(
         workflow,
         outputs={
@@ -151,7 +157,10 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
             "distribution_analysis": [
                 f"Distribution charts: {', '.join(charts.keys()) or 'none'}."
             ],
-            "visualization": ["Visualization charts embedded in the EDA report."],
+            "visualization": [
+                "Visualization charts embedded in the EDA report.",
+                "Exploratory clustering diagnostics (hypothesis-only) included.",
+            ],
             "relationship_analysis": [
                 f"Top correlations computed: {len(correlations)} pairs."
             ],
@@ -223,6 +232,7 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
         "steps": workflow_steps,
     }
     meta["exploratory_transformations"] = transform_experiments
+    meta["clustering_exploration"] = clustering_exploration["metadata"]
     (run_dir / "metadata.yaml").write_text(
         yaml.safe_dump(meta, sort_keys=False, allow_unicode=True), encoding="utf-8"
     )
@@ -253,6 +263,7 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
         hypotheses=hypotheses,
         validation_summary=validation_summary,
         transform_experiments=transform_experiments,
+        clustering_exploration=clustering_exploration["report"],
     )
 
     latest_dir = base / "latest"
