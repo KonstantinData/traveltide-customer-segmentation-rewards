@@ -69,8 +69,18 @@ while ($true) {
     Format-Table -AutoSize
 
   $dataDir  = Join-Path $latest.FullName "data"
+  $silverDir = Join-Path $dataDir "silver"
+  $goldDir = Join-Path $dataDir "gold"
   $sessions = Test-Path (Join-Path $dataDir "sessions_clean.parquet")
   $users    = Test-Path (Join-Path $dataDir "users_agg.parquet")
+  $silverSessions = Test-Path (Join-Path $silverDir "sessions_cleaned.parquet")
+  $silverUsers    = Test-Path (Join-Path $silverDir "users_cleaned.parquet")
+  $silverFlights  = Test-Path (Join-Path $silverDir "flights_cleaned.parquet")
+  $silverHotels   = Test-Path (Join-Path $silverDir "hotels_cleaned.parquet")
+  $goldSessions = Test-Path (Join-Path $goldDir "sessions_transformed.parquet")
+  $goldUsers    = Test-Path (Join-Path $goldDir "users_transformed.parquet")
+  $goldFlights  = Test-Path (Join-Path $goldDir "flights_transformed.parquet")
+  $goldHotels   = Test-Path (Join-Path $goldDir "hotels_transformed.parquet")
   $metaYaml = Test-Path (Join-Path $latest.FullName "metadata.yaml")
   $metaJson = Test-Path (Join-Path $latest.FullName "metadata.json")
   $report   = Test-Path (Join-Path $latest.FullName "eda_report.html")
@@ -79,12 +89,22 @@ while ($true) {
   Write-Host "Milestones:"
   Write-Host ("- sessions_clean.parquet: " + ($(if ($sessions) { "OK" } else { "..." })))
   Write-Host ("- users_agg.parquet:      " + ($(if ($users)    { "OK" } else { "..." })))
+  Write-Host ("- silver/sessions_cleaned.parquet: " + ($(if ($silverSessions) { "OK" } else { "..." })))
+  Write-Host ("- silver/users_cleaned.parquet:    " + ($(if ($silverUsers)    { "OK" } else { "..." })))
+  Write-Host ("- silver/flights_cleaned.parquet:  " + ($(if ($silverFlights)  { "OK" } else { "..." })))
+  Write-Host ("- silver/hotels_cleaned.parquet:   " + ($(if ($silverHotels)   { "OK" } else { "..." })))
+  Write-Host ("- gold/sessions_transformed.parquet: " + ($(if ($goldSessions) { "OK" } else { "..." })))
+  Write-Host ("- gold/users_transformed.parquet:    " + ($(if ($goldUsers)    { "OK" } else { "..." })))
+  Write-Host ("- gold/flights_transformed.parquet:  " + ($(if ($goldFlights)  { "OK" } else { "..." })))
+  Write-Host ("- gold/hotels_transformed.parquet:   " + ($(if ($goldHotels)   { "OK" } else { "..." })))
   Write-Host ("- metadata.yaml:          " + ($(if ($metaYaml) { "OK" } else { "..." })))
   Write-Host ("- metadata.json:          " + ($(if ($metaJson) { "OK" } else { "..." })))
   Write-Host ("- eda_report.html:        " + ($(if ($report)   { "OK" } else { "..." })))
 
   # Auto-finish: if all milestones are present, show completion message and exit.
-  if ($sessions -and $users -and $metaYaml -and $metaJson -and $report) {
+  if ($sessions -and $users -and $silverSessions -and $silverUsers -and $silverFlights -and $silverHotels `
+      -and $goldSessions -and $goldUsers -and $goldFlights -and $goldHotels `
+      -and $metaYaml -and $metaJson -and $report) {
     Show-CompletionAndExit -RunName $latest.Name -RunPath $latest.FullName -Seconds $AutoCloseSeconds
     # If KeepOpen was set, we continue monitoring.
   }
