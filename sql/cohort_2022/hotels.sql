@@ -1,37 +1,40 @@
 /*
 Description:
-Hotel-level extraction restricted to the cohort definition required for segmentation.
-The cohort is defined by a fixed observation window starting after the New Year holiday
-(2023-01-04) and a minimum amount of observed behavior per user (> 7 sessions) within
-that same window.
+Hotel bookings restricted to the segmentation cohort definition:
+users signed up in 2022, sessions observed from 2023-01-04 onward with page_clicks >= 2,
+and users having more than 7 qualifying sessions in that window. Hotels are included only
+for trip_id values observed in cohort-qualified sessions.
 
 # Notes:
-# - The cohort is session-window based (not hotel-booking based).
-# - Users must have > 7 sessions in the observation window to ensure sufficient behavioral signal.
-# - Hotels are linked via trip_id, but trip_id is only considered after cohort eligibility is enforced.
-# - page_clicks >= 2 is included explicitly for auditability, even if the source dataset already
-#   satisfies a minimum-click condition by design.
+# - Hotel rows are filtered via trip_id derived from cohort sessions (prevents leakage).
+# - Eligibility is computed from sessions, not from hotels.
 */
 
-WITH cohort_sessions AS (
+WITH cohort_users AS (
     SELECT
-        ses.user_id,
-        ses.trip_id,
-        ses.page_clicks,
-        ses.session_start
-    FROM sessions AS ses
-    WHERE ses.session_start >= '2023-01-04'
-    -- # Note: Defines the fixed observation window for cohorting.
+        u.user_id
+    FROM users AS u
+    WHERE u.sign_up_date >= DATE '2022-01-01'
+      AND u.sign_up_date <  DATE '2023-01-01'
+),
+cohort_sessions AS (
+    SELECT
+        s.user_id,
+        s.trip_id,
+        s.page_clicks,
+        s.session_start
+    FROM sessions AS s
+    JOIN cohort_users AS cu
+        ON cu.user_id = s.user_id
+    WHERE s.session_start >= TIMESTAMP '2023-01-04'
+      AND s.page_clicks >= 2
 ),
 eligible_users AS (
     SELECT
         cs.user_id
     FROM cohort_sessions AS cs
-    WHERE cs.page_clicks >= 2
-    -- # Note: Ensures sessions carry a minimum amount of behavioral signal.
     GROUP BY cs.user_id
     HAVING COUNT(*) > 7
-    -- # Note: Elena's eligibility criterion: users must have more than 7 sessions in the same window.
 ),
 cohort_trips AS (
     SELECT DISTINCT
@@ -40,17 +43,9 @@ cohort_trips AS (
     JOIN eligible_users AS eu
         ON eu.user_id = cs.user_id
     WHERE cs.trip_id IS NOT NULL
-    -- # Note: Restricts downstream booking tables to trips observed within the cohort.
 )
 SELECT
-    h.trip_id,
-    h.hotel_name,
-    h.nights,
-    h.rooms,
-    h.check_in_time,
-    h.check_out_time,
-    h.hotel_per_room_usd
+    h.*
 FROM hotels AS h
 JOIN cohort_trips AS ct
     ON ct.trip_id = h.trip_id;
--- # Note: Only hotel bookings connected to cohort-qualified trips are included.

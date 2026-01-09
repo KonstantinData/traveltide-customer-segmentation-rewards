@@ -1,29 +1,40 @@
 /*
 Description:
-Session-level extraction for segmentation prep. Defines a cohort based on a fixed analysis window
-(starting after the New Year holiday) and a minimum amount of observed behavior per user.
-No feature engineering is performed here—this is filtering and shaping the session-level dataset.
+Session extraction for behavioral analysis and downstream feature engineering.
+Returns only sessions that (1) belong to the 2022 sign-up cohort, (2) fall within the
+observation window starting 2023-01-04, (3) have page_clicks >= 2, and (4) belong to users
+with more than 7 such sessions in the same window.
 
 # Notes:
-# - Cohort window: sessions with session_start >= '2023-01-04'
-# - Engagement threshold: users must have > 7 sessions in that same window
-# - Quality/activity threshold: keep only sessions with page_clicks >= 2
+# - Cohort is user-based (sign_up_date in 2022).
+# - Observation window is session-based (session_start >= 2023-01-04).
+# - Eligibility is user-based, computed from qualifying sessions in the window.
 */
 
-WITH cohort_sessions AS (
+WITH cohort_users AS (
     SELECT
-        ses.*
-    FROM sessions AS ses
-    WHERE ses.session_start >= '2023-01-04'
-    -- # Note: lower-bound defines the fixed observation window for cohorting.
+        u.user_id
+    FROM users AS u
+    WHERE u.sign_up_date >= DATE '2022-01-01'
+      AND u.sign_up_date <  DATE '2023-01-01'
+),
+cohort_sessions AS (
+    SELECT
+        s.*
+    FROM sessions AS s
+    JOIN cohort_users AS cu
+        ON cu.user_id = s.user_id
+    WHERE s.session_start >= TIMESTAMP '2023-01-04'
+      AND s.page_clicks >= 2
+    -- # Note: Observation window + minimum activity applied at session level.
 ),
 eligible_users AS (
     SELECT
-        user_id
-    FROM cohort_sessions
-    GROUP BY user_id
+        cs.user_id
+    FROM cohort_sessions AS cs
+    GROUP BY cs.user_id
     HAVING COUNT(*) > 7
-    -- # Note: ensures each user has enough sessions to represent behavior reliably.
+    -- # Note: Keep only users with sufficient behavioral history in the window.
 )
 SELECT
     cs.cancellation,
@@ -41,6 +52,4 @@ SELECT
     cs.user_id
 FROM cohort_sessions AS cs
 JOIN eligible_users AS eu
-    ON eu.user_id = cs.user_id
-WHERE cs.page_clicks >= 2;
--- # Note: removes near-empty browsing sessions that carry little behavioral signal.
+    ON eu.user_id = cs.user_id;
