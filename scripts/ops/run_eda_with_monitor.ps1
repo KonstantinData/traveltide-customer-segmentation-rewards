@@ -1,4 +1,4 @@
-# Description: Run the EDA pipeline while launching a live monitor window.
+# Description: Optional operational helper to run EDA with a live monitor (non-EDA utility).
 param(
   [string]$Config = "config/eda.yaml",
   [string]$OutDir = "artifacts/eda",
