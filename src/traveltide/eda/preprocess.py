@@ -109,14 +109,10 @@ def transform_users_table(df: pd.DataFrame) -> pd.DataFrame:
     now_utc = pd.Timestamp.now(tz="UTC").normalize()
     if "birthdate" in out.columns:
         birthdates = pd.to_datetime(out["birthdate"], utc=True, errors="coerce")
-        out["age_years"] = (
-            now_utc - birthdates
-        ).dt.days / 365.25
+        out["age_years"] = (now_utc - birthdates).dt.days / 365.25
     if "sign_up_date" in out.columns:
         signups = pd.to_datetime(out["sign_up_date"], utc=True, errors="coerce")
-        out["tenure_days"] = (
-            now_utc - signups
-        ).dt.days
+        out["tenure_days"] = (now_utc - signups).dt.days
     return out
 
 
