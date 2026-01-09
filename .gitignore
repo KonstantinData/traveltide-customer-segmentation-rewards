@@ -60,3 +60,4 @@ artifacts/**
 # =========================
 artifacts/eda/*
 !artifacts/eda/.gitkeep
+data/*_full.csv
