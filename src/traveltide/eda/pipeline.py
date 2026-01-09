@@ -30,7 +30,17 @@ from .preprocess import (
     build_metadata,
     remove_outliers,
 )
-from .report import build_basic_charts, render_html_report
+from .report import (
+    build_basic_charts,
+    correlation_pairs,
+    data_overview,
+    derive_hypotheses,
+    derive_key_insights,
+    descriptive_stats_table,
+    missingness_table,
+    render_html_report,
+)
+from .workflow import annotate_steps, load_workflow, workflow_to_dict
 
 
 def _timestamp_slug() -> str:
@@ -46,8 +56,9 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
     - Failure should be loud (exceptions) to avoid producing partial/untrustworthy artifacts.
     """
 
-    # Notes: Load config once and pass typed config through the pipeline for determinism.
+    # Notes: Load config + workflow once and pass typed config through the pipeline for determinism.
     config = load_config(config_path)
+    workflow = load_workflow(Path("eda.yml"))
 
     # Notes: Create a new versioned artifact directory per run; fail if it already exists.
     base = Path(outdir)
@@ -78,6 +89,45 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
     user = aggregate_user_level(df_clean)
     user = USER_AGGREGATE_SCHEMA.validate(user, lazy=True)
 
+    # 3a) EDA summaries for workflow steps and reporting
+    overview = data_overview(raw)
+    session_missing = missingness_table(df_clean)
+    correlations = correlation_pairs(df_clean)
+    session_stats = descriptive_stats_table(df_clean)
+    user_stats = descriptive_stats_table(user)
+    key_insights = derive_key_insights(session_missing, outlier_rules, correlations)
+    hypotheses = derive_hypotheses(correlations)
+    charts = build_basic_charts(df_clean)
+    workflow_steps = annotate_steps(
+        workflow,
+        outputs={
+            "objective_definition": [
+                "Scope defined in config/eda.yaml cohort parameters."
+            ],
+            "data_overview": [
+                f"Rows: {overview['rows']}; Columns: {overview['columns']}."
+            ],
+            "data_quality_check": [
+                f"Missingness captured for {len(session_missing)} session columns."
+            ],
+            "outlier_analysis": [
+                f"Outlier method: {config.outliers.method}; columns: {', '.join(config.outliers.columns)}."
+            ],
+            "descriptive_statistics": [
+                f"Computed stats for {len(session_stats)} session numeric columns."
+            ],
+            "distribution_analysis": [
+                f"Distribution charts: {', '.join(charts.keys()) or 'none'}."
+            ],
+            "visualization": ["Visualization charts embedded in the EDA report."],
+            "relationship_analysis": [
+                f"Top correlations computed: {len(correlations)} pairs."
+            ],
+            "key_insights": key_insights,
+            "hypothesis_generation": hypotheses,
+        },
+    )
+
     # 4) Persist data artifacts
     # Notes: Parquet is efficient and preserves dtypes; artifacts are used by later steps.
     session_path = data_dir / "sessions_clean.parquet"
@@ -97,6 +147,11 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
         outlier_rules=outlier_rules,
         invalid_hotel_nights_meta=invalid_hotel_nights_meta,
     )
+    meta["workflow"] = {
+        "definition": workflow_to_dict(workflow),
+        "overview": overview,
+        "steps": workflow_steps,
+    }
     (run_dir / "metadata.yaml").write_text(
         yaml.safe_dump(meta, sort_keys=False, allow_unicode=True), encoding="utf-8"
     )
@@ -109,7 +164,6 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
     if config.report.output_format != "html":
         raise ValueError("report.output_format currently supports: html")
 
-    charts = build_basic_charts(df_clean)
     render_html_report(
         out_path=run_dir / "eda_report.html",
         title=config.report.title,
@@ -118,6 +172,14 @@ def run_eda(*, config_path: str, outdir: str) -> Path:
         user_df=user,
         charts=charts,
         sample_rows=config.report.include_sample_rows,
+        workflow=workflow_to_dict(workflow),
+        workflow_steps=workflow_steps,
+        overview=overview,
+        session_stats=session_stats,
+        user_stats=user_stats,
+        correlations=correlations,
+        key_insights=key_insights,
+        hypotheses=hypotheses,
     )
 
     return run_dir

@@ -11,7 +11,7 @@ from __future__ import annotations
 import base64
 import io
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -101,6 +101,101 @@ def missingness_table(df: pd.DataFrame) -> pd.DataFrame:
     return out.reset_index(names=["column"])
 
 
+def data_overview(df: pd.DataFrame) -> dict[str, Any]:
+    """Return a compact data overview for reporting."""
+
+    numeric = df.select_dtypes(include="number")
+    ranges = {
+        col: {"min": float(numeric[col].min()), "max": float(numeric[col].max())}
+        for col in numeric.columns
+        if numeric[col].notna().any()
+    }
+    return {
+        "rows": int(df.shape[0]),
+        "columns": int(df.shape[1]),
+        "dtypes": {col: str(dtype) for col, dtype in df.dtypes.items()},
+        "numeric_ranges": ranges,
+    }
+
+
+def descriptive_stats_table(df: pd.DataFrame) -> list[dict[str, Any]]:
+    """Return descriptive statistics for numeric columns."""
+
+    numeric = df.select_dtypes(include="number")
+    if numeric.empty:
+        return []
+
+    stats = numeric.agg(["mean", "median", "min", "max", "std"]).T
+    stats = stats.round(4)
+    stats.reset_index(inplace=True)
+    stats.rename(columns={"index": "column"}, inplace=True)
+    return stats.to_dict(orient="records")
+
+
+def correlation_pairs(df: pd.DataFrame, *, top_n: int = 10) -> list[dict[str, Any]]:
+    """Return top absolute correlation pairs for numeric columns."""
+
+    numeric = df.select_dtypes(include="number")
+    if numeric.shape[1] < 2:
+        return []
+
+    corr = numeric.corr().abs()
+    pairs = []
+    cols = list(corr.columns)
+    for i, col_a in enumerate(cols):
+        for col_b in cols[i + 1 :]:
+            value = corr.loc[col_a, col_b]
+            if pd.notna(value):
+                pairs.append({"col_a": col_a, "col_b": col_b, "corr": float(value)})
+    pairs.sort(key=lambda r: r["corr"], reverse=True)
+    return pairs[:top_n]
+
+
+def derive_key_insights(
+    missingness: pd.DataFrame,
+    outlier_rules: dict[str, Any],
+    correlations: Iterable[dict[str, Any]],
+) -> list[str]:
+    """Create a short, data-driven insights list from EDA artifacts."""
+
+    insights: list[str] = []
+
+    if not missingness.empty:
+        top = missingness.iloc[0]
+        insights.append(
+            f"Highest missingness: {top['column']} ({top['missing_pct']}% missing)."
+        )
+
+    if outlier_rules:
+        most_removed = max(outlier_rules.items(), key=lambda item: item[1].rows_removed)
+        insights.append(
+            f"Most outliers removed: {most_removed[0]} ({most_removed[1].rows_removed} rows)."
+        )
+
+    if correlations:
+        strongest = correlations[0]
+        insights.append(
+            "Strongest numeric association: "
+            f"{strongest['col_a']} vs {strongest['col_b']} (|corr|={strongest['corr']:.2f})."
+        )
+
+    return insights
+
+
+def derive_hypotheses(
+    correlations: Iterable[dict[str, Any]], *, top_n: int = 3
+) -> list[str]:
+    """Generate lightweight hypothesis candidates based on correlations."""
+
+    hypotheses = []
+    for pair in list(correlations)[:top_n]:
+        hypotheses.append(
+            "Investigate relationship between "
+            f"{pair['col_a']} and {pair['col_b']} (|corr|={pair['corr']:.2f})."
+        )
+    return hypotheses
+
+
 def render_html_report(
     *,
     out_path: Path,
@@ -110,6 +205,14 @@ def render_html_report(
     user_df: pd.DataFrame,
     charts: dict[str, str],
     sample_rows: int,
+    workflow: dict[str, Any],
+    workflow_steps: list[dict[str, Any]],
+    overview: dict[str, Any],
+    session_stats: list[dict[str, Any]],
+    user_stats: list[dict[str, Any]],
+    correlations: list[dict[str, Any]],
+    key_insights: list[str],
+    hypotheses: list[str],
 ) -> None:
     """Render the EDA report as a standalone HTML file.
 
@@ -129,6 +232,9 @@ def render_html_report(
     html = tpl.render(
         title=title,
         metadata=metadata,
+        workflow=workflow,
+        workflow_steps=workflow_steps,
+        overview=overview,
         session_shape=session_df.shape,
         user_shape=user_df.shape,
         session_missing=missingness_table(session_df).to_dict(orient="records"),
@@ -136,6 +242,11 @@ def render_html_report(
         session_sample=dataframe_preview_html(session_df, sample_rows),
         user_sample=dataframe_preview_html(user_df, sample_rows),
         charts=charts,
+        session_stats=session_stats,
+        user_stats=user_stats,
+        correlations=correlations,
+        key_insights=key_insights,
+        hypotheses=hypotheses,
     )
 
     # Notes: Write as UTF-8 for portability; output becomes part of the artifact directory.
