@@ -49,6 +49,7 @@ dist/
 # Keep the folder tracked, ignore generated contents by default
 artifacts/**
 !artifacts/.gitkeep
+!artifacts/README.md
 !artifacts/eda/.gitkeep
 !artifacts/gallery/
 !artifacts/gallery/*.svg
