@@ -1,3 +1,4 @@
+# Description: Data Quality (DQ) report generator for EDA artifacts.
 """Data Quality (DQ) report generator for TT-015.
 
 Notes:
@@ -15,6 +16,7 @@ from typing import Any
 import yaml
 
 
+# Notes: Encapsulates before/after row impact for a single rule.
 @dataclass(frozen=True)
 class RuleImpact:
     """Single rule impact snapshot."""
@@ -40,6 +42,7 @@ def _fmt_pct(x: float) -> str:
     return f"{x:.2f}%"
 
 
+# Notes: Load the most recent EDA run metadata payload.
 def load_metadata(run_dir: Path) -> dict[str, Any]:
     """Load EDA run metadata from a run directory."""
     path = run_dir / "metadata.yaml"
@@ -48,6 +51,7 @@ def load_metadata(run_dir: Path) -> dict[str, Any]:
     return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
 
 
+# Notes: Resolve the latest timestamped EDA run directory.
 def find_latest_run(artifacts_base: Path) -> Path:
     """Find the latest timestamped EDA run directory within artifacts_base."""
     if not artifacts_base.exists():
@@ -59,6 +63,7 @@ def find_latest_run(artifacts_base: Path) -> Path:
     return sorted(runs)[-1]
 
 
+# Notes: Convert metadata into a markdown audit report.
 def render_dq_report_md(meta: dict[str, Any]) -> str:
     """Render a markdown DQ report from EDA metadata."""
 
@@ -69,6 +74,7 @@ def render_dq_report_md(meta: dict[str, Any]) -> str:
 
     validity: dict[str, Any] = meta.get("validity_rules", {}) or {}
     outliers: dict[str, Any] = meta.get("outliers", {}) or {}
+    validation_checks: dict[str, Any] = meta.get("validation_checks", {}) or {}
 
     def _loss_pct(before: int, after: int) -> float:
         return 0.0 if before == 0 else ((before - after) / before) * 100.0
@@ -101,11 +107,89 @@ def render_dq_report_md(meta: dict[str, Any]) -> str:
         lines.append("\n")
         return "".join(lines)
 
+    def _render_validation_checks(checks: dict[str, Any]) -> str:
+        if not checks:
+            return (
+                "## Validity & consistency checks\n\nNo additional checks recorded.\n\n"
+            )
+
+        lines = ["## Validity & consistency checks\n\n"]
+        lines.append(
+            "| Check | Type | Details | Invalid/flagged rows | Decision | Rationale |\n"
+        )
+        lines.append(
+            "|------|------|---------|---------------------:|----------|-----------|\n"
+        )
+
+        duplicates = checks.get("duplicates", {}) or {}
+        if duplicates:
+            status = duplicates.get("status", "evaluated")
+            keys = duplicates.get("keys") or []
+            detail = (
+                f"keys: {', '.join(keys)}"
+                if keys
+                else duplicates.get("reason", "Missing key columns.")
+            )
+            invalid = (
+                "N/A"
+                if status == "skipped"
+                else _fmt_int(int(duplicates.get("rows_in_duplicate_groups", 0)))
+            )
+            lines.append(
+                "| Duplicate sessions | duplicates | {detail} | {invalid} | {decision} | {rationale} |\n".format(
+                    detail=detail,
+                    invalid=invalid,
+                    decision=duplicates.get("decision", ""),
+                    rationale=duplicates.get("rationale", ""),
+                )
+            )
+
+        range_checks = checks.get("range_checks", {}) or {}
+        for name, entry in range_checks.items():
+            status = entry.get("status", "evaluated")
+            invalid = (
+                "N/A"
+                if status == "skipped"
+                else _fmt_int(int(entry.get("invalid_count", 0)))
+            )
+            detail = f"range: {entry.get('min_allowed')} to {entry.get('max_allowed')}"
+            lines.append(
+                "| {name} | range | {detail} | {invalid} | {decision} | {rationale} |\n".format(
+                    name=name,
+                    detail=detail,
+                    invalid=invalid,
+                    decision=entry.get("decision", ""),
+                    rationale=entry.get("rationale", ""),
+                )
+            )
+
+        logical_checks = checks.get("logical_checks", {}) or {}
+        for name, entry in logical_checks.items():
+            status = entry.get("status", "evaluated")
+            invalid = (
+                "N/A"
+                if status == "skipped"
+                else _fmt_int(int(entry.get("invalid_count", 0)))
+            )
+            detail = entry.get("comparison", "")
+            lines.append(
+                "| {name} | logical | {detail} | {invalid} | {decision} | {rationale} |\n".format(
+                    name=name,
+                    detail=detail,
+                    invalid=invalid,
+                    decision=entry.get("decision", ""),
+                    rationale=entry.get("rationale", ""),
+                )
+            )
+
+        lines.append("\n")
+        return "".join(lines)
+
     md = []
-    md.append("# Data Quality Report — Outlier & Anomaly Handling\n")
+    md.append("# Data Quality Report — Validity, Consistency, and Outlier Handling\n")
     md.append("## Context\n")
     md.append(
-        "This report documents the quantitative impact of all data quality rules defined in `docs/eda/outlier-policy.md`.\n"
+        "This report documents the quantitative impact of validity checks and outlier rules defined for the EDA pipeline.\n"
     )
     md.append(
         "All counts refer to **cohort-scoped** session-level data extracted by the Step-1 EDA pipeline.\n"
@@ -125,6 +209,7 @@ def render_dq_report_md(meta: dict[str, Any]) -> str:
     md.append("---\n\n")
 
     md.append(_render_rules_table("Validity rules", validity))
+    md.append(_render_validation_checks(validation_checks))
     md.append(_render_rules_table("Outlier rules", outliers))
 
     nights = meta.get("invalid_hotel_nights", {}) or {}
@@ -157,11 +242,13 @@ def render_dq_report_md(meta: dict[str, Any]) -> str:
     return "".join(md)
 
 
+# Notes: Persist the rendered report to disk.
 def write_dq_report(out_path: Path, md: str) -> None:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(md, encoding="utf-8")
 
 
+# Notes: CLI entrypoint for generating the DQ report.
 def cmd_dq_report(*, artifacts_base: Path, out: Path) -> int:
     run_dir = find_latest_run(artifacts_base)
     meta = load_metadata(run_dir)

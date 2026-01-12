@@ -111,6 +111,66 @@ These fields are attached using a **first non-null** rule within each `user_id`:
 
 ---
 
+---
+
+## Cleaned datasets
+
+These datasets are **cleaned, typed, and validity-checked**. They are the cleaned outputs
+used as the baseline for downstream transformations and modeling outputs.
+
+**Location:** `artifacts/eda/<timestamp>/data/cleaned/`
+
+### `sessions_cleaned.parquet`
+
+- **Grain:** 1 row per `session_id`
+- **Description:** Cleaned sessions data with standardized types and core session fields.
+
+### `users_cleaned.parquet`
+
+- **Grain:** 1 row per `user_id`
+- **Description:** Cleaned user dimension data with standardized demographic attributes.
+
+### `flights_cleaned.parquet`
+
+- **Grain:** 1 row per `trip_id` (nullable for non-flight sessions)
+- **Description:** Cleaned flight dimension data with standardized fares, airports, and timestamps.
+
+### `hotels_cleaned.parquet`
+
+- **Grain:** 1 row per `trip_id` (nullable for non-hotel sessions)
+- **Description:** Cleaned hotel dimension data with standardized pricing and stay details.
+
+---
+
+## Transformed datasets
+
+These datasets are **transformed** for consumption-ready analytics, aligned with cleaned grain
+and nomenclature but enriched for downstream modeling and reporting.
+
+**Location:** `artifacts/eda/<timestamp>/data/transformed/`
+
+### `sessions_transformed.parquet`
+
+- **Grain:** 1 row per `session_id`
+- **Description:** Transformed sessions dataset derived from cleaned sessions.
+
+### `users_transformed.parquet`
+
+- **Grain:** 1 row per `user_id`
+- **Description:** Transformed users dataset derived from cleaned users.
+
+### `flights_transformed.parquet`
+
+- **Grain:** 1 row per `trip_id` (nullable for non-flight sessions)
+- **Description:** Transformed flights dataset derived from cleaned flights.
+
+### `hotels_transformed.parquet`
+
+- **Grain:** 1 row per `trip_id` (nullable for non-hotel sessions)
+- **Description:** Transformed hotels dataset derived from cleaned hotels.
+
+---
+
 ## Associated run files (context)
 
 - `eda_report.html`: Human-readable EDA report (shapes, missingness, charts, previews)

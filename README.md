@@ -1,3 +1,4 @@
+
 # TravelTide — Customer Segmentation & Data-Driven Rewards
 
 [![CI](https://img.shields.io/badge/CI-GitHub_Actions-blue?logo=githubactions&logoColor=white)](actions/workflows/ci.yml)
@@ -53,7 +54,7 @@ The remaining analytical pipeline (feature engineering → clustering → final 
 
 ### Step 1 (EDA) artifact generation (TT-012)
 
-Generate a versioned EDA report + cleaned tables (requires `TRAVELTIDE_DATABASE_URL`):
+Generate a versioned EDA report + cleaned tables (loads from local raw files in `data/`):
 
 ```bash
 python -m pip install -r requirements.txt
@@ -63,16 +64,20 @@ python -m pip install -e .
 python -m traveltide eda --config config/eda.yaml --outdir artifacts/eda
 ```
 
+**Process vs. runtime config**
+
+- `config/eda.yaml` defines **operational pipeline parameters** for running the EDA generator.
+- `eda.yml` documents the **EDA process workflow** used in this project.
+
 ## Visual gallery (generated plots)
 
 The EDA pipeline produces lightweight plots that are versioned in `artifacts/` for quick review. The gallery below links to the latest committed examples.
 
-| Plot | Preview |
-| --- | --- |
-| Missingness overview | [artifacts/gallery/eda_missingness.svg](artifacts/gallery/eda_missingness.svg) |
+| Plot                       | Preview                                                                                 |
+| -------------------------- | --------------------------------------------------------------------------------------- |
+| Missingness overview       | [artifacts/gallery/eda_missingness.svg](artifacts/gallery/eda_missingness.svg)             |
 | Session duration histogram | [artifacts/gallery/session_duration_hist.svg](artifacts/gallery/session_duration_hist.svg) |
-| Base fare histogram | [artifacts/gallery/base_fare_hist.svg](artifacts/gallery/base_fare_hist.svg) |
-
+| Base fare histogram        | [artifacts/gallery/base_fare_hist.svg](artifacts/gallery/base_fare_hist.svg)               |
 
 ## How We Define Done
 
@@ -101,60 +106,62 @@ This project therefore:
 
 ## Data source (high level)
 
-The TravelTide dataset is hosted in a PostgreSQL database and organized around four core tables:
+The TravelTide raw dataset lives in the repository under
+`data/` and is organized around four core tables:
 
 - `users` — user demographic / account attributes
 - `sessions` — browsing sessions (behavioral events; e.g., clicks, discounts surfaced, cancellation intent)
 - `flights` — purchased flight attributes (pricing, discounts, trip structure)
 - `hotels` — purchased hotel stays (pricing, discounts, stay structure)
 
-Credentials/connection details must **not** be committed to Git. Use environment variables (and optionally a local `.env` file, which is gitignored) when you implement data access.
+The dataset is versioned with the repository to support fully reproducible,
+offline analysis.
 
----
+> Note (legacy): A PostgreSQL connection can be supported as an optional fallback
+> via `TRAVELTIDE_DATABASE_URL`.
 
-## Data architecture (layer model)
+## Data architecture (processing stages)
 
-This project follows a classic Lakehouse/ELT layer model to cleanly separate raw data from analysis-ready and versionable data.
+This project separates raw data from analysis-ready and versionable artifacts using clear processing stages.
 
-### 1) Bronze layer → S3
+### 1) Raw data → repo (`data/`)
 
-- **Location:** `s3://traveltide-data/bronze/`
-- **Contents:** full raw data, unchanged and uncleaned (CSV/Parquet), large files, sensitive and non-versionable data
-- **Rules:** data is read-only (never written), never stored in the repo, only used temporarily locally
+Raw data is loaded from local files committed under `data/`. The EDA pipeline automatically loads
+the `users`, `sessions`, `flights`, and `hotels` tables from this directory.
+
+- **Location:** `data/`
+- **Contents:** full raw data, unchanged and uncleaned (CSV/Parquet)
+- **Rules:** data is read-only (never overwritten by the pipeline)
 - **Validation:** Pandera validation immediately after load against a RAW schema
 
-### 2) Silver layer → repo (`data/`)
+### 2) Cleaned data (versioned artifacts)
 
-- **Location in repo:**
-  - `data/sessions_clean.parquet`
-  - `data/users_agg.parquet`
-- **Contents:** cleaned session-level data, enriched fields (e.g., `session_duration_sec`, `age_years`), outliers filtered, validity rules applied
-- **Validation:** Pandera-validated (`SESSION_CLEAN_SCHEMA`, `USER_AGGREGATE_SCHEMA`)
-- **Properties:** small (only relevant columns), safe (no sensitive raw data), compressed (Parquet), commit-ready
-- **Rule:** the Silver layer is the source for cohorts/features/segments
+Cleaned artifacts are type-stable and validated for downstream analysis.
 
-### 3) Gold layer → repo (`data/features/`, `data/cohort/`, `reports/`)
+- **Location in EDA artifacts:** `artifacts/eda/<timestamp>/data/cleaned/`
+- **Contents:** cleaned session/user/flight/hotel tables
+- **Validation:** Pandera-validated, with outlier/validity rules applied where configured
 
-- **Location in repo:**
-  - `data/features/*.parquet`
-  - `data/cohort/*.csv`
-  - `reports/*.md`
-- **Contents:** feature engineering outputs, segmentations, cohort definitions, KPIs, reports & insights
-- **Properties:** highly compressed, anonymized/aggregated, commit-ready, no sensitive fields, fully reproducible from Silver
+### 3) Transformed data & outputs
+
+Transformed artifacts include derived columns for modeling and reporting. Outputs include features,
+segments, and reports.
+
+- **Location in EDA artifacts:** `artifacts/eda/<timestamp>/data/transformed/`
+- **Location for pipeline outputs:** `artifacts/outputs/` (features, segments, perks)
+- **Contents:** feature engineering outputs, segmentations, cohorts, KPIs, and reports
 
 ### End-to-end flow (compact)
 
-**Bronze (S3)** → load raw data → validate with Pandera RAW schema  
-**Silver (repo `data/`)** → preprocessing, derived columns, validity, outlier removal → Silver Parquet  
-**Gold (repo `data/features/` + `reports/`)** → cohorts, features, segments, reports → persisted & versioned
+**Raw (local)** → load raw data → validate with Pandera RAW schema
+**Cleaned (artifacts)** → preprocessing, derived columns, validity, outlier removal → cleaned Parquet
+**Transformed/Outputs** → features, segments, reports → persisted & versioned
 
-### Why this model is correct
+### Why this model works
 
-- **Bronze = source of truth**, but not versionable
-- **Silver = cleaned, standardized core** for all analyses
-- **Gold = consumption-ready output** for BI, data science, reporting
-
-This is the standard Lakehouse/ELT layer model used in professional analytics projects.
+- **Raw = source of truth**
+- **Cleaned = standardized core** for all analyses
+- **Transformed/outputs = consumption-ready output** for BI, data science, reporting
 
 ---
 
@@ -260,38 +267,31 @@ CLI entry points below (documentation only; adjust configs and paths as needed):
 
 ```bash
 python -m traveltide eda --config config/eda.yaml --outdir artifacts/eda
-python -m traveltide features --config config/features.yaml --outdir data/features
+python -m traveltide features --config config/features.yaml --outdir artifacts/outputs
 python -m traveltide segmentation --config config/segmentation.yaml
-python -m traveltide perks --assignments data/segments/segment_assignments.parquet \
-  --config config/perks.yaml --out data/perks/customer_perks.csv
+python -m traveltide perks --assignments artifacts/outputs/segments/segment_assignments.parquet \
+  --config config/perks.yaml --out artifacts/outputs/perks/customer_perks.csv
 python -m traveltide exec-summary --source docs/step4_presentation/executive_summary.md --out reports/executive_summary.pdf
 ```
 
 ---
 
-## S3 Data Access (Bronze)
+## Local Raw Data Access
 
-Raw (Bronze) data lives in a private S3 bucket and is **not** committed to the repo.
-Configure access via environment variables and follow the data-access notes:
-
-- `S3_ACCESS_KEY_ID`
-- `S3_SECRET_ACCESS_KEY`
-- `TRAVELTIDE_S3_BUCKET`
-- `TRAVELTIDE_S3_PREFIX`
-
-See [`docs/data_access.md`](docs/data_access.md) for the full access model and verification
-commands.
+Raw data is committed to `data/`, so no credentials or network
+access are required. See [`docs/data_access.md`](docs/data_access.md) for the
+layout and verification command.
 
 ---
 
-## Artefakte & Pfade
+## Artifacts & Paths
 
 Key generated artifacts live in predictable locations so they can be reviewed and
 versioned consistently:
 
-- **Features** → `data/features/` (customer-level feature tables)
-- **Segments** → `data/segments/` (segment assignments + profiles)
-- **Perks** → `data/perks/` (per-segment/customer perk assignments)
+- **Features** → `artifacts/outputs/` (customer-level feature tables)
+- **Segments** → `artifacts/outputs/segments/` (segment assignments + profiles)
+- **Perks** → `artifacts/outputs/perks/` (per-segment/customer perk assignments)
 - **Reports** → `reports/` (executive summary PDF, final report, visuals)
 
 Step 4 presentation assets live in `docs/step4_presentation/`:

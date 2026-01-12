@@ -1,37 +1,25 @@
-# Data access (private S3; non-public)
+# Data access (local raw data)
 
-This repository does not store full raw TravelTide data due to size constraints.
-Raw data is stored in a private S3 bucket and accessed via AWS IAM (read-only).
+This repository ships the raw TravelTide tables directly in the
+`data/` directory, enabling offline and reproducible analysis without any
+external storage dependencies.
 
 ## Source of truth (raw data)
 
-- S3 Bucket: `traveltide-data`
-- Prefix: `bronze/`
-- Objects:
-  - `bronze/users.csv`
-  - `bronze/sessions.csv`
-  - `bronze/flights.csv`
-  - `bronze/hotels.csv`
+- Location: `data/`
+- Tables:
+  - `data/users_full.csv`
+  - `data/sessions_full.csv`
+  - `data/flights_full.csv`
+  - `data/hotels_full.csv`
 
-## Access model (no public access)
+## Access model
 
-- The bucket remains private (Block Public Access enabled).
-- Access is granted via IAM credentials (read-only).
-
-## Required environment variables
-
-Set the following environment variables (do not commit credentials):
-
-- `S3_ACCESS_KEY_ID` (fallback: `AWS_ACCESS_KEY_ID`)
-- `S3_SECRET_ACCESS_KEY` (fallback: `AWS_SECRET_ACCESS_KEY`)
-- `AWS_DEFAULT_REGION`
-- `TRAVELTIDE_S3_BUCKET` (e.g., `traveltide-data`)
-- `TRAVELTIDE_S3_PREFIX` (e.g., `bronze/`)
+- Files are committed to the repository for local access.
+- No credentials or network calls are required.
 
 ## Verification commands
 
 ```bash
-aws sts get-caller-identity
-aws s3 ls s3://traveltide-data
-aws s3 ls s3://traveltide-data/bronze/ --recursive --human-readable --summarize
+ls -lh data
 ```

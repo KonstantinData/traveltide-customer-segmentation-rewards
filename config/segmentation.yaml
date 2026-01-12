@@ -1,7 +1,7 @@
 input:
-  customer_features_path: "data/features/customer_features.parquet"
+  customer_features_path: "artifacts/outputs/customer_features.parquet"
 output:
-  outdir: "data/segments"
+  outdir: "artifacts/outputs/segments"
 
 segmentation:
   features:

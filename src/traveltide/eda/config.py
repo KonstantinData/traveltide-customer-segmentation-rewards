@@ -1,3 +1,4 @@
+# Description: Typed EDA configuration model and loader.
 """EDA configuration loader and typed config model (TT-012).
 
 Notes:
@@ -17,6 +18,7 @@ from typing import Any
 import yaml
 
 
+# Notes: Cohort rules used to scope the EDA dataset.
 @dataclass(frozen=True)
 class CohortConfig:
     """Cohort selection rules.
@@ -30,6 +32,7 @@ class CohortConfig:
     sign_up_date_end: str
 
 
+# Notes: Extraction settings for the session-level dataset.
 @dataclass(frozen=True)
 class ExtractionConfig:
     """Data extraction controls.
@@ -40,8 +43,11 @@ class ExtractionConfig:
     """
 
     session_start_min: str | None
+    min_sessions: int | None
+    min_page_clicks: int | None
 
 
+# Notes: Cleaning policies for known data anomalies.
 @dataclass(frozen=True)
 class CleaningConfig:
     """Cleaning policies for known anomalies.
@@ -54,6 +60,7 @@ class CleaningConfig:
     invalid_hotel_nights_policy: str
 
 
+# Notes: Outlier detection parameters for EDA filtering.
 @dataclass(frozen=True)
 class OutliersConfig:
     """Outlier detection/removal settings.
@@ -69,6 +76,7 @@ class OutliersConfig:
     columns: list[str]
 
 
+# Notes: Report rendering configuration for EDA outputs.
 @dataclass(frozen=True)
 class ReportConfig:
     """Report rendering settings.
@@ -83,6 +91,7 @@ class ReportConfig:
     include_sample_rows: int
 
 
+# Notes: Top-level container for all EDA configuration sections.
 @dataclass(frozen=True)
 class EDAConfig:
     """Top-level EDA configuration object.
@@ -99,6 +108,7 @@ class EDAConfig:
     report: ReportConfig
 
 
+# Notes: Require config keys and fail fast on missing values.
 def _get(d: dict[str, Any], key: str) -> Any:
     # Notes: Central helper to enforce required keys and fail fast with a clear error message.
     if key not in d:
@@ -106,6 +116,7 @@ def _get(d: dict[str, Any], key: str) -> Any:
     return d[key]
 
 
+# Notes: Read, validate, and normalize EDA configuration.
 def load_config(path: str | Path) -> EDAConfig:
     """Load EDA configuration from YAML.
 
@@ -135,7 +146,17 @@ def load_config(path: str | Path) -> EDAConfig:
         ),
         extraction=ExtractionConfig(
             # Notes: Optional constraint; can be null in YAML to disable session_start filtering.
-            session_start_min=extraction.get("session_start_min")
+            session_start_min=extraction.get("session_start_min"),
+            min_sessions=(
+                int(extraction.get("min_sessions"))
+                if extraction.get("min_sessions") is not None
+                else None
+            ),
+            min_page_clicks=(
+                int(extraction.get("min_page_clicks"))
+                if extraction.get("min_page_clicks") is not None
+                else None
+            ),
         ),
         cleaning=CleaningConfig(
             # Notes: Normalized to lowercase to ensure comparisons are stable across YAML styles.

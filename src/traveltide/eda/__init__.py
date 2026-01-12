@@ -1,3 +1,4 @@
+# Description: Step 1 (EDA) package namespace and public entrypoints.
 """Step 1 (EDA) package.
 
 Notes:

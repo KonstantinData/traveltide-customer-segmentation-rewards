@@ -1,0 +1,144 @@
+# Purpose: Monitor EDA artifact generation and surface milestone status in the console.
+# Inputs: OutDir (required), RefreshSeconds (poll interval), AutoCloseSeconds (countdown), KeepOpen (switch).
+# Outputs (path + format): None; prints status to the console and exits with a process status code.
+# How to run: powershell -File scripts/ops/eda_monitor.ps1 -OutDir artifacts/eda [-RefreshSeconds 2] [-AutoCloseSeconds 5] [-KeepOpen]
+# Description: Operational helper to monitor EDA artifact generation (non-EDA utility).
+param(
+  [Parameter(Mandatory = $true)][string]$OutDir,
+  [int]$RefreshSeconds = 2,
+  [int]$AutoCloseSeconds = 5,
+  [switch]$KeepOpen
+)
+
+$ErrorActionPreference = "SilentlyContinue"
+
+$monitorStart = Get-Date
+$baselineRun = Get-LatestRunDir
+$baselineRunName = if ($null -ne $baselineRun) { $baselineRun.Name } else { $null }
+$activeRun = $null
+
+# Notes: Default refresh/auto-close values are tuned for near-real-time feedback without spamming the console.
+# Notes: Resolve the most recent EDA run folder in the output directory.
+function Get-LatestRunDir {
+  if (-not (Test-Path $OutDir)) { return $null }
+  $runDirs = Get-ChildItem -Path $OutDir -Directory | Where-Object { $_.Name -ne "latest" }
+  if ($runDirs) {
+    return $runDirs | Sort-Object Name -Descending | Select-Object -First 1
+  }
+  Get-ChildItem -Path $OutDir -Directory | Where-Object { $_.Name -eq "latest" } | Select-Object -First 1
+}
+
+# Notes: Display completion details and optionally close the monitor window.
+function Show-CompletionAndExit {
+  param(
+    [string]$RunName,
+    [string]$RunPath,
+    [int]$Seconds
+  )
+
+  Write-Host ""
+  Write-Host "✅ EDA run completed." -ForegroundColor Green
+  Write-Host ("Run:  " + $RunName)
+  Write-Host ("Path: " + $RunPath)
+
+  if ($KeepOpen) {
+    Write-Host ""
+    Write-Host "KeepOpen was set -> leaving monitor window open."
+    return
+  }
+
+  if ($Seconds -le 0) {
+    exit 0
+  }
+
+  Write-Host ""
+  Write-Host ("Closing this monitor window in " + $Seconds + " seconds...")
+  for ($i = $Seconds; $i -ge 1; $i--) {
+    Write-Host ("  " + $i + "...")
+    Start-Sleep -Seconds 1
+  }
+  exit 0
+}
+
+while ($true) {
+  Clear-Host
+  Write-Host ("TravelTide EDA Monitor | " + (Get-Date))
+  Write-Host ("OutDir: " + $OutDir)
+  Write-Host ""
+
+  $latest = Get-LatestRunDir
+  if ($null -eq $latest) {
+    Write-Host "No run directory yet..."
+    Start-Sleep -Seconds $RefreshSeconds
+    continue
+  }
+
+  if ($null -eq $activeRun) {
+    if ($null -eq $baselineRunName -or $latest.Name -ne $baselineRunName) {
+      $activeRun = $latest
+    } else {
+      Write-Host ("Latest run: " + $latest.Name)
+      Write-Host ("Path: " + $latest.FullName)
+      Write-Host ""
+      Write-Host ("Waiting for a new run (latest run predates monitor start at " + $monitorStart + ").")
+      Start-Sleep -Seconds $RefreshSeconds
+      continue
+    }
+  } elseif ($latest.Name -ne $activeRun.Name -and $latest.LastWriteTime -gt $activeRun.LastWriteTime) {
+    $activeRun = $latest
+  }
+
+  Write-Host ("Latest run: " + $activeRun.Name)
+  Write-Host ("Path: " + $activeRun.FullName)
+  Write-Host ""
+
+  # Notes: Show the 30 most recently updated files as a lightweight progress proxy.
+  Get-ChildItem -Recurse -Path $activeRun.FullName |
+    Sort-Object LastWriteTime -Descending |
+    Select-Object -First 30 FullName, Length, LastWriteTime |
+    Format-Table -AutoSize
+
+  $dataDir  = Join-Path $activeRun.FullName "data"
+  $cleanedDir = Join-Path $dataDir "cleaned"
+  $transformedDir = Join-Path $dataDir "transformed"
+  $sessions = Test-Path (Join-Path $dataDir "sessions_clean.parquet")
+  $users    = Test-Path (Join-Path $dataDir "users_agg.parquet")
+  $cleanedSessions = Test-Path (Join-Path $cleanedDir "sessions_cleaned.parquet")
+  $cleanedUsers    = Test-Path (Join-Path $cleanedDir "users_cleaned.parquet")
+  $cleanedFlights  = Test-Path (Join-Path $cleanedDir "flights_cleaned.parquet")
+  $cleanedHotels   = Test-Path (Join-Path $cleanedDir "hotels_cleaned.parquet")
+  $transformedSessions = Test-Path (Join-Path $transformedDir "sessions_transformed.parquet")
+  $transformedUsers    = Test-Path (Join-Path $transformedDir "users_transformed.parquet")
+  $transformedFlights  = Test-Path (Join-Path $transformedDir "flights_transformed.parquet")
+  $transformedHotels   = Test-Path (Join-Path $transformedDir "hotels_transformed.parquet")
+  $metaYaml = Test-Path (Join-Path $activeRun.FullName "metadata.yaml")
+  $metaJson = Test-Path (Join-Path $activeRun.FullName "metadata.json")
+  $report   = Test-Path (Join-Path $activeRun.FullName "eda_report.html")
+
+  Write-Host ""
+  Write-Host "Milestones:"
+  Write-Host ("- sessions_clean.parquet: " + ($(if ($sessions) { "OK" } else { "..." })))
+  Write-Host ("- users_agg.parquet:      " + ($(if ($users)    { "OK" } else { "..." })))
+  Write-Host ("- cleaned/sessions_cleaned.parquet: " + ($(if ($cleanedSessions) { "OK" } else { "..." })))
+  Write-Host ("- cleaned/users_cleaned.parquet:    " + ($(if ($cleanedUsers)    { "OK" } else { "..." })))
+  Write-Host ("- cleaned/flights_cleaned.parquet:  " + ($(if ($cleanedFlights)  { "OK" } else { "..." })))
+  Write-Host ("- cleaned/hotels_cleaned.parquet:   " + ($(if ($cleanedHotels)   { "OK" } else { "..." })))
+  Write-Host ("- transformed/sessions_transformed.parquet: " + ($(if ($transformedSessions) { "OK" } else { "..." })))
+  Write-Host ("- transformed/users_transformed.parquet:    " + ($(if ($transformedUsers)    { "OK" } else { "..." })))
+  Write-Host ("- transformed/flights_transformed.parquet:  " + ($(if ($transformedFlights)  { "OK" } else { "..." })))
+  Write-Host ("- transformed/hotels_transformed.parquet:   " + ($(if ($transformedHotels)   { "OK" } else { "..." })))
+  Write-Host ("- metadata.yaml:          " + ($(if ($metaYaml) { "OK" } else { "..." })))
+  Write-Host ("- metadata.json:          " + ($(if ($metaJson) { "OK" } else { "..." })))
+  Write-Host ("- eda_report.html:        " + ($(if ($report)   { "OK" } else { "..." })))
+
+  # Notes: Treat all expected artifacts as a completion threshold before auto-close.
+  # Auto-finish: if all milestones are present, show completion message and exit.
+  if ($sessions -and $users -and $cleanedSessions -and $cleanedUsers -and $cleanedFlights -and $cleanedHotels `
+      -and $transformedSessions -and $transformedUsers -and $transformedFlights -and $transformedHotels `
+      -and $metaYaml -and $metaJson -and $report) {
+    Show-CompletionAndExit -RunName $activeRun.Name -RunPath $activeRun.FullName -Seconds $AutoCloseSeconds
+    # If KeepOpen was set, we continue monitoring.
+  }
+
+  Start-Sleep -Seconds $RefreshSeconds
+}

@@ -1,3 +1,4 @@
+# Description: Command-line interface for TravelTide workflows and reports.
 """CLI entry point for the TravelTide repository.
 
 Notes:
@@ -22,6 +23,7 @@ from traveltide.reports.final_report import cmd_final_report
 from traveltide.segmentation.run import run_segmentation_job
 
 
+# Notes: Define the CLI contract and subcommand registry.
 def build_parser() -> argparse.ArgumentParser:
     # Notes: Defines the CLI contract (commands + arguments) and keeps UX consistent across environments.
     parser = argparse.ArgumentParser(
@@ -127,8 +129,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     features.add_argument(
         "--outdir",
-        default=str(Path("data") / "features"),
-        help="Output directory for customer features (default: data/features).",
+        default=str(Path("artifacts") / "outputs"),
+        help="Output directory for customer features (default: artifacts/outputs).",
     )
 
     segmentation = sub.add_parser(
@@ -143,10 +145,12 @@ def build_parser() -> argparse.ArgumentParser:
     perks = sub.add_parser("perks", help="Map customer segments to persona perks.")
     perks.add_argument(
         "--assignments",
-        default=str(Path("data") / "segments" / "segment_assignments.parquet"),
+        default=str(
+            Path("artifacts") / "outputs" / "segments" / "segment_assignments.parquet"
+        ),
         help=(
             "Path to segment assignments parquet "
-            "(default: data/segments/segment_assignments.parquet)."
+            "(default: artifacts/outputs/segments/segment_assignments.parquet)."
         ),
     )
     perks.add_argument(
@@ -156,13 +160,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     perks.add_argument(
         "--out",
-        default=str(Path("data") / "perks" / "customer_perks.csv"),
-        help="Path to the output customer perks CSV (default: data/perks/customer_perks.csv).",
+        default=str(Path("artifacts") / "outputs" / "perks" / "customer_perks.csv"),
+        help=(
+            "Path to the output customer perks CSV "
+            "(default: artifacts/outputs/perks/customer_perks.csv)."
+        ),
     )
 
     return parser
 
 
+# Notes: Emit version and environment diagnostics for reproducibility.
 def cmd_info(show_env: bool) -> int:
     # Notes: Prints minimal versioning/runtime context to help debugging and ensure reproducibility.
     print("TravelTide Customer Segmentation & Rewards")
@@ -173,6 +181,7 @@ def cmd_info(show_env: bool) -> int:
     return 0
 
 
+# Notes: Placeholder command to preserve a stable automation entrypoint.
 def cmd_run(mode: str) -> int:
     # Notes: Provides a stable placeholder command so automation/docs can reference it before implementation.
     print("Golden path placeholder: pipeline not implemented yet.")
@@ -180,6 +189,7 @@ def cmd_run(mode: str) -> int:
     return 0
 
 
+# Notes: Run the Step 1 EDA pipeline and report artifact locations.
 def cmd_eda(config_path: str, outdir: str) -> int:
     # Notes: Executes TT-012 EDA pipeline and prints artifact locations for fast navigation.
     run_dir = run_eda(config_path=config_path, outdir=outdir)
@@ -188,6 +198,7 @@ def cmd_eda(config_path: str, outdir: str) -> int:
     return 0
 
 
+# Notes: Parse arguments and dispatch to the selected subcommand.
 def main(argv: Sequence[str] | None = None) -> int:
     # Notes: Entrypoint dispatcher — parses argv and routes to the correct subcommand implementation.
     parser = build_parser()

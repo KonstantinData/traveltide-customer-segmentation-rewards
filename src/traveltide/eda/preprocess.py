@@ -1,3 +1,4 @@
+# Description: Preprocessing, cleaning, and aggregation for Step 1 EDA data.
 """Preprocessing, cleaning, outlier handling, and aggregation for Step 1 (EDA) (TT-012).
 
 Notes:
@@ -20,6 +21,126 @@ from .config import EDAConfig
 from .dq_report import RuleImpact
 
 
+# Notes: Normalize raw table dtypes for cleaned tables.
+def coerce_columns(
+    df: pd.DataFrame,
+    *,
+    datetime_cols: tuple[str, ...] = (),
+    numeric_cols: tuple[str, ...] = (),
+) -> pd.DataFrame:
+    """Coerce datetimes and numerics for cleaned EDA tables.
+
+    Notes:
+    - "Cleaned" means the raw table is type-stable with no feature derivations.
+    - "Transformed" variants add derived features for EDA summaries (see *_transformed helpers).
+    """
+
+    out = df.copy()
+    for col in datetime_cols:
+        if col in out.columns:
+            out[col] = pd.to_datetime(out[col], errors="coerce", utc=True)
+    for col in numeric_cols:
+        if col in out.columns:
+            out[col] = pd.to_numeric(out[col], errors="coerce")
+    return out
+
+
+# Notes: Clean session tables to stable types without derived features.
+def clean_sessions_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Return the cleaned sessions table (type-stable, no derived features)."""
+
+    return coerce_columns(
+        df,
+        datetime_cols=("session_start", "session_end"),
+        numeric_cols=("user_id", "page_clicks"),
+    )
+
+
+# Notes: Clean user tables to stable types without derived features.
+def clean_users_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Return the cleaned users table (type-stable, no derived features)."""
+
+    return coerce_columns(
+        df,
+        datetime_cols=("birthdate", "sign_up_date"),
+        numeric_cols=("user_id",),
+    )
+
+
+# Notes: Clean flight tables to stable types without derived features.
+def clean_flights_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Return the cleaned flights table (type-stable, no derived features)."""
+
+    return coerce_columns(
+        df,
+        datetime_cols=("departure_time", "return_time"),
+        numeric_cols=("seats", "checked_bags", "base_fare_usd"),
+    )
+
+
+# Notes: Clean hotel tables to stable types without derived features.
+def clean_hotels_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Return the cleaned hotels table (type-stable, no derived features)."""
+
+    return coerce_columns(
+        df,
+        datetime_cols=("check_in_time", "check_out_time"),
+        numeric_cols=("nights", "rooms", "hotel_per_room_usd"),
+    )
+
+
+# Notes: Add derived session-level metrics for EDA.
+def transform_sessions_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Return the transformed sessions table with EDA-ready derived features."""
+
+    out = df.copy()
+    if "session_start" in out.columns and "session_end" in out.columns:
+        out["session_duration_sec"] = (
+            out["session_end"] - out["session_start"]
+        ).dt.total_seconds()
+    return out
+
+
+# Notes: Add derived user-level metrics for EDA.
+def transform_users_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Return the transformed users table with EDA-ready derived features."""
+
+    out = df.copy()
+    now_utc = pd.Timestamp.now(tz="UTC").normalize()
+    if "birthdate" in out.columns:
+        birthdates = pd.to_datetime(out["birthdate"], utc=True, errors="coerce")
+        out["age_years"] = (now_utc - birthdates).dt.days / 365.25
+    if "sign_up_date" in out.columns:
+        signups = pd.to_datetime(out["sign_up_date"], utc=True, errors="coerce")
+        out["tenure_days"] = (now_utc - signups).dt.days
+    return out
+
+
+# Notes: Add derived flight-level metrics for EDA.
+def transform_flights_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Return the transformed flights table with EDA-ready derived features."""
+
+    out = df.copy()
+    if "departure_time" in out.columns and "return_time" in out.columns:
+        out["trip_duration_hours"] = (
+            out["return_time"] - out["departure_time"]
+        ).dt.total_seconds() / 3600.0
+    return out
+
+
+# Notes: Add derived hotel-level metrics for EDA.
+def transform_hotels_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Return the transformed hotels table with EDA-ready derived features."""
+
+    out = df.copy()
+    if "check_in_time" in out.columns and "check_out_time" in out.columns:
+        out["stay_duration_nights"] = (
+            out["check_out_time"] - out["check_in_time"]
+        ).dt.total_seconds() / 86400.0
+    return out
+
+
+# Notes: Create derived session features used in EDA summaries.
 def add_derived_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Add derived, analysis-friendly columns.
 
@@ -59,6 +180,7 @@ def add_derived_columns(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+# Notes: Apply the configured policy for invalid hotel nights.
 def fix_invalid_hotel_nights(df: pd.DataFrame, policy: str) -> pd.DataFrame:
     """Handle invalid values in hotels.nights (0 or negative).
 
@@ -107,14 +229,172 @@ def fix_invalid_hotel_nights(df: pd.DataFrame, policy: str) -> pd.DataFrame:
     return out
 
 
+def _validation_rationale() -> str:
+    return (
+        "Exploratory EDA: flag anomalies for review while retaining rows for analysis."
+    )
+
+
+def _resolve_duplicate_keys(df: pd.DataFrame) -> tuple[list[str], str | None]:
+    if "session_id" in df.columns:
+        return ["session_id"], None
+    composite = ["user_id", "session_start", "session_end"]
+    if all(col in df.columns for col in composite):
+        return composite, None
+    fallback = ["user_id", "session_start"]
+    if all(col in df.columns for col in fallback):
+        return fallback, None
+    return [], "Missing session identifier columns for duplicate detection."
+
+
+def detect_duplicate_sessions(df: pd.DataFrame) -> dict[str, object]:
+    """Detect duplicate rows in session-level data."""
+
+    keys, reason = _resolve_duplicate_keys(df)
+    base = {
+        "keys": keys,
+        "decision": "flag_only",
+        "action": "retained",
+        "rationale": _validation_rationale(),
+    }
+
+    if not keys:
+        return {
+            **base,
+            "status": "skipped",
+            "reason": reason,
+            "duplicate_rows": 0,
+            "rows_in_duplicate_groups": 0,
+            "duplicate_groups": 0,
+        }
+
+    duplicate_rows = df.duplicated(subset=keys, keep="first")
+    rows_in_duplicate_groups = df.duplicated(subset=keys, keep=False)
+    counts = df[keys].value_counts(dropna=False)
+    duplicate_groups = int((counts > 1).sum())
+
+    return {
+        **base,
+        "status": "evaluated",
+        "duplicate_rows": int(duplicate_rows.sum()),
+        "rows_in_duplicate_groups": int(rows_in_duplicate_groups.sum()),
+        "duplicate_groups": duplicate_groups,
+    }
+
+
+def _range_check(
+    df: pd.DataFrame,
+    *,
+    column: str,
+    min_value: float | int | None = None,
+    max_value: float | int | None = None,
+) -> dict[str, object]:
+    base = {
+        "column": column,
+        "min_allowed": min_value,
+        "max_allowed": max_value,
+        "decision": "flag_only",
+        "action": "retained",
+        "rationale": _validation_rationale(),
+    }
+
+    if column not in df.columns:
+        return {
+            **base,
+            "status": "skipped",
+            "reason": "Column not available for range check.",
+            "invalid_count": 0,
+        }
+
+    s = pd.to_numeric(df[column], errors="coerce")
+    invalid = pd.Series(False, index=df.index)
+    if min_value is not None:
+        invalid |= s < min_value
+    if max_value is not None:
+        invalid |= s > max_value
+    invalid &= s.notna()
+
+    return {
+        **base,
+        "status": "evaluated",
+        "invalid_count": int(invalid.sum()),
+    }
+
+
+def _datetime_order_check(
+    df: pd.DataFrame, *, name: str, earlier_col: str, later_col: str, comparison: str
+) -> dict[str, object]:
+    base = {
+        "name": name,
+        "comparison": comparison,
+        "decision": "flag_only",
+        "action": "retained",
+        "rationale": _validation_rationale(),
+    }
+
+    if earlier_col not in df.columns or later_col not in df.columns:
+        return {
+            **base,
+            "status": "skipped",
+            "reason": "Required columns missing for logical check.",
+            "invalid_count": 0,
+        }
+
+    earlier = pd.to_datetime(df[earlier_col], errors="coerce", utc=True)
+    later = pd.to_datetime(df[later_col], errors="coerce", utc=True)
+    invalid = earlier.notna() & later.notna() & (later < earlier)
+
+    return {
+        **base,
+        "status": "evaluated",
+        "invalid_count": int(invalid.sum()),
+    }
+
+
+# Notes: Apply validity rules and log their impact for metadata.
 def apply_validity_rules(
     df: pd.DataFrame, config: EDAConfig
-) -> tuple[pd.DataFrame, dict[str, RuleImpact], dict[str, int | str]]:
+) -> tuple[
+    pd.DataFrame,
+    dict[str, RuleImpact],
+    dict[str, int | str],
+    dict[str, object],
+]:
     """Apply validity rules and capture their impact for metadata."""
 
     out = df.copy()
     validity_rules: dict[str, RuleImpact] = {}
     invalid_hotel_nights_meta: dict[str, int | str] = {}
+    validation_checks = {
+        "duplicates": detect_duplicate_sessions(out),
+        "range_checks": {
+            "session_duration_sec": _range_check(
+                out, column="session_duration_sec", min_value=0
+            ),
+            "age_years": _range_check(
+                out, column="age_years", min_value=0, max_value=120
+            ),
+            "nights": _range_check(out, column="nights", min_value=1),
+            "rooms": _range_check(out, column="rooms", min_value=1),
+            "seats": _range_check(out, column="seats", min_value=1),
+        },
+        "logical_checks": {
+            "session_end_before_start": _datetime_order_check(
+                out,
+                name="session_end_before_start",
+                earlier_col="session_start",
+                later_col="session_end",
+                comparison="session_end < session_start",
+            ),
+            "birthdate_after_session_start": _datetime_order_check(
+                out,
+                name="birthdate_after_session_start",
+                earlier_col="birthdate",
+                later_col="session_start",
+                comparison="birthdate > session_start",
+            ),
+        },
+    }
 
     if "nights" in out.columns:
         nights = pd.to_numeric(out["nights"], errors="coerce")
@@ -130,6 +410,10 @@ def apply_validity_rules(
                 "policy": "drop",
                 "invalid_detected": invalid_detected,
                 "dropped_rows": invalid_detected,
+                "decision": "drop",
+                "rationale": (
+                    "Configured policy for known hotel nights anomaly; rows removed."
+                ),
             }
         else:
             out = fix_invalid_hotel_nights(out, policy=policy)
@@ -141,6 +425,10 @@ def apply_validity_rules(
                 "invalid_detected": invalid_detected,
                 "recomputed_success": recomputed_success,
                 "still_missing": still_missing,
+                "decision": "recompute",
+                "rationale": (
+                    "Configured policy for known hotel nights anomaly; recompute to preserve rows."
+                ),
             }
 
         rows_after = int(len(out))
@@ -150,9 +438,10 @@ def apply_validity_rules(
             rows_removed=rows_before - rows_after,
         )
 
-    return out, validity_rules, invalid_hotel_nights_meta
+    return out, validity_rules, invalid_hotel_nights_meta, validation_checks
 
 
+# Notes: Remove outliers based on configured method and thresholds.
 def remove_outliers(
     df: pd.DataFrame, config: EDAConfig
 ) -> tuple[pd.DataFrame, dict[str, RuleImpact]]:
@@ -213,6 +502,7 @@ def remove_outliers(
     return out.loc[mask_keep].copy(), rules
 
 
+# Notes: Aggregate session data to a customer-level table.
 def aggregate_user_level(df: pd.DataFrame) -> pd.DataFrame:
     """Aggregate session-level data to one row per user.
 
@@ -266,6 +556,7 @@ def aggregate_user_level(df: pd.DataFrame) -> pd.DataFrame:
     return user
 
 
+# Notes: Build the EDA run metadata payload.
 def build_metadata(
     config: EDAConfig,
     row_counts: dict[str, int],
@@ -275,6 +566,8 @@ def build_metadata(
     validity_rules: dict[str, RuleImpact],
     outlier_rules: dict[str, RuleImpact],
     invalid_hotel_nights_meta: dict[str, int | str],
+    validation_checks: dict[str, object] | None = None,
+    n_rows_raw_full: int | None = None,
 ) -> dict[str, object]:
     """Create a run metadata payload saved next to artifacts.
 
@@ -283,17 +576,22 @@ def build_metadata(
     - This enables reviewers (and future you) to reproduce the artifact precisely.
     """
 
+    rows = {
+        "session_level_raw": n_rows_raw,
+        "session_level_after_validity": n_rows_after_validity,
+        "session_level_clean": n_rows_clean,
+    }
+    if n_rows_raw_full is not None:
+        rows["session_level_raw_full"] = n_rows_raw_full
+
     return {
         "config": asdict(config),
         "source_table_row_counts": row_counts,
-        "rows": {
-            "session_level_raw": n_rows_raw,
-            "session_level_after_validity": n_rows_after_validity,
-            "session_level_clean": n_rows_clean,
-        },
+        "rows": rows,
         "validity_rules": {
             name: asdict(impact) for name, impact in validity_rules.items()
         },
+        "validation_checks": validation_checks or {},
         "outliers": {col: asdict(impact) for col, impact in outlier_rules.items()},
         "invalid_hotel_nights": invalid_hotel_nights_meta,
         "outliers_removed_by_column": {

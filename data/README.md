@@ -1,56 +1,52 @@
 
-# Data Engineering: Extraction & Medallion Architecture
+# Data Engineering: Extraction & Processing Stages
 
-This document describes how data is sourced, scoped (cohort), and processed through the **Bronze → Silver → Gold** layers for the TravelTide customer segmentation project.
+This document describes how data is sourced, scoped (cohort), and processed through the **raw → cleaned → transformed → outputs** stages for the TravelTide customer segmentation project.
 
 ---
 
 ## Data availability & repository policy
 
-### Why raw data is not committed
+### Raw data availability
 
-Raw datasets are **not committed** to this repository due to:
+The raw datasets are committed to this repository to keep analysis offline and reproducible.
 
-- **GitHub size constraints** (large CSV files),
-- potential **sensitivity** of user-related data,
-- and the portfolio nature of this project (focus on methodology and engineering hygiene rather than redistributing datasets).
+### Expected local inputs (raw)
 
-### Expected local inputs (Bronze)
-
-Place the **full raw exports** in the Bronze directory locally:
+The full raw exports live in the repository `data/` directory:
 
 ```text
 data/
-└─ bronze/
-   ├─ users_full.csv
-   ├─ sessions_full.csv
-   ├─ flights_full.csv
-   └─ hotels_full.csv
+├─ users_full.csv
+├─ sessions_full.csv
+├─ flights_full.csv
+└─ hotels_full.csv
 ```
-
-These files are excluded from Git via `.gitignore`.
 
 ### What is versioned in Git
 
 - This documentation (`data/README.md`)
 - SQL extraction logic (queries in this document; optionally mirrored in `sql/`)
-- Code used to build Silver/Gold layers (EDA, feature engineering, segmentation)
+- Code used to build cleaned/transformed/outputs (EDA, feature engineering, segmentation)
 
 ### What is not versioned in Git
 
-- Full raw CSV exports (`*_full.csv`)
-- Derived artifacts (Silver/Gold outputs), e.g. `*.parquet`, `*.csv` produced by the pipeline
+- Derived artifacts (cleaned/transformed/outputs), e.g. `*.parquet`, `*.csv` produced by the pipeline
 
 ---
 
 ## Cohort definition (analysis scope)
 
-To ensure fair behavioral comparisons, the analysis is scoped to a defined cohort based on account creation date.
+EDA begins with a **full-dataset exploration** before any cohort filtering. After the
+exploration step, the analysis scope is constrained to a cohort and observation window
+for behavioral comparisons.
 
-**Default cohort (recommended half-open interval):**
+**Cohort + observation window (post-exploration):**
 
-- `sign_up_date >= '2022-01-01'`
-- `sign_up_date <  '2023-01-01'`
+- Cohort users: `sign_up_date >= '2022-01-01'` and `sign_up_date < '2023-01-01'`
+- Session window: `session_start >= '2023-01-04'`
+- Engagement filter: `page_clicks >= 2`
+- Active users: keep only users with **more than 7** qualifying sessions in the window
 
 Half-open intervals are robust if `sign_up_date` is stored as a timestamp rather than a date.
 
@@ -70,7 +66,7 @@ Half-open intervals are robust if `sign_up_date` is stored as a timestamp rather
 - `users.user_id` → `sessions.user_id`
 - `sessions.trip_id` → `flights.trip_id` / `hotels.trip_id`
 
-### Expected integrity checks (performed in Silver)
+### Expected integrity checks (performed in cleaned tables)
 
 - `users.user_id` is **unique** and **not null**
 - `sessions.session_id` is **unique** and **not null**
@@ -83,26 +79,27 @@ Half-open intervals are robust if `sign_up_date` is stored as a timestamp rather
 
 This repository is designed for a **local-first** workflow.
 
-### 1) Provide Bronze inputs
+### 1) Provide raw inputs
 
 Ensure the four `*_full.csv` files exist in:
 
-- `data/bronze/users_full.csv`
-- `data/bronze/sessions_full.csv`
-- `data/bronze/flights_full.csv`
-- `data/bronze/hotels_full.csv`
+- `data/users_full.csv`
+- `data/sessions_full.csv`
+- `data/flights_full.csv`
+- `data/hotels_full.csv`
 
 ### 2) Build downstream layers
 
 Run the EDA / feature engineering / segmentation entrypoints used by the project.
 
 > Note: The exact commands depend on the project’s current implementation (scripts vs. notebooks vs. CLI).
-> As a minimum, the pipeline should read from `data/bronze/` and write derived artifacts to `data/silver/` and `data/gold/`.
+> As a minimum, the pipeline should read from `data/` and write derived artifacts to `artifacts/eda/` and `artifacts/outputs/`.
 
 Recommended outputs:
 
-- `data/silver/*.parquet` — cleaned, typed, validated tables
-- `data/gold/*.parquet` — user-level features and final segmentation outputs
+- `artifacts/eda/<timestamp>/data/cleaned/*.parquet` — cleaned, typed, validated tables
+- `artifacts/eda/<timestamp>/data/transformed/*.parquet` — transformed tables with derived columns
+- `artifacts/outputs/*.parquet` — user-level features and final segmentation outputs
 
 ---
 
@@ -122,9 +119,27 @@ WHERE sign_up_date >= '2022-01-01'
   AND sign_up_date <  '2023-01-01';
 ```
 
-### 2) Sessions (cohort-scoped)
+### 2) Sessions (cohort-scoped + observation window)
 
 ```sql
+WITH cohort_users AS (
+  SELECT user_id
+  FROM users
+  WHERE sign_up_date >= '2022-01-01'
+    AND sign_up_date <  '2023-01-01'
+),
+filtered_sessions AS (
+  SELECT *
+  FROM sessions
+  WHERE session_start >= '2023-01-04'
+    AND page_clicks >= 2
+),
+active_users AS (
+  SELECT user_id
+  FROM filtered_sessions
+  GROUP BY user_id
+  HAVING COUNT(*) > 7
+)
 SELECT
   ses.cancellation,
   ses.flight_booked,
@@ -139,16 +154,34 @@ SELECT
   ses.session_start,
   ses.trip_id,
   ses.user_id
-FROM sessions AS ses
-JOIN users AS use
+FROM filtered_sessions AS ses
+JOIN cohort_users AS use
   ON use.user_id = ses.user_id
-WHERE use.sign_up_date >= '2022-01-01'
-  AND use.sign_up_date <  '2023-01-01';
+JOIN active_users AS act
+  ON act.user_id = ses.user_id;
 ```
 
 ### 3) Flights (cohort-scoped via sessions → users)
 
 ```sql
+WITH cohort_users AS (
+  SELECT user_id
+  FROM users
+  WHERE sign_up_date >= '2022-01-01'
+    AND sign_up_date <  '2023-01-01'
+),
+filtered_sessions AS (
+  SELECT ses.trip_id, ses.user_id
+  FROM sessions AS ses
+  WHERE ses.session_start >= '2023-01-04'
+    AND ses.page_clicks >= 2
+),
+active_users AS (
+  SELECT user_id
+  FROM filtered_sessions
+  GROUP BY user_id
+  HAVING COUNT(*) > 7
+)
 SELECT
   fli.base_fare_usd,
   fli.checked_bags,
@@ -164,17 +197,35 @@ SELECT
   fli.trip_airline,
   fli.trip_id
 FROM flights AS fli
-JOIN sessions AS ses
+JOIN filtered_sessions AS ses
   ON ses.trip_id = fli.trip_id
-JOIN users AS use
+JOIN cohort_users AS use
   ON use.user_id = ses.user_id
-WHERE use.sign_up_date >= '2022-01-01'
-  AND use.sign_up_date <  '2023-01-01';
+JOIN active_users AS act
+  ON act.user_id = ses.user_id;
 ```
 
 ### 4) Hotels (cohort-scoped via sessions → users)
 
 ```sql
+WITH cohort_users AS (
+  SELECT user_id
+  FROM users
+  WHERE sign_up_date >= '2022-01-01'
+    AND sign_up_date <  '2023-01-01'
+),
+filtered_sessions AS (
+  SELECT ses.trip_id, ses.user_id
+  FROM sessions AS ses
+  WHERE ses.session_start >= '2023-01-04'
+    AND ses.page_clicks >= 2
+),
+active_users AS (
+  SELECT user_id
+  FROM filtered_sessions
+  GROUP BY user_id
+  HAVING COUNT(*) > 7
+)
 SELECT
   hot.check_in_time,
   hot.check_out_time,
@@ -184,30 +235,30 @@ SELECT
   hot.rooms,
   hot.trip_id
 FROM hotels AS hot
-JOIN sessions AS ses
+JOIN filtered_sessions AS ses
   ON ses.trip_id = hot.trip_id
-JOIN users AS use
+JOIN cohort_users AS use
   ON use.user_id = ses.user_id
-WHERE use.sign_up_date >= '2022-01-01'
-  AND use.sign_up_date <  '2023-01-01';
+JOIN active_users AS act
+  ON act.user_id = ses.user_id;
 ```
 
 ---
 
-## Medallion architecture (multi-hop)
+## Processing stages (multi-hop)
 
-This project applies a **Medallion Architecture** (Multi-hop pipeline) to transform raw data into business-ready analytical outputs.
+This project applies a multi-hop pipeline to transform raw data into business-ready analytical outputs.
 
-### 🥉 Bronze layer: Raw ingestion (local-only)
+### Raw data: Ingestion
 
-**Status:** Raw, immutable exports (not committed)
+**Status:** Raw, immutable exports
 
 - Source: SQL exports from the TravelTide database
 - Format: CSV
 - Files: `users_full.csv`, `sessions_full.csv`, `flights_full.csv`, `hotels_full.csv`
 - Role: Landing zone for raw data. No transformations are applied here.
 
-### 🥈 Silver layer: Cleansed & conformed
+### Cleaned data: Cleansed & conformed
 
 **Status:** Typed, validated, corrected where necessary
 
@@ -221,7 +272,7 @@ Typical steps:
 #### Hotel nights correction (data quality)
 
 A known anomaly can occur in the `hotels.nights` column (e.g., zero/negative or mismatched values).
-In Silver, a corrected value can be derived from timestamps:
+In cleaned tables, a corrected value can be derived from timestamps:
 
 - `nights_corrected = DATE(check_out_time) - DATE(check_in_time)`
 
@@ -232,7 +283,7 @@ Recommended practice:
 - add `nights_was_corrected` (boolean flag)
 - filter invalid records (`nights_corrected <= 0`) if they cannot be reconciled
 
-#### Why Parquet in Silver/Gold?
+#### Why Parquet in cleaned/transformed data?
 
 Parquet is preferred over CSV for internal layers because it provides:
 
@@ -240,7 +291,7 @@ Parquet is preferred over CSV for internal layers because it provides:
 2. **Columnar performance** for analytics workloads
 3. **Compression & I/O efficiency** (smaller files, faster reads)
 
-### 🥇 Gold layer: Business-level aggregates (model-ready)
+### Transformed & outputs: Business-level aggregates (model-ready)
 
 **Status:** Enriched, aggregated, analytics-ready
 
@@ -250,7 +301,7 @@ Typical outputs:
 - Segment assignments (cluster labels / personas)
 - Perk recommendation per segment (business mapping)
 
-Gold is the final “source of truth” for:
+Outputs are the final “source of truth” for:
 
 - visualizations,
 - segment interpretation,
@@ -266,4 +317,4 @@ This repository prioritizes:
 - transparent cohort logic,
 - and professional pipeline structuring.
 
-Because raw data is not distributed with the repository, external users cannot reproduce the full results out-of-the-box. However, the extraction logic and processing steps are fully documented to demonstrate end-to-end capability and decision-making.
+Because raw data is distributed with the repository, external users can reproduce the results out-of-the-box. The extraction logic and processing steps are documented to demonstrate end-to-end capability and decision-making.

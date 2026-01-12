@@ -5,13 +5,20 @@ from __future__ import annotations
 import pandera as pa
 from pandera import Column, DataFrameSchema
 
+# NOTE:
+# Raw exports often use UUID-like IDs for session_id/trip_id.
+# Therefore we validate them as strings (not int64).
+# user_id is kept as Int64 (typical TravelTide dataset uses numeric user IDs).
+# If your raw export uses UUIDs for user_id too, switch user_id to pa.String.
+
 SESSION_RAW_SCHEMA = DataFrameSchema(
     {
-        "session_id": Column(pa.Int64, nullable=False),
+        "session_id": Column(pa.String, nullable=False),
         "user_id": Column(pa.Int64, nullable=False),
-        "trip_id": Column(pa.Int64, nullable=True),
+        "trip_id": Column(pa.String, nullable=True),
         "session_start": Column(pa.DateTime, nullable=False),
-        "session_end": Column(pa.DateTime, nullable=False),
+        # Raw exports may have missing/empty values -> allow null
+        "session_end": Column(pa.DateTime, nullable=True),
         "flight_discount": Column(pa.Float64, nullable=True),
         "hotel_discount": Column(pa.Float64, nullable=True),
         "flight_discount_amount": Column(pa.Float64, nullable=True),
@@ -31,11 +38,13 @@ SESSION_RAW_SCHEMA = DataFrameSchema(
         "origin_airport": Column(pa.String, nullable=True),
         "destination": Column(pa.String, nullable=True),
         "destination_airport": Column(pa.String, nullable=True),
-        "seats": Column(pa.Int64, nullable=True),
+        # These often become float64 due to NaNs in pandas.
+        # If you want strict nullable integers, see the alternative below.
+        "seats": Column(pa.Float64, nullable=True),
         "return_flight_booked": Column(pa.Bool, nullable=True),
         "departure_time": Column(pa.DateTime, nullable=True),
         "return_time": Column(pa.DateTime, nullable=True),
-        "checked_bags": Column(pa.Int64, nullable=True),
+        "checked_bags": Column(pa.Float64, nullable=True),
         "trip_airline": Column(pa.String, nullable=True),
         "base_fare_usd": Column(pa.Float64, nullable=True),
         "hotel_name": Column(pa.String, nullable=True),

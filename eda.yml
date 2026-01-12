@@ -1,0 +1,45 @@
+# Description: Process documentation and execution map for the TravelTide Step 1 EDA workflow.
+eda_workflow:
+  name: "Pure EDA Process (without Feature Engineering)"
+  description: "Explore and validate the dataset to uncover patterns, issues, and relationships before any modeling or feature work."
+  steps:
+    - id: objective_definition
+      title: "Objective Definition"
+      purpose: "Understand what the data describes and which questions it can answer"
+      note: "Clarifies the analysis scope, target outcomes, and what 'good' insights look like before touching the data."
+    - id: data_overview
+      title: "Data Overview"
+      purpose: "Number of observations, variables, data types, and value ranges"
+      note: "Builds a mental model of the dataset shape and basic constraints (e.g., expected ranges, units, and granularity)."
+    - id: data_quality_check
+      title: "Data Quality Check"
+      purpose: "Identify missing values, duplicates, and inconsistent entries"
+      note: "Surfaces reliability risks early to prevent misleading conclusions from flawed or inconsistent records."
+    - id: outlier_analysis
+      title: "Outlier Analysis"
+      purpose: "Detect unusual or extreme values"
+      note: "Flags potential data errors or rare-but-valid cases that can heavily influence statistics and plots."
+    - id: descriptive_statistics
+      title: "Descriptive Statistics"
+      purpose: "Metrics such as mean, median, minimum, maximum, and dispersion"
+      note: "Provides a numeric baseline summary to compare segments, validate expectations, and spot anomalies quickly."
+    - id: distribution_analysis
+      title: "Distribution Analysis"
+      purpose: "Examine distributions of individual variables"
+      note: "Reveals skewness, multimodality, sparsity, and imbalance—important for interpretation and later modeling choices."
+    - id: visualization
+      title: "Visualization"
+      purpose: "Graphical representations to identify patterns and structures"
+      note: "Makes trends, clusters, and anomalies easier to detect than with tables alone; supports intuitive validation."
+    - id: relationship_analysis
+      title: "Relationship Analysis"
+      purpose: "Analyze correlations and dependencies between variables"
+      note: "Identifies meaningful associations, potential confounders, and multicollinearity signals without claiming causality."
+    - id: key_insights
+      title: "Key Insights"
+      purpose: "Document notable patterns, trends, and potential data issues"
+      note: "Creates an auditable summary of findings and risks to align stakeholders and guide next steps."
+    - id: hypothesis_generation
+      title: "Hypothesis Generation"
+      purpose: "Derive questions and assumptions for subsequent analyses or models"
+      note: "Turns observations into testable ideas to investigate with deeper analysis or modeling later."
