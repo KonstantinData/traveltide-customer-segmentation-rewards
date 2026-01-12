@@ -32,7 +32,7 @@ Notes
 
 from __future__ import annotations
 
-from typing import Final
+from typing import Final, Sequence
 
 import pandas as pd
 
@@ -42,7 +42,7 @@ from .config import EDAConfig
 
 # Stable output contract: keep column order consistent across runs.
 # If some columns are missing in raw, they will be created as NA.
-_SESSION_LEVEL_COLUMNS: Final[list[str]] = [
+_SESSION_LEVEL_COLUMNS: Final[Sequence[str]] = [
     # Session facts
     "session_id",
     "user_id",
