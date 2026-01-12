@@ -24,10 +24,11 @@ htmlcov/
 .env
 .env.*
 !.env.example
-data/bronze/flights_full.csv
-data/bronze/hotels_full.csv
-data/bronze/sessions_full.csv
-data/bronze/users_full.csv
+data\flights_full.csv
+data\hotels_full.csv
+data\sessions_full.csv
+data\users_full.csv
+
 
 # =========================
 # OS / IDE
@@ -60,3 +61,6 @@ artifacts/**
 # =========================
 artifacts/eda/*
 !artifacts/eda/.gitkeep
+
+# large local datasets
+/data/*_full.csv
