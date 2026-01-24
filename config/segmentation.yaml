@@ -10,9 +10,9 @@ segmentation:
     - avg_page_clicks
     - p_flight_booked
     - p_hotel_booked
-    - p_cancellation_session
-    - p_flight_discount_shown
-    - p_hotel_discount_shown
+    - p_cancellation
+    - p_flight_discount
+    - p_hotel_discount
     - avg_flight_discount_amount
     - avg_hotel_discount_amount
     - avg_base_fare_usd
