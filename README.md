@@ -40,7 +40,7 @@ The intended outcome is a **portfolio-ready** deliverable that is reproducible (
   - `docs/step3_insights_strategy/`
   - `docs/step4_presentation/`
   - `docs/adr/`
-- `notebooks/` — supporting notebooks (optional; not the long-term source of truth)
+- `notebooks/` — professional analytics notebooks with comprehensive EDA, feature engineering, segmentation, and presentation assets
 - `scripts/` — one-off utilities / experiments
 - `artifacts/` — generated outputs (exports, charts, tables). The folder is versioned; generated contents are typically ignored.
 
@@ -325,7 +325,7 @@ The CLI is the intended “golden path” entry point:
 <pre class="overflow-visible! px-0!" data-start="6338" data-end="6377"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-bash"><span><span>python -m traveltide --</span><span>help</span><span>
 </span></span></code></div></div></pre>
 
-Note: At the moment, CLI commands are placeholders; the pipeline will be wired in as the project progresses.
+
 
 ---
 
