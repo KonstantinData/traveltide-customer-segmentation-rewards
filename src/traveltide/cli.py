@@ -18,6 +18,7 @@ from traveltide.eda import run_eda
 from traveltide.eda.dq_report import cmd_dq_report
 from traveltide.features.pipeline import run_features
 from traveltide.perks.mapping import write_customer_perks
+from traveltide.pipeline import run_end_to_end
 from traveltide.reports.executive_summary import cmd_executive_summary
 from traveltide.reports.final_report import cmd_final_report
 from traveltide.segmentation.run import run_segmentation_job
@@ -56,6 +57,22 @@ def build_parser() -> argparse.ArgumentParser:
         "--mode",
         default="golden-path",
         help="Execution mode placeholder (reserved for future pipeline modes).",
+    )
+    run.add_argument(
+        "--seed",
+        default=None,
+        type=int,
+        help="Optional random seed for reproducibility.",
+    )
+    run.add_argument(
+        "--run-id",
+        default=None,
+        help="Optional run identifier used to name the artifacts folder.",
+    )
+    run.add_argument(
+        "--outdir",
+        default=str(Path("artifacts") / "runs"),
+        help="Base output directory for pipeline runs (default: artifacts/runs).",
     )
 
     # Notes: TT-012 reproducible EDA report generator (artifact emitter).
@@ -182,10 +199,12 @@ def cmd_info(show_env: bool) -> int:
 
 
 # Notes: Placeholder command to preserve a stable automation entrypoint.
-def cmd_run(mode: str) -> int:
-    # Notes: Provides a stable placeholder command so automation/docs can reference it before implementation.
-    print("Golden path placeholder: pipeline not implemented yet.")
-    print(f"Requested mode: {mode}")
+def cmd_run(mode: str, seed: int | None, run_id: str | None, outdir: str) -> int:
+    # Notes: Creates a run directory and captures metadata to keep automation stable.
+    run_dir = run_end_to_end(mode=mode, seed=seed, run_id=run_id, outdir=outdir)
+    if run_id and run_dir.name != run_id:
+        print(f"Requested run-id already exists. Created run directory: {run_dir.name}")
+    print(f"Run directory: {run_dir}")
     return 0
 
 
@@ -210,7 +229,12 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     # Notes: "run" command routing.
     if args.command == "run":
-        return cmd_run(mode=str(args.mode))
+        return cmd_run(
+            mode=str(args.mode),
+            seed=args.seed,
+            run_id=args.run_id,
+            outdir=str(args.outdir),
+        )
 
     # Notes: "eda" command routing.
     if args.command == "eda":
