@@ -69,6 +69,14 @@ def run_features(config_path: str, outdir: str | None = None) -> Path:
         max_cols=max_cols,
     )
 
+    # Fill missing values for numeric features with 0 (means customer didn't use that service)
+    numeric_cols = [
+        col
+        for col in features.columns
+        if col.startswith("avg_") and features[col].dtype in ["float64", "int64"]
+    ]
+    features[numeric_cols] = features[numeric_cols].fillna(0)
+
     if features_cfg.get("validate_schema", False):
         schema = build_customer_features_schema(features_cfg)
         schema.validate(features)

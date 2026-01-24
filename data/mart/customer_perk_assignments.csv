@@ -1,0 +1,641 @@
+user_id,segment,persona_name,primary_perk
+94883,2,Staycation Bundlers,Hotel/room perks
+101486,4,Cautious Evaluators,Risk-reduction perks
+106907,0,Explorer Planners,Planning tools + itinerary support
+118043,2,Staycation Bundlers,Hotel/room perks
+120851,4,Cautious Evaluators,Risk-reduction perks
+125845,1,Deal-Driven Flyers,Flight discounting
+133058,0,Explorer Planners,Planning tools + itinerary support
+149058,1,Deal-Driven Flyers,Flight discounting
+152583,2,Staycation Bundlers,Hotel/room perks
+153982,1,Deal-Driven Flyers,Flight discounting
+160754,4,Cautious Evaluators,Risk-reduction perks
+164522,4,Cautious Evaluators,Risk-reduction perks
+167852,0,Explorer Planners,Planning tools + itinerary support
+171470,0,Explorer Planners,Planning tools + itinerary support
+174997,2,Staycation Bundlers,Hotel/room perks
+175032,2,Staycation Bundlers,Hotel/room perks
+181157,2,Staycation Bundlers,Hotel/room perks
+182191,3,Frequent Business Travelers,Loyalty accelerators
+187212,2,Staycation Bundlers,Hotel/room perks
+189676,4,Cautious Evaluators,Risk-reduction perks
+190866,1,Deal-Driven Flyers,Flight discounting
+195192,2,Staycation Bundlers,Hotel/room perks
+204943,1,Deal-Driven Flyers,Flight discounting
+204997,2,Staycation Bundlers,Hotel/room perks
+205044,1,Deal-Driven Flyers,Flight discounting
+206011,2,Staycation Bundlers,Hotel/room perks
+217114,0,Explorer Planners,Planning tools + itinerary support
+217136,4,Cautious Evaluators,Risk-reduction perks
+220725,1,Deal-Driven Flyers,Flight discounting
+224996,4,Cautious Evaluators,Risk-reduction perks
+226367,4,Cautious Evaluators,Risk-reduction perks
+228195,0,Explorer Planners,Planning tools + itinerary support
+228872,4,Cautious Evaluators,Risk-reduction perks
+229009,3,Frequent Business Travelers,Loyalty accelerators
+229108,0,Explorer Planners,Planning tools + itinerary support
+229330,1,Deal-Driven Flyers,Flight discounting
+232647,4,Cautious Evaluators,Risk-reduction perks
+249521,2,Staycation Bundlers,Hotel/room perks
+252835,1,Deal-Driven Flyers,Flight discounting
+258451,4,Cautious Evaluators,Risk-reduction perks
+264470,4,Cautious Evaluators,Risk-reduction perks
+276512,2,Staycation Bundlers,Hotel/room perks
+281952,2,Staycation Bundlers,Hotel/room perks
+283325,4,Cautious Evaluators,Risk-reduction perks
+290123,1,Deal-Driven Flyers,Flight discounting
+297546,1,Deal-Driven Flyers,Flight discounting
+298253,0,Explorer Planners,Planning tools + itinerary support
+299476,2,Staycation Bundlers,Hotel/room perks
+306165,0,Explorer Planners,Planning tools + itinerary support
+306819,4,Cautious Evaluators,Risk-reduction perks
+312488,2,Staycation Bundlers,Hotel/room perks
+313724,1,Deal-Driven Flyers,Flight discounting
+316527,1,Deal-Driven Flyers,Flight discounting
+317688,1,Deal-Driven Flyers,Flight discounting
+322867,4,Cautious Evaluators,Risk-reduction perks
+324191,2,Staycation Bundlers,Hotel/room perks
+328590,1,Deal-Driven Flyers,Flight discounting
+330764,1,Deal-Driven Flyers,Flight discounting
+330893,1,Deal-Driven Flyers,Flight discounting
+331039,3,Frequent Business Travelers,Loyalty accelerators
+334787,4,Cautious Evaluators,Risk-reduction perks
+337227,0,Explorer Planners,Planning tools + itinerary support
+338086,2,Staycation Bundlers,Hotel/room perks
+340166,4,Cautious Evaluators,Risk-reduction perks
+343928,2,Staycation Bundlers,Hotel/room perks
+347778,4,Cautious Evaluators,Risk-reduction perks
+348817,1,Deal-Driven Flyers,Flight discounting
+348863,0,Explorer Planners,Planning tools + itinerary support
+349132,2,Staycation Bundlers,Hotel/room perks
+353271,2,Staycation Bundlers,Hotel/room perks
+353694,4,Cautious Evaluators,Risk-reduction perks
+354050,1,Deal-Driven Flyers,Flight discounting
+354260,4,Cautious Evaluators,Risk-reduction perks
+354311,4,Cautious Evaluators,Risk-reduction perks
+354950,4,Cautious Evaluators,Risk-reduction perks
+356046,4,Cautious Evaluators,Risk-reduction perks
+357737,1,Deal-Driven Flyers,Flight discounting
+359072,4,Cautious Evaluators,Risk-reduction perks
+359080,2,Staycation Bundlers,Hotel/room perks
+359653,2,Staycation Bundlers,Hotel/room perks
+361459,2,Staycation Bundlers,Hotel/room perks
+361759,2,Staycation Bundlers,Hotel/room perks
+363535,3,Frequent Business Travelers,Loyalty accelerators
+365825,4,Cautious Evaluators,Risk-reduction perks
+371201,0,Explorer Planners,Planning tools + itinerary support
+373489,0,Explorer Planners,Planning tools + itinerary support
+374331,2,Staycation Bundlers,Hotel/room perks
+374340,0,Explorer Planners,Planning tools + itinerary support
+374341,4,Cautious Evaluators,Risk-reduction perks
+375160,0,Explorer Planners,Planning tools + itinerary support
+375729,2,Staycation Bundlers,Hotel/room perks
+375751,1,Deal-Driven Flyers,Flight discounting
+376159,4,Cautious Evaluators,Risk-reduction perks
+377411,2,Staycation Bundlers,Hotel/room perks
+378565,4,Cautious Evaluators,Risk-reduction perks
+379543,2,Staycation Bundlers,Hotel/room perks
+380434,4,Cautious Evaluators,Risk-reduction perks
+380436,2,Staycation Bundlers,Hotel/room perks
+380757,1,Deal-Driven Flyers,Flight discounting
+380874,2,Staycation Bundlers,Hotel/room perks
+380949,1,Deal-Driven Flyers,Flight discounting
+381259,2,Staycation Bundlers,Hotel/room perks
+381465,3,Frequent Business Travelers,Loyalty accelerators
+382181,4,Cautious Evaluators,Risk-reduction perks
+382384,4,Cautious Evaluators,Risk-reduction perks
+382533,0,Explorer Planners,Planning tools + itinerary support
+385689,4,Cautious Evaluators,Risk-reduction perks
+386469,0,Explorer Planners,Planning tools + itinerary support
+386914,2,Staycation Bundlers,Hotel/room perks
+387282,4,Cautious Evaluators,Risk-reduction perks
+387783,4,Cautious Evaluators,Risk-reduction perks
+388328,2,Staycation Bundlers,Hotel/room perks
+388767,4,Cautious Evaluators,Risk-reduction perks
+388947,2,Staycation Bundlers,Hotel/room perks
+389662,4,Cautious Evaluators,Risk-reduction perks
+389759,1,Deal-Driven Flyers,Flight discounting
+390811,4,Cautious Evaluators,Risk-reduction perks
+392453,4,Cautious Evaluators,Risk-reduction perks
+395202,4,Cautious Evaluators,Risk-reduction perks
+395981,4,Cautious Evaluators,Risk-reduction perks
+396552,1,Deal-Driven Flyers,Flight discounting
+399137,1,Deal-Driven Flyers,Flight discounting
+399218,4,Cautious Evaluators,Risk-reduction perks
+399799,1,Deal-Driven Flyers,Flight discounting
+400275,4,Cautious Evaluators,Risk-reduction perks
+400582,2,Staycation Bundlers,Hotel/room perks
+400899,1,Deal-Driven Flyers,Flight discounting
+401245,2,Staycation Bundlers,Hotel/room perks
+402332,2,Staycation Bundlers,Hotel/room perks
+402978,1,Deal-Driven Flyers,Flight discounting
+403881,1,Deal-Driven Flyers,Flight discounting
+404879,1,Deal-Driven Flyers,Flight discounting
+405305,2,Staycation Bundlers,Hotel/room perks
+406210,4,Cautious Evaluators,Risk-reduction perks
+407118,3,Frequent Business Travelers,Loyalty accelerators
+407250,1,Deal-Driven Flyers,Flight discounting
+407434,4,Cautious Evaluators,Risk-reduction perks
+407642,4,Cautious Evaluators,Risk-reduction perks
+408551,2,Staycation Bundlers,Hotel/room perks
+409073,1,Deal-Driven Flyers,Flight discounting
+411701,2,Staycation Bundlers,Hotel/room perks
+413128,2,Staycation Bundlers,Hotel/room perks
+413340,4,Cautious Evaluators,Risk-reduction perks
+413418,2,Staycation Bundlers,Hotel/room perks
+413658,3,Frequent Business Travelers,Loyalty accelerators
+414128,1,Deal-Driven Flyers,Flight discounting
+415282,2,Staycation Bundlers,Hotel/room perks
+415381,2,Staycation Bundlers,Hotel/room perks
+416319,1,Deal-Driven Flyers,Flight discounting
+416580,3,Frequent Business Travelers,Loyalty accelerators
+417679,2,Staycation Bundlers,Hotel/room perks
+418329,2,Staycation Bundlers,Hotel/room perks
+418488,1,Deal-Driven Flyers,Flight discounting
+418692,2,Staycation Bundlers,Hotel/room perks
+420648,4,Cautious Evaluators,Risk-reduction perks
+420669,3,Frequent Business Travelers,Loyalty accelerators
+421247,1,Deal-Driven Flyers,Flight discounting
+421515,1,Deal-Driven Flyers,Flight discounting
+421666,4,Cautious Evaluators,Risk-reduction perks
+421700,2,Staycation Bundlers,Hotel/room perks
+421870,2,Staycation Bundlers,Hotel/room perks
+422066,1,Deal-Driven Flyers,Flight discounting
+422668,0,Explorer Planners,Planning tools + itinerary support
+423042,3,Frequent Business Travelers,Loyalty accelerators
+423413,0,Explorer Planners,Planning tools + itinerary support
+424553,2,Staycation Bundlers,Hotel/room perks
+425632,4,Cautious Evaluators,Risk-reduction perks
+425653,0,Explorer Planners,Planning tools + itinerary support
+425953,1,Deal-Driven Flyers,Flight discounting
+425966,4,Cautious Evaluators,Risk-reduction perks
+426478,3,Frequent Business Travelers,Loyalty accelerators
+427426,2,Staycation Bundlers,Hotel/room perks
+427506,2,Staycation Bundlers,Hotel/room perks
+428056,4,Cautious Evaluators,Risk-reduction perks
+428552,2,Staycation Bundlers,Hotel/room perks
+428858,1,Deal-Driven Flyers,Flight discounting
+429345,4,Cautious Evaluators,Risk-reduction perks
+429375,3,Frequent Business Travelers,Loyalty accelerators
+430722,3,Frequent Business Travelers,Loyalty accelerators
+431144,2,Staycation Bundlers,Hotel/room perks
+431337,1,Deal-Driven Flyers,Flight discounting
+431746,2,Staycation Bundlers,Hotel/room perks
+431899,3,Frequent Business Travelers,Loyalty accelerators
+431912,0,Explorer Planners,Planning tools + itinerary support
+432333,2,Staycation Bundlers,Hotel/room perks
+432637,2,Staycation Bundlers,Hotel/room perks
+432941,1,Deal-Driven Flyers,Flight discounting
+433080,1,Deal-Driven Flyers,Flight discounting
+433339,4,Cautious Evaluators,Risk-reduction perks
+433905,4,Cautious Evaluators,Risk-reduction perks
+434238,2,Staycation Bundlers,Hotel/room perks
+434623,1,Deal-Driven Flyers,Flight discounting
+435231,4,Cautious Evaluators,Risk-reduction perks
+435596,2,Staycation Bundlers,Hotel/room perks
+435669,2,Staycation Bundlers,Hotel/room perks
+435837,4,Cautious Evaluators,Risk-reduction perks
+435882,2,Staycation Bundlers,Hotel/room perks
+436320,2,Staycation Bundlers,Hotel/room perks
+436894,2,Staycation Bundlers,Hotel/room perks
+437069,1,Deal-Driven Flyers,Flight discounting
+437162,4,Cautious Evaluators,Risk-reduction perks
+437251,1,Deal-Driven Flyers,Flight discounting
+437539,1,Deal-Driven Flyers,Flight discounting
+437549,2,Staycation Bundlers,Hotel/room perks
+438189,1,Deal-Driven Flyers,Flight discounting
+438406,2,Staycation Bundlers,Hotel/room perks
+438551,2,Staycation Bundlers,Hotel/room perks
+438596,4,Cautious Evaluators,Risk-reduction perks
+438839,2,Staycation Bundlers,Hotel/room perks
+438937,2,Staycation Bundlers,Hotel/room perks
+438985,3,Frequent Business Travelers,Loyalty accelerators
+438995,0,Explorer Planners,Planning tools + itinerary support
+439052,2,Staycation Bundlers,Hotel/room perks
+439120,2,Staycation Bundlers,Hotel/room perks
+439363,1,Deal-Driven Flyers,Flight discounting
+440655,2,Staycation Bundlers,Hotel/room perks
+441200,2,Staycation Bundlers,Hotel/room perks
+441205,0,Explorer Planners,Planning tools + itinerary support
+441448,4,Cautious Evaluators,Risk-reduction perks
+441457,2,Staycation Bundlers,Hotel/room perks
+441982,1,Deal-Driven Flyers,Flight discounting
+442484,2,Staycation Bundlers,Hotel/room perks
+442718,2,Staycation Bundlers,Hotel/room perks
+442812,4,Cautious Evaluators,Risk-reduction perks
+442819,2,Staycation Bundlers,Hotel/room perks
+442833,1,Deal-Driven Flyers,Flight discounting
+443305,4,Cautious Evaluators,Risk-reduction perks
+443453,2,Staycation Bundlers,Hotel/room perks
+443652,1,Deal-Driven Flyers,Flight discounting
+444387,4,Cautious Evaluators,Risk-reduction perks
+444885,2,Staycation Bundlers,Hotel/room perks
+445515,2,Staycation Bundlers,Hotel/room perks
+446124,1,Deal-Driven Flyers,Flight discounting
+446138,1,Deal-Driven Flyers,Flight discounting
+446473,2,Staycation Bundlers,Hotel/room perks
+446933,1,Deal-Driven Flyers,Flight discounting
+447053,2,Staycation Bundlers,Hotel/room perks
+447591,4,Cautious Evaluators,Risk-reduction perks
+447737,2,Staycation Bundlers,Hotel/room perks
+447951,1,Deal-Driven Flyers,Flight discounting
+448025,4,Cautious Evaluators,Risk-reduction perks
+448154,2,Staycation Bundlers,Hotel/room perks
+448295,4,Cautious Evaluators,Risk-reduction perks
+448467,4,Cautious Evaluators,Risk-reduction perks
+448564,1,Deal-Driven Flyers,Flight discounting
+449033,1,Deal-Driven Flyers,Flight discounting
+449619,2,Staycation Bundlers,Hotel/room perks
+449804,1,Deal-Driven Flyers,Flight discounting
+449980,3,Frequent Business Travelers,Loyalty accelerators
+450164,1,Deal-Driven Flyers,Flight discounting
+450193,4,Cautious Evaluators,Risk-reduction perks
+450305,2,Staycation Bundlers,Hotel/room perks
+450615,1,Deal-Driven Flyers,Flight discounting
+451291,2,Staycation Bundlers,Hotel/room perks
+451674,0,Explorer Planners,Planning tools + itinerary support
+452034,3,Frequent Business Travelers,Loyalty accelerators
+452532,1,Deal-Driven Flyers,Flight discounting
+452594,1,Deal-Driven Flyers,Flight discounting
+452612,3,Frequent Business Travelers,Loyalty accelerators
+453168,4,Cautious Evaluators,Risk-reduction perks
+454264,0,Explorer Planners,Planning tools + itinerary support
+454430,2,Staycation Bundlers,Hotel/room perks
+454616,4,Cautious Evaluators,Risk-reduction perks
+454661,4,Cautious Evaluators,Risk-reduction perks
+454920,1,Deal-Driven Flyers,Flight discounting
+454934,3,Frequent Business Travelers,Loyalty accelerators
+454955,4,Cautious Evaluators,Risk-reduction perks
+456226,1,Deal-Driven Flyers,Flight discounting
+456318,4,Cautious Evaluators,Risk-reduction perks
+456663,4,Cautious Evaluators,Risk-reduction perks
+457468,2,Staycation Bundlers,Hotel/room perks
+457599,1,Deal-Driven Flyers,Flight discounting
+458479,1,Deal-Driven Flyers,Flight discounting
+458688,4,Cautious Evaluators,Risk-reduction perks
+458725,0,Explorer Planners,Planning tools + itinerary support
+458762,4,Cautious Evaluators,Risk-reduction perks
+458814,2,Staycation Bundlers,Hotel/room perks
+458855,2,Staycation Bundlers,Hotel/room perks
+458919,2,Staycation Bundlers,Hotel/room perks
+459229,4,Cautious Evaluators,Risk-reduction perks
+459486,2,Staycation Bundlers,Hotel/room perks
+459645,4,Cautious Evaluators,Risk-reduction perks
+460072,2,Staycation Bundlers,Hotel/room perks
+460181,4,Cautious Evaluators,Risk-reduction perks
+460553,4,Cautious Evaluators,Risk-reduction perks
+460625,3,Frequent Business Travelers,Loyalty accelerators
+461559,1,Deal-Driven Flyers,Flight discounting
+461744,4,Cautious Evaluators,Risk-reduction perks
+461791,2,Staycation Bundlers,Hotel/room perks
+462127,2,Staycation Bundlers,Hotel/room perks
+462456,1,Deal-Driven Flyers,Flight discounting
+462894,0,Explorer Planners,Planning tools + itinerary support
+463652,2,Staycation Bundlers,Hotel/room perks
+463698,1,Deal-Driven Flyers,Flight discounting
+463783,4,Cautious Evaluators,Risk-reduction perks
+463867,2,Staycation Bundlers,Hotel/room perks
+463910,1,Deal-Driven Flyers,Flight discounting
+464080,4,Cautious Evaluators,Risk-reduction perks
+464239,2,Staycation Bundlers,Hotel/room perks
+464614,1,Deal-Driven Flyers,Flight discounting
+464673,4,Cautious Evaluators,Risk-reduction perks
+464782,4,Cautious Evaluators,Risk-reduction perks
+464855,4,Cautious Evaluators,Risk-reduction perks
+465138,1,Deal-Driven Flyers,Flight discounting
+465343,2,Staycation Bundlers,Hotel/room perks
+465531,2,Staycation Bundlers,Hotel/room perks
+465731,1,Deal-Driven Flyers,Flight discounting
+466205,4,Cautious Evaluators,Risk-reduction perks
+466342,4,Cautious Evaluators,Risk-reduction perks
+466723,3,Frequent Business Travelers,Loyalty accelerators
+467007,4,Cautious Evaluators,Risk-reduction perks
+467092,4,Cautious Evaluators,Risk-reduction perks
+467339,4,Cautious Evaluators,Risk-reduction perks
+467809,2,Staycation Bundlers,Hotel/room perks
+467892,3,Frequent Business Travelers,Loyalty accelerators
+468106,1,Deal-Driven Flyers,Flight discounting
+468370,1,Deal-Driven Flyers,Flight discounting
+468409,1,Deal-Driven Flyers,Flight discounting
+468666,2,Staycation Bundlers,Hotel/room perks
+468801,2,Staycation Bundlers,Hotel/room perks
+468808,2,Staycation Bundlers,Hotel/room perks
+468832,3,Frequent Business Travelers,Loyalty accelerators
+469237,2,Staycation Bundlers,Hotel/room perks
+469418,0,Explorer Planners,Planning tools + itinerary support
+469464,2,Staycation Bundlers,Hotel/room perks
+469699,1,Deal-Driven Flyers,Flight discounting
+469767,1,Deal-Driven Flyers,Flight discounting
+469824,2,Staycation Bundlers,Hotel/room perks
+471077,1,Deal-Driven Flyers,Flight discounting
+471161,2,Staycation Bundlers,Hotel/room perks
+471186,2,Staycation Bundlers,Hotel/room perks
+471500,4,Cautious Evaluators,Risk-reduction perks
+471565,4,Cautious Evaluators,Risk-reduction perks
+471649,0,Explorer Planners,Planning tools + itinerary support
+471687,1,Deal-Driven Flyers,Flight discounting
+471717,2,Staycation Bundlers,Hotel/room perks
+471935,1,Deal-Driven Flyers,Flight discounting
+471973,0,Explorer Planners,Planning tools + itinerary support
+472394,4,Cautious Evaluators,Risk-reduction perks
+472446,4,Cautious Evaluators,Risk-reduction perks
+472614,4,Cautious Evaluators,Risk-reduction perks
+472713,2,Staycation Bundlers,Hotel/room perks
+472785,4,Cautious Evaluators,Risk-reduction perks
+472966,4,Cautious Evaluators,Risk-reduction perks
+473332,2,Staycation Bundlers,Hotel/room perks
+473343,1,Deal-Driven Flyers,Flight discounting
+473402,3,Frequent Business Travelers,Loyalty accelerators
+473467,1,Deal-Driven Flyers,Flight discounting
+473568,2,Staycation Bundlers,Hotel/room perks
+473712,1,Deal-Driven Flyers,Flight discounting
+473847,2,Staycation Bundlers,Hotel/room perks
+474007,4,Cautious Evaluators,Risk-reduction perks
+474120,2,Staycation Bundlers,Hotel/room perks
+474239,0,Explorer Planners,Planning tools + itinerary support
+474261,2,Staycation Bundlers,Hotel/room perks
+474278,0,Explorer Planners,Planning tools + itinerary support
+474384,1,Deal-Driven Flyers,Flight discounting
+474464,2,Staycation Bundlers,Hotel/room perks
+474546,2,Staycation Bundlers,Hotel/room perks
+474951,1,Deal-Driven Flyers,Flight discounting
+474980,4,Cautious Evaluators,Risk-reduction perks
+475060,2,Staycation Bundlers,Hotel/room perks
+475130,1,Deal-Driven Flyers,Flight discounting
+475467,2,Staycation Bundlers,Hotel/room perks
+475531,1,Deal-Driven Flyers,Flight discounting
+476081,1,Deal-Driven Flyers,Flight discounting
+476104,1,Deal-Driven Flyers,Flight discounting
+476124,2,Staycation Bundlers,Hotel/room perks
+476173,4,Cautious Evaluators,Risk-reduction perks
+476270,4,Cautious Evaluators,Risk-reduction perks
+476393,4,Cautious Evaluators,Risk-reduction perks
+476436,1,Deal-Driven Flyers,Flight discounting
+476535,1,Deal-Driven Flyers,Flight discounting
+476665,1,Deal-Driven Flyers,Flight discounting
+476693,1,Deal-Driven Flyers,Flight discounting
+476714,1,Deal-Driven Flyers,Flight discounting
+476742,4,Cautious Evaluators,Risk-reduction perks
+476916,0,Explorer Planners,Planning tools + itinerary support
+476956,4,Cautious Evaluators,Risk-reduction perks
+477285,2,Staycation Bundlers,Hotel/room perks
+477597,4,Cautious Evaluators,Risk-reduction perks
+477730,1,Deal-Driven Flyers,Flight discounting
+477805,4,Cautious Evaluators,Risk-reduction perks
+478003,2,Staycation Bundlers,Hotel/room perks
+478146,2,Staycation Bundlers,Hotel/room perks
+478188,4,Cautious Evaluators,Risk-reduction perks
+478228,4,Cautious Evaluators,Risk-reduction perks
+478291,4,Cautious Evaluators,Risk-reduction perks
+478533,4,Cautious Evaluators,Risk-reduction perks
+478585,1,Deal-Driven Flyers,Flight discounting
+478760,4,Cautious Evaluators,Risk-reduction perks
+478801,2,Staycation Bundlers,Hotel/room perks
+479071,1,Deal-Driven Flyers,Flight discounting
+479078,4,Cautious Evaluators,Risk-reduction perks
+479101,2,Staycation Bundlers,Hotel/room perks
+479254,2,Staycation Bundlers,Hotel/room perks
+479524,0,Explorer Planners,Planning tools + itinerary support
+479785,0,Explorer Planners,Planning tools + itinerary support
+480186,0,Explorer Planners,Planning tools + itinerary support
+480313,2,Staycation Bundlers,Hotel/room perks
+480690,1,Deal-Driven Flyers,Flight discounting
+480796,4,Cautious Evaluators,Risk-reduction perks
+480877,2,Staycation Bundlers,Hotel/room perks
+480895,4,Cautious Evaluators,Risk-reduction perks
+481050,4,Cautious Evaluators,Risk-reduction perks
+481245,4,Cautious Evaluators,Risk-reduction perks
+481292,1,Deal-Driven Flyers,Flight discounting
+481358,0,Explorer Planners,Planning tools + itinerary support
+481554,1,Deal-Driven Flyers,Flight discounting
+481622,1,Deal-Driven Flyers,Flight discounting
+481772,4,Cautious Evaluators,Risk-reduction perks
+481781,0,Explorer Planners,Planning tools + itinerary support
+482264,2,Staycation Bundlers,Hotel/room perks
+482335,0,Explorer Planners,Planning tools + itinerary support
+482424,2,Staycation Bundlers,Hotel/room perks
+482548,1,Deal-Driven Flyers,Flight discounting
+482621,4,Cautious Evaluators,Risk-reduction perks
+482630,2,Staycation Bundlers,Hotel/room perks
+482744,2,Staycation Bundlers,Hotel/room perks
+482811,2,Staycation Bundlers,Hotel/room perks
+483237,1,Deal-Driven Flyers,Flight discounting
+483345,1,Deal-Driven Flyers,Flight discounting
+483480,1,Deal-Driven Flyers,Flight discounting
+483483,2,Staycation Bundlers,Hotel/room perks
+483525,2,Staycation Bundlers,Hotel/room perks
+483603,2,Staycation Bundlers,Hotel/room perks
+483928,1,Deal-Driven Flyers,Flight discounting
+483982,4,Cautious Evaluators,Risk-reduction perks
+484249,4,Cautious Evaluators,Risk-reduction perks
+484342,0,Explorer Planners,Planning tools + itinerary support
+485149,2,Staycation Bundlers,Hotel/room perks
+485260,2,Staycation Bundlers,Hotel/room perks
+485393,4,Cautious Evaluators,Risk-reduction perks
+485505,4,Cautious Evaluators,Risk-reduction perks
+485518,0,Explorer Planners,Planning tools + itinerary support
+485536,0,Explorer Planners,Planning tools + itinerary support
+485544,1,Deal-Driven Flyers,Flight discounting
+485591,2,Staycation Bundlers,Hotel/room perks
+485658,1,Deal-Driven Flyers,Flight discounting
+485780,1,Deal-Driven Flyers,Flight discounting
+485785,2,Staycation Bundlers,Hotel/room perks
+485891,3,Frequent Business Travelers,Loyalty accelerators
+485894,4,Cautious Evaluators,Risk-reduction perks
+486113,2,Staycation Bundlers,Hotel/room perks
+486191,4,Cautious Evaluators,Risk-reduction perks
+486261,4,Cautious Evaluators,Risk-reduction perks
+486268,0,Explorer Planners,Planning tools + itinerary support
+486270,4,Cautious Evaluators,Risk-reduction perks
+486366,4,Cautious Evaluators,Risk-reduction perks
+486447,3,Frequent Business Travelers,Loyalty accelerators
+486454,1,Deal-Driven Flyers,Flight discounting
+486605,2,Staycation Bundlers,Hotel/room perks
+486671,1,Deal-Driven Flyers,Flight discounting
+486751,1,Deal-Driven Flyers,Flight discounting
+486823,2,Staycation Bundlers,Hotel/room perks
+487002,4,Cautious Evaluators,Risk-reduction perks
+487036,2,Staycation Bundlers,Hotel/room perks
+487040,2,Staycation Bundlers,Hotel/room perks
+487101,1,Deal-Driven Flyers,Flight discounting
+487276,1,Deal-Driven Flyers,Flight discounting
+487352,2,Staycation Bundlers,Hotel/room perks
+487453,1,Deal-Driven Flyers,Flight discounting
+487637,2,Staycation Bundlers,Hotel/room perks
+487680,3,Frequent Business Travelers,Loyalty accelerators
+487715,2,Staycation Bundlers,Hotel/room perks
+487858,4,Cautious Evaluators,Risk-reduction perks
+487954,2,Staycation Bundlers,Hotel/room perks
+488009,4,Cautious Evaluators,Risk-reduction perks
+488314,1,Deal-Driven Flyers,Flight discounting
+488410,1,Deal-Driven Flyers,Flight discounting
+488430,0,Explorer Planners,Planning tools + itinerary support
+488480,3,Frequent Business Travelers,Loyalty accelerators
+488511,4,Cautious Evaluators,Risk-reduction perks
+488529,2,Staycation Bundlers,Hotel/room perks
+488539,0,Explorer Planners,Planning tools + itinerary support
+488672,1,Deal-Driven Flyers,Flight discounting
+488827,1,Deal-Driven Flyers,Flight discounting
+488870,4,Cautious Evaluators,Risk-reduction perks
+488918,1,Deal-Driven Flyers,Flight discounting
+488974,1,Deal-Driven Flyers,Flight discounting
+489096,4,Cautious Evaluators,Risk-reduction perks
+489131,0,Explorer Planners,Planning tools + itinerary support
+489575,1,Deal-Driven Flyers,Flight discounting
+489635,1,Deal-Driven Flyers,Flight discounting
+489730,4,Cautious Evaluators,Risk-reduction perks
+489785,2,Staycation Bundlers,Hotel/room perks
+489786,0,Explorer Planners,Planning tools + itinerary support
+489802,4,Cautious Evaluators,Risk-reduction perks
+489844,2,Staycation Bundlers,Hotel/room perks
+489852,2,Staycation Bundlers,Hotel/room perks
+489949,4,Cautious Evaluators,Risk-reduction perks
+489953,1,Deal-Driven Flyers,Flight discounting
+489992,2,Staycation Bundlers,Hotel/room perks
+490040,2,Staycation Bundlers,Hotel/room perks
+490107,1,Deal-Driven Flyers,Flight discounting
+490201,2,Staycation Bundlers,Hotel/room perks
+490358,2,Staycation Bundlers,Hotel/room perks
+490517,2,Staycation Bundlers,Hotel/room perks
+490576,2,Staycation Bundlers,Hotel/room perks
+490608,2,Staycation Bundlers,Hotel/room perks
+490629,1,Deal-Driven Flyers,Flight discounting
+490671,1,Deal-Driven Flyers,Flight discounting
+491003,2,Staycation Bundlers,Hotel/room perks
+491124,1,Deal-Driven Flyers,Flight discounting
+491141,1,Deal-Driven Flyers,Flight discounting
+491175,1,Deal-Driven Flyers,Flight discounting
+491182,1,Deal-Driven Flyers,Flight discounting
+491241,4,Cautious Evaluators,Risk-reduction perks
+491266,1,Deal-Driven Flyers,Flight discounting
+491559,1,Deal-Driven Flyers,Flight discounting
+491597,2,Staycation Bundlers,Hotel/room perks
+491617,2,Staycation Bundlers,Hotel/room perks
+491706,2,Staycation Bundlers,Hotel/room perks
+491772,2,Staycation Bundlers,Hotel/room perks
+491925,1,Deal-Driven Flyers,Flight discounting
+491930,1,Deal-Driven Flyers,Flight discounting
+491995,0,Explorer Planners,Planning tools + itinerary support
+492209,1,Deal-Driven Flyers,Flight discounting
+492211,2,Staycation Bundlers,Hotel/room perks
+492287,2,Staycation Bundlers,Hotel/room perks
+492371,2,Staycation Bundlers,Hotel/room perks
+492497,0,Explorer Planners,Planning tools + itinerary support
+492614,0,Explorer Planners,Planning tools + itinerary support
+492999,4,Cautious Evaluators,Risk-reduction perks
+493177,1,Deal-Driven Flyers,Flight discounting
+493409,1,Deal-Driven Flyers,Flight discounting
+493476,4,Cautious Evaluators,Risk-reduction perks
+493718,2,Staycation Bundlers,Hotel/room perks
+494294,2,Staycation Bundlers,Hotel/room perks
+494382,1,Deal-Driven Flyers,Flight discounting
+494441,0,Explorer Planners,Planning tools + itinerary support
+494463,2,Staycation Bundlers,Hotel/room perks
+494484,2,Staycation Bundlers,Hotel/room perks
+494590,2,Staycation Bundlers,Hotel/room perks
+494630,4,Cautious Evaluators,Risk-reduction perks
+494680,1,Deal-Driven Flyers,Flight discounting
+494704,1,Deal-Driven Flyers,Flight discounting
+494985,1,Deal-Driven Flyers,Flight discounting
+495029,3,Frequent Business Travelers,Loyalty accelerators
+495042,1,Deal-Driven Flyers,Flight discounting
+495080,2,Staycation Bundlers,Hotel/room perks
+495272,2,Staycation Bundlers,Hotel/room perks
+495273,1,Deal-Driven Flyers,Flight discounting
+495386,2,Staycation Bundlers,Hotel/room perks
+495482,1,Deal-Driven Flyers,Flight discounting
+495592,0,Explorer Planners,Planning tools + itinerary support
+495603,1,Deal-Driven Flyers,Flight discounting
+495727,1,Deal-Driven Flyers,Flight discounting
+496016,1,Deal-Driven Flyers,Flight discounting
+496273,2,Staycation Bundlers,Hotel/room perks
+496286,1,Deal-Driven Flyers,Flight discounting
+496332,1,Deal-Driven Flyers,Flight discounting
+496382,2,Staycation Bundlers,Hotel/room perks
+496408,1,Deal-Driven Flyers,Flight discounting
+496566,2,Staycation Bundlers,Hotel/room perks
+496899,3,Frequent Business Travelers,Loyalty accelerators
+496972,4,Cautious Evaluators,Risk-reduction perks
+497042,1,Deal-Driven Flyers,Flight discounting
+497077,1,Deal-Driven Flyers,Flight discounting
+497108,2,Staycation Bundlers,Hotel/room perks
+497225,1,Deal-Driven Flyers,Flight discounting
+497475,2,Staycation Bundlers,Hotel/room perks
+497615,2,Staycation Bundlers,Hotel/room perks
+497678,2,Staycation Bundlers,Hotel/room perks
+497680,2,Staycation Bundlers,Hotel/room perks
+497829,2,Staycation Bundlers,Hotel/room perks
+497915,1,Deal-Driven Flyers,Flight discounting
+498199,2,Staycation Bundlers,Hotel/room perks
+498287,1,Deal-Driven Flyers,Flight discounting
+498298,4,Cautious Evaluators,Risk-reduction perks
+498357,1,Deal-Driven Flyers,Flight discounting
+498363,2,Staycation Bundlers,Hotel/room perks
+498500,2,Staycation Bundlers,Hotel/room perks
+498607,4,Cautious Evaluators,Risk-reduction perks
+498665,3,Frequent Business Travelers,Loyalty accelerators
+498857,2,Staycation Bundlers,Hotel/room perks
+498931,4,Cautious Evaluators,Risk-reduction perks
+499028,4,Cautious Evaluators,Risk-reduction perks
+499038,2,Staycation Bundlers,Hotel/room perks
+499252,2,Staycation Bundlers,Hotel/room perks
+499313,4,Cautious Evaluators,Risk-reduction perks
+499366,1,Deal-Driven Flyers,Flight discounting
+499375,1,Deal-Driven Flyers,Flight discounting
+499379,2,Staycation Bundlers,Hotel/room perks
+499461,4,Cautious Evaluators,Risk-reduction perks
+499475,4,Cautious Evaluators,Risk-reduction perks
+499633,1,Deal-Driven Flyers,Flight discounting
+499634,4,Cautious Evaluators,Risk-reduction perks
+499659,4,Cautious Evaluators,Risk-reduction perks
+499669,4,Cautious Evaluators,Risk-reduction perks
+499751,1,Deal-Driven Flyers,Flight discounting
+499760,0,Explorer Planners,Planning tools + itinerary support
+499780,0,Explorer Planners,Planning tools + itinerary support
+499810,4,Cautious Evaluators,Risk-reduction perks
+499847,1,Deal-Driven Flyers,Flight discounting
+499969,4,Cautious Evaluators,Risk-reduction perks
+499979,1,Deal-Driven Flyers,Flight discounting
+499990,3,Frequent Business Travelers,Loyalty accelerators
+500078,4,Cautious Evaluators,Risk-reduction perks
+500196,2,Staycation Bundlers,Hotel/room perks
+500243,2,Staycation Bundlers,Hotel/room perks
+500257,4,Cautious Evaluators,Risk-reduction perks
+500288,0,Explorer Planners,Planning tools + itinerary support
+500493,2,Staycation Bundlers,Hotel/room perks
+500646,2,Staycation Bundlers,Hotel/room perks
+500745,4,Cautious Evaluators,Risk-reduction perks
+500773,1,Deal-Driven Flyers,Flight discounting
+500791,4,Cautious Evaluators,Risk-reduction perks
+500828,2,Staycation Bundlers,Hotel/room perks
+500972,4,Cautious Evaluators,Risk-reduction perks
+501087,4,Cautious Evaluators,Risk-reduction perks
+501125,4,Cautious Evaluators,Risk-reduction perks
+501184,1,Deal-Driven Flyers,Flight discounting
+501322,2,Staycation Bundlers,Hotel/room perks
+501344,0,Explorer Planners,Planning tools + itinerary support
+501436,1,Deal-Driven Flyers,Flight discounting
+501512,2,Staycation Bundlers,Hotel/room perks
+501708,2,Staycation Bundlers,Hotel/room perks
+501735,4,Cautious Evaluators,Risk-reduction perks
+501764,2,Staycation Bundlers,Hotel/room perks
+501780,0,Explorer Planners,Planning tools + itinerary support
+501794,1,Deal-Driven Flyers,Flight discounting
+501817,1,Deal-Driven Flyers,Flight discounting
+501830,4,Cautious Evaluators,Risk-reduction perks
+501897,4,Cautious Evaluators,Risk-reduction perks
+501947,1,Deal-Driven Flyers,Flight discounting
+502145,4,Cautious Evaluators,Risk-reduction perks
+502210,1,Deal-Driven Flyers,Flight discounting
+502212,4,Cautious Evaluators,Risk-reduction perks
+502353,1,Deal-Driven Flyers,Flight discounting
+502412,2,Staycation Bundlers,Hotel/room perks
+502435,2,Staycation Bundlers,Hotel/room perks
+502444,1,Deal-Driven Flyers,Flight discounting
+502609,1,Deal-Driven Flyers,Flight discounting
+502626,2,Staycation Bundlers,Hotel/room perks
+502826,4,Cautious Evaluators,Risk-reduction perks
+502847,1,Deal-Driven Flyers,Flight discounting
+502850,0,Explorer Planners,Planning tools + itinerary support
+502875,2,Staycation Bundlers,Hotel/room perks
+502995,0,Explorer Planners,Planning tools + itinerary support
