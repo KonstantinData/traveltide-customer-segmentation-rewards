@@ -51,28 +51,50 @@ def build_parser() -> argparse.ArgumentParser:
         help="Also print relevant environment variables (redacted if missing).",
     )
 
-    # Notes: Reserved placeholder for a future end-to-end pipeline entrypoint (kept stable for roadmap).
-    run = sub.add_parser("run", help="Golden path placeholder (not implemented yet).")
+    # Notes: End-to-end pipeline entrypoint. Executes the full golden path.
+    run = sub.add_parser("run", help="Execute the full end-to-end pipeline.")
     run.add_argument(
         "--mode",
-        default="golden-path",
-        help="Execution mode placeholder (reserved for future pipeline modes).",
+        default="sample",
+        help=(
+            "Pipeline mode. Currently only 'sample' is supported and controls the size of "
+            "input data used during local runs."
+        ),
     )
     run.add_argument(
         "--seed",
-        default=None,
         type=int,
-        help="Optional random seed for reproducibility.",
+        default=42,
+        help="Random seed controlling any stochastic processes (default: 42).",
     )
     run.add_argument(
         "--run-id",
         default=None,
-        help="Optional run identifier used to name the artifacts folder.",
+        help=(
+            "Optional identifier for the run. If omitted, a UTC timestamp will be used "
+            "(e.g. 20250101_120000Z). Providing a constant name like 'local' makes outputs "
+            "reproducible across runs."
+        ),
     )
     run.add_argument(
-        "--outdir",
-        default=str(Path("artifacts") / "runs"),
-        help="Base output directory for pipeline runs (default: artifacts/runs).",
+        "--eda-config",
+        default=str(Path("config") / "eda.yaml"),
+        help="Path to the EDA YAML configuration file (default: config/eda.yaml).",
+    )
+    run.add_argument(
+        "--features-config",
+        default=str(Path("config") / "features.yaml"),
+        help="Path to the feature engineering YAML config (default: config/features.yaml).",
+    )
+    run.add_argument(
+        "--segmentation-config",
+        default=str(Path("config") / "segmentation.yaml"),
+        help="Path to the segmentation YAML config (default: config/segmentation.yaml).",
+    )
+    run.add_argument(
+        "--perks-config",
+        default=str(Path("config") / "perks.yaml"),
+        help="Path to the perks mapping YAML config (default: config/perks.yaml).",
     )
 
     # Notes: TT-012 reproducible EDA report generator (artifact emitter).
@@ -199,12 +221,37 @@ def cmd_info(show_env: bool) -> int:
 
 
 # Notes: Placeholder command to preserve a stable automation entrypoint.
-def cmd_run(mode: str, seed: int | None, run_id: str | None, outdir: str) -> int:
-    # Notes: Creates a run directory and captures metadata to keep automation stable.
-    run_dir = run_end_to_end(mode=mode, seed=seed, run_id=run_id, outdir=outdir)
-    if run_id and run_dir.name != run_id:
-        print(f"Requested run-id already exists. Created run directory: {run_dir.name}")
-    print(f"Run directory: {run_dir}")
+def cmd_run(
+    mode: str,
+    seed: int,
+    run_id: str | None,
+    eda_config: str,
+    features_config: str,
+    segmentation_config: str,
+    perks_config: str,
+) -> int:
+    """Execute the full end-to-end pipeline.
+
+    This command orchestrates the EDA, feature engineering, segmentation and perks
+    mapping steps and writes artifacts into a deterministic run folder under
+    ``artifacts/runs/<run_id>/``. Key outputs are mirrored into ``data/mart`` and
+    ``reports`` for easy review.
+    """
+    run_dir = run_end_to_end(
+        mode=mode,
+        seed=seed,
+        run_id=run_id,
+        eda_config=eda_config,
+        features_config=features_config,
+        segmentation_config=segmentation_config,
+        perks_config=perks_config,
+    )
+    print(f"Run completed. Artifacts written to: {run_dir}")
+    print(
+        "Final customer perk assignments:",
+        Path("data") / "mart" / "customer_perk_assignments.csv",
+    )
+    print("Reports available under:", Path("reports"))
     return 0
 
 
@@ -231,9 +278,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "run":
         return cmd_run(
             mode=str(args.mode),
-            seed=args.seed,
-            run_id=args.run_id,
-            outdir=str(args.outdir),
+            seed=int(args.seed),
+            run_id=str(args.run_id) if args.run_id is not None else None,
+            eda_config=str(args.eda_config),
+            features_config=str(args.features_config),
+            segmentation_config=str(args.segmentation_config),
+            perks_config=str(args.perks_config),
         )
 
     # Notes: "eda" command routing.
