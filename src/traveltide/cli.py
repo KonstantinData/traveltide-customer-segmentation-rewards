@@ -237,10 +237,12 @@ def cmd_run(
     ``artifacts/runs/<run_id>/``. Key outputs are mirrored into ``data/mart`` and
     ``reports`` for easy review.
     """
+    base_outdir = Path("artifacts") / "runs"
     run_dir = run_end_to_end(
         mode=mode,
         seed=seed,
         run_id=run_id,
+        outdir=str(base_outdir),
         eda_config=eda_config,
         features_config=features_config,
         segmentation_config=segmentation_config,

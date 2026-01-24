@@ -36,6 +36,10 @@ def run_end_to_end(
     seed: int | None,
     run_id: str | None,
     outdir: str,
+    eda_config: str,
+    features_config: str,
+    segmentation_config: str,
+    perks_config: str,
 ) -> Path:
     """Create a run directory and capture metadata for a pipeline run."""
 
@@ -44,6 +48,12 @@ def run_end_to_end(
         "mode": mode,
         "seed": seed,
         "run_id": run_id,
+        "configs": {
+            "eda": eda_config,
+            "features": features_config,
+            "segmentation": segmentation_config,
+            "perks": perks_config,
+        },
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     metadata_path = run_dir / "run_metadata.json"
