@@ -55,6 +55,16 @@ jobs:
       - name: CLI smoke (help)
         run: python -m traveltide --help
 
+      # Notes: Execute the golden path on sample data to ensure the end-to-end pipeline runs successfully.
+      - name: Golden path smoke run
+        run: |
+          # Use a deterministic run ID so CI artifacts are easy to locate and reproducible.
+          python -m traveltide run --mode sample --seed 42 --run-id ci
+          # Verify that the customer perks file and reports were created.
+          test -f data/mart/customer_perk_assignments.csv
+          test -d reports
+          echo "Golden path smoke run completed."
+
       # Notes:
       # - Enforce lint rules (ruff check)
       # - Enforce formatting compliance without rewriting files (ruff format --check)
@@ -66,6 +76,19 @@ jobs:
       # Notes: Run the test suite (fast, deterministic) to prevent regressions.
       - name: Tests (pytest)
         run: python -m pytest -q
+
+      # Notes: Placeholder scan — fail if any files contain ellipsis placeholders ('...').
+      - name: Placeholder scan
+        run: |
+          # grep returns non-zero when nothing is found with -q; invert logic using set +e to capture exit code.
+          set +e
+          grep -R "\.\.\." -n README.md docs notebooks || exit_code=$?
+          # If exit_code is undefined (meaning grep found a match), fail the build
+          if [ -z "$exit_code" ]; then
+            echo 'Error: Found ellipsis placeholders ("...") in the repository.'
+            exit 1
+          fi
+          echo 'No ellipsis placeholders found.'
 
       # Notes:
       # Scan dependency set for known vulnerabilities.

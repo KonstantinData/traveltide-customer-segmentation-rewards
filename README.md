@@ -48,25 +48,41 @@ The intended outcome is a **portfolio-ready** deliverable that is reproducible (
 
 # Project status
 
-This repository provides the **project scaffold + CI baseline** (packaging, CLI entry point, lint/tests hooks) and now includes a **reproducible Step 1 EDA artifact generator** (TT-012).
+The end‑to‑end TravelTide analytics pipeline is **fully implemented**.  The CLI now exposes a
+`run` command that orchestrates every phase—from EDA to feature engineering, segmentation and
+perk assignment—in a single deterministic execution.  CI runs unit tests and a smoke
+execution of the pipeline on sample data to ensure the golden path remains reproducible.
 
-The remaining analytical pipeline (feature engineering → clustering → final presentation artifacts) is implemented iteratively in subsequent issues/steps.
+### Running the full pipeline (Golden Path)
 
-### Step 1 (EDA) artifact generation (TT-012)
-
-Generate a versioned EDA report + cleaned tables (loads from local raw files in `data/`):
+After installing the package (in editable mode or otherwise) you can generate all artifacts
+in one shot.  The command below installs dependencies, installs the package, then runs the
+pipeline on the built‑in sample dataset.  You can override the `--run-id` to control where
+outputs are written (helpful for local testing).  The `--seed` flag ensures reproducible
+results across runs.
 
 ```bash
+# Install dependencies
 python -m pip install -r requirements.txt
 python -m pip install -e .
 
-# Generate EDA artifact into artifacts/eda/<timestamp>/
-python -m traveltide eda --config config/eda.yaml --outdir artifacts/eda
+# Execute the golden path using sample data
+python -m traveltide run --mode sample --seed 42 --run-id local
+
+# Inspect outputs
+ls artifacts/runs/local
+ls data/mart/customer_perk_assignments.csv
+ls reports/
 ```
+
+The `run` command accepts additional options to point at custom configuration files if you
+wish to experiment with different cohort definitions, feature sets or segmentation
+parameters.  See `python -m traveltide run --help` for details.
 
 **Process vs. runtime config**
 
-- `config/eda.yaml` defines **operational pipeline parameters** for running the EDA generator.
+- `config/eda.yaml`, `config/features.yaml`, `config/segmentation.yaml` and
+  `config/perks.yaml` define **operational pipeline parameters** for running each stage.
 - `eda.yml` documents the **EDA process workflow** used in this project.
 
 ## Visual gallery (generated plots)
