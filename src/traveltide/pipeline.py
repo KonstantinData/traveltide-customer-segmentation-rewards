@@ -51,7 +51,7 @@ def _ensure_latest_link(base_dir: Path, run_dir: Path) -> None:
         else:
             shutil.rmtree(latest_dir)
     try:
-        latest_dir.symlink_to(run_dir, target_is_directory=True)
+        latest_dir.symlink_to(run_dir.resolve(), target_is_directory=True)
     except OSError:
         shutil.copytree(run_dir, latest_dir)
 
@@ -123,9 +123,10 @@ def run_end_to_end(
         eda_run_dir = run_eda(config_path=eda_config, outdir=str(step1_dir))
 
     features_cfg = yaml.safe_load(Path(features_config).read_text(encoding="utf-8"))
-    features_cfg["input"]["sessions_clean_path"] = str(
-        step1_dir / "latest" / "data" / "sessions_clean.parquet"
-    )
+    sessions_clean_path = eda_run_dir / "data" / "sessions_clean.parquet"
+    if not sessions_clean_path.exists():
+        sessions_clean_path = step1_dir / "latest" / "data" / "sessions_clean.parquet"
+    features_cfg["input"]["sessions_clean_path"] = str(sessions_clean_path)
     step2_data_dir = step2_dir / "data"
     step2_data_dir.mkdir(parents=True, exist_ok=True)
     features_cfg["output"]["customer_features_path"] = str(
