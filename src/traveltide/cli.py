@@ -203,10 +203,7 @@ def cmd_run(mode: str, seed: int | None, run_id: str | None, outdir: str) -> int
     # Notes: Creates a run directory and captures metadata to keep automation stable.
     run_dir = run_end_to_end(mode=mode, seed=seed, run_id=run_id, outdir=outdir)
     if run_id and run_dir.name != run_id:
-        print(
-            "Requested run-id already exists. "
-            f"Created run directory: {run_dir.name}"
-        )
+        print(f"Requested run-id already exists. Created run directory: {run_dir.name}")
     print(f"Run directory: {run_dir}")
     return 0
 
