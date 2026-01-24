@@ -24,10 +24,10 @@ htmlcov/
 .env
 .env.*
 !.env.example
-data\flights_full.csv
-data\hotels_full.csv
-data\sessions_full.csv
-data\users_full.csv
+data/flights_full.csv
+data/hotels_full.csv
+data/sessions_full.csv
+data/users_full.csv
 
 
 # =========================
