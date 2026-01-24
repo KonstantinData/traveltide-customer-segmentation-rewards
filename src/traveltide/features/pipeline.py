@@ -69,6 +69,19 @@ def run_features(config_path: str, outdir: str | None = None) -> Path:
         max_cols=max_cols,
     )
 
+    rename_map = {
+        "p_cancellation": "p_cancellation_session",
+        "p_flight_discount": "p_flight_discount_shown",
+        "p_hotel_discount": "p_hotel_discount_shown",
+    }
+    rename_map = {
+        src: dest
+        for src, dest in rename_map.items()
+        if src in features.columns and dest not in features.columns
+    }
+    if rename_map:
+        features = features.rename(columns=rename_map)
+
     if features_cfg.get("validate_schema", False):
         schema = build_customer_features_schema(features_cfg)
         schema.validate(features)
